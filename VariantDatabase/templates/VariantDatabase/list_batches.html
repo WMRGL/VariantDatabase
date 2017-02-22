@@ -1,0 +1,58 @@
+{% extends 'VariantDatabase/base.html' %}
+
+  {% block content %}
+
+  	<br>
+  	<br>
+
+  	<div class="alert alert-success">
+  		You are viewing the Batches belonging to Project {{ project.pk    }}
+	</div>
+
+
+
+
+  	<table class = 'table table-hover'>
+
+		<tr>
+			<th> Batch Number </th>
+			<th> Batch Name </th>
+			<th> Batch Comment </th>
+			<th> Batch Date </th>
+			<th> Batch Samples </th>			
+
+
+
+		</tr>
+
+
+		{% for batch in batches_for_project %}
+
+		<tr>
+
+			<td> {{ batch.pk }} </td>
+			<td> {{ batch.batch_name }} </td>
+			<td> {{ batch.batch_comment }} </td>
+			<td> {{ batch.batch_date }} </td>
+			<td> Link </td>
+
+		</tr>
+
+
+			
+
+		{% endfor %}
+
+
+	</table>
+
+
+
+
+
+
+
+      
+
+     
+  {% endblock %}

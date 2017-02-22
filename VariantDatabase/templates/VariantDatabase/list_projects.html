@@ -1,0 +1,52 @@
+{% extends 'VariantDatabase/base.html' %}
+
+  {% block content %}
+
+  	<br>
+  	<br>
+
+  	<table class = 'table table-hover'>
+
+		<tr>
+			<th> Project Number </th>
+			<th> Project Title </th>
+			<th> Project Description  </th>
+			<th> Project Owner </th>
+			<th> Project Batches </th>
+
+		</tr>
+
+
+		{% for project in all_projects %}
+
+		<tr>
+
+			<td> {{ project.pk }} </td>
+			<td> {{ project.project_title }} </td>
+			<td> {{ project.project_description }} </td>
+			<td> {{ project.project_owner }} </td>
+			<td> <a href= "{% url 'list_batches' pk=project.pk %}"> List Batches </a> </td>
+
+
+
+
+		</tr>
+
+
+			
+
+		{% endfor %}
+
+
+	</table>
+
+
+
+
+
+
+
+      
+
+     
+  {% endblock %}
