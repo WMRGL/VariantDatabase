@@ -19,6 +19,7 @@
 
   <header class="container-fluid text-center">
     <h1>Variant Database</h1>
+
   </header>
 
 
@@ -36,16 +37,23 @@
 
       <li>
         <a href="{% url 'list_projects' %}">Projects</a>
+
       </li>
+
+      <li>
+        <a href="#" >Upload</a> </li>
 
       <li>
         <a href="#">Search</a>
       </li>
 
+      <li>
+        <a href="#">Unique Variants</a>
+      </li>
 
 
       <li>
-        <a href="#">Logout</a>
+        <a href="{% url 'logout' %}">Logout</a>
       </li>
 
 
@@ -58,6 +66,8 @@
 
 
     <div class="col-sm-8 text-left" id='test'> 
+
+    
 
     {% block content %}
 

@@ -6,7 +6,7 @@
   	<br>
 
   	<div class="alert alert-success">
-  		You are viewing the Samples belonging to Project Batch {{ batch.pk }}
+  		You are viewing the Samples belonging to {{batch.project.project_title}} : Batch {{ batch.pk }}
 	</div>
 
 
@@ -17,7 +17,9 @@
 		<tr>
 			<th> Sample Number </th>
 			<th> Sample Name </th>
-			<th> Patient Initials </th>	
+			<th> Patient Initials </th>
+			<th> View Variants </th>
+
 
 		</tr>
 
@@ -29,6 +31,7 @@
 			<td> {{ sample.pk }} </td>
 			<td> {{ sample.sample_name }} </td>
 			<td> {{ sample.patient_initials }} </td>
+			<td> View </td>
 
 		</tr>
 
