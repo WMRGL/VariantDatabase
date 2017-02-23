@@ -6,4 +6,4 @@ from .models import *
 admin.site.register(Project)
 admin.site.register(Batch)
 admin.site.register(Sample)
-admin.site.register(SampleBatch)
+

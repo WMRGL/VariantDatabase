@@ -34,7 +34,7 @@
 			<td> {{ batch.batch_name }} </td>
 			<td> {{ batch.batch_comment }} </td>
 			<td> {{ batch.batch_date }} </td>
-			<td> Link </td>
+			<td> <a href= "{% url 'list_batch_samples' pk=batch.pk%}"> List Samples </a> </td>
 
 		</tr>
 

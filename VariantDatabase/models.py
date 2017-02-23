@@ -29,13 +29,11 @@ class Sample(models.Model):
 
 	sample_name = models.CharField(max_length=50)
 	patient_initials = models.CharField(max_length=50)
+	batch = models.ForeignKey(Batch)
 
 	def __str__(self):
 		return self.sample_name
 
 
-class SampleBatch(models.Model):
 
-	sample = models.ForeignKey(Sample)
-	batch = models.ForeignKey(Batch)
 
