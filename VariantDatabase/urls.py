@@ -8,6 +8,7 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^batch/(?P<pk>\d+)/$', views.list_batch_samples, name='list_batch_samples'),
 				url(r'^login/$', auth_views.login, {'template_name': 'VariantDatabase/login.html'}, name='login'),
 				url(r'^logout/$', auth_views.logout, {'template_name': 'VariantDatabase/logout.html'}, name='logout'),
+				url(r'^search/$', views.search_page, name='search_page'),
 
 
 				

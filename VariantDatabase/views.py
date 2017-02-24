@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from VariantDatabase.models import *
 from django.contrib.auth.decorators import login_required
 
-# Create your views here.
+
 
 @login_required
 def home_page(request):
@@ -36,5 +36,27 @@ def list_batch_samples(request, pk):
 	samples_in_batch = Sample.objects.filter(batch = batch)
 
 	return render(request, 'VariantDatabase/list_batch_samples.html', {'batch': batch, 'samples_in_batch' : samples_in_batch})
+
+
+def list_sample_variants(request, pk):
+
+	#get sample batch
+	#get vcf fiel path
+	#extract variants from vcf
+	#display in table
+
+	pass
+
+
+#finish this later
+def search_page(request):
+
+	query = request.GET['query']
+
+	return render(request, 'VariantDatabase/search_results.html', {'query': query})
+
+
+
+
 
 
