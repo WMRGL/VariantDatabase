@@ -31,7 +31,7 @@
 			<td> {{ sample.pk }} </td>
 			<td> {{ sample.sample_name }} </td>
 			<td> {{ sample.patient_initials }} </td>
-			<td> View </td>
+			<td>  <a href= "{% url 'list_sample_variants' pk_project=sample.batch.project.pk        pk_batch=sample.batch.pk          pk_sample=sample.pk  %}"> List Variants </a> </td>
 
 		</tr>
 

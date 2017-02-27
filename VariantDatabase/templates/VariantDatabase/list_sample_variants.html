@@ -1,0 +1,53 @@
+{% extends 'VariantDatabase/base.html' %}
+
+  {% block content %}
+
+  	{{ vcf_file_path }}
+
+  	  	<table class = 'table table-hover'>
+
+		<tr>
+			<th> CHROM </th>
+			<th> POS </th>
+			<th> GENE </th>
+			<th> GENOTYPE </th>			
+
+
+
+		</tr>
+
+
+
+
+  	{% for variant in data %}
+
+  		
+
+		<tr>
+
+			<td> {{ variant.CHROM }} </td>
+			<td> {{ variant.POS }} </td>
+			<td> {{ variant.Gene_refGene }} </td>
+			<td> {{ variant.genotype}} </td>
+
+
+		</tr>
+
+
+
+
+  	{% endfor %}
+
+
+	</table>
+
+
+{{ data }}
+     
+ {% endblock %}  
+  
+  
+ 
+  
+  
+  

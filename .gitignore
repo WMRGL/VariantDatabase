@@ -3,3 +3,4 @@ manage.py
 mysite/
 myvenv/
 *.pyc
+cyvcf2/
