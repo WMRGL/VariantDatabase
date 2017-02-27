@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 import imp
 from cyvcf2.cyvcf2 import VCF
 extract_sample_data = imp.load_source('extract_sample_data', '/home/cuser/Documents/Project/Preliminary/cyvcf2/extract_sample_data.py')
-import dicttoxml
+
 
 
 @login_required
@@ -38,7 +38,7 @@ def list_batch_samples(request, pk_project, pk_batch):
 
 	return render(request, 'VariantDatabase/list_batch_samples.html', {'batch': batch, 'samples_in_batch' : samples_in_batch,})
 
-
+@login_required
 def list_sample_variants(request, pk_project, pk_batch, pk_sample):
 
 	batch = get_object_or_404(Batch, pk=pk_batch)
@@ -48,13 +48,6 @@ def list_sample_variants(request, pk_project, pk_batch, pk_sample):
 	vcf_file_path = batch.vcf_file
 
 	data = extract_sample_data.create_variant_list(vcf_file_path, sample.sample_name)
-
-
-	#get sample batch
-	#get vcf fiel path
-	#extract variants from vcf
-	#display in table
-
 
 	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'batch': batch, 'vcf_file_path': vcf_file_path, 'data': data})
 

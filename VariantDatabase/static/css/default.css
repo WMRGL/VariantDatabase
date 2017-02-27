@@ -5,7 +5,7 @@
 }
 
 /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
-.row.content {height: 900px}
+.row.content {height: 1000px}
 
 /* Set gray background color and 100% height */
 .sidenav {
@@ -37,4 +37,9 @@ button{
     position:relative;
     top:50%; 
     left:14.8%;
+}
+
+table {
+    table-layout: fixed; 
+    word-wrap: break-word;
 }
