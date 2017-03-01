@@ -6,7 +6,7 @@
     <br>
 
   	<div class="alert alert-success">
-  		You are viewing the Variations in the file:  {{ vcf_file_path }}
+  		You are viewing the Variations in the file:  {{ vcf_file_path }} Sample : {{ sample.sample_name}}
 	</div>
 
 
@@ -32,10 +32,10 @@
 
 		<tr>
 
-			<td> {{ variant.CHROM }} </td>
-			<td> {{ variant.POS }} </td>
-			<td > {{ variant.ref }} </td>
-			<td > {{ variant.alt.0 }} </td>
+			<td> {{ variant.chrom }} </td>
+			<td> {{ variant.pos }} </td>
+			<td > {{ variant.reference }} </td>
+			<td > {{ variant.alt_alleles }} </td>
 			<td> {{ variant.Gene_refGene }} </td>
 			<td> {{ variant.genotype}} </td>
 

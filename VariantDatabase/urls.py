@@ -7,7 +7,7 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^project/(?P<pk>\d+)/$', views.list_batches, name='list_batches'),
 				url(r'^batch/(?P<pk_project>\d+)/(?P<pk_batch>\d+)/$', views.list_batch_samples, name='list_batch_samples'),
 				url(r'^batch/(?P<pk_project>\d+)/(?P<pk_batch>\d+)/(?P<pk_sample>\d+)/$', views.list_sample_variants, name='list_sample_variants'),
-
+				url(r'^variant_detail$', views.variant_detail, name='variant_detail'),
 
 
 				url(r'^login/$', auth_views.login, {'template_name': 'VariantDatabase/login.html'}, name='login'),

@@ -33,10 +33,10 @@ header {
 button{
     height:35px; 
     width:100px; 
-    margin: -20px -50px; 
-    position:relative;
-    top:50%; 
-    left:14.8%;
+    margin: -20px ; 
+
+    margin-left:110px;
+    float:none; display:inline-block;
 }
 
 table {

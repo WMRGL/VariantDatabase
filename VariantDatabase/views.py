@@ -2,8 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from VariantDatabase.models import *
 from django.contrib.auth.decorators import login_required
 import imp
-from cyvcf2.cyvcf2 import VCF
-extract_sample_data = imp.load_source('extract_sample_data', '/home/cuser/Documents/Project/Preliminary/cyvcf2/extract_sample_data.py')
+from pysam import VariantFile
+pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/Pysam/pysam_extract.py')
 
 
 
@@ -47,9 +47,17 @@ def list_sample_variants(request, pk_project, pk_batch, pk_sample):
 
 	vcf_file_path = batch.vcf_file
 
-	data = extract_sample_data.create_variant_list(vcf_file_path, sample.sample_name)
+	#data = extract_sample_data.create_variant_list(vcf_file_path, sample.sample_name)
 
-	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'batch': batch, 'vcf_file_path': vcf_file_path, 'data': data})
+	data = pysam_extract.create_master_list(vcf_file_path, sample.sample_name)
+
+	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'vcf_file_path': vcf_file_path, 'data': data})
+
+
+def variant_detail(request):
+
+	return render(request, 'VariantDatabase/variant_detail.html', {})
+
 
 
 #finish this later

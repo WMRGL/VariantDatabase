@@ -19,7 +19,7 @@ class Batch(models.Model):
 	project = models.ForeignKey(Project)
 	batch_date = models.DateTimeField(blank=True, null=True)
 	batch_comment = models.TextField()
-	vcf_file = models.FilePathField(path='/home/cuser/Documents/Project/Preliminary')
+	vcf_file = models.FilePathField(path='/home/cuser/Documents/Project/DatabaseData',recursive=True)
 	vcf_hash = models.TextField(max_length=200)
 
 	def __str__(self):
