@@ -38,12 +38,35 @@ def create_master_list(file,sample):
 		master_list.append(my_dict) 
 
 
-		#print my_dict['genotype'], my_dict['pos'], my_dict['chrom'],my_dict['reference'], my_dict['alt_alleles'], my_dict['format']
 
 	return master_list
+
+
+def get_genes_in_file(file, sample):
+
+	bcf_in = VariantFile(file)
+
+	gene_list =[]
+
+	for rec in bcf_in.fetch():
+
+		if 'Gene.refGene' in rec.info.keys():
+
+			for gene in rec.info['Gene.refGene']:
+
+				gene_list.append(gene)
+
+
+		else:
+
+			return 'An error occured - can not find Gene.refGene key in info field'
+
+
+	return list(set(gene_list))
+
 
 
 if __name__ == '__main__':
 
 
-	create_master_list("merged-sorted.vcf.gz",'205908-3-D17-01112-JH_S3' )    
+	print create_master_list("merged-sorted.vcf.gz",'205908-3-D17-01112-JH_S3' )

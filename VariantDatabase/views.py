@@ -47,11 +47,11 @@ def list_sample_variants(request, pk_project, pk_batch, pk_sample):
 
 	vcf_file_path = batch.vcf_file
 
-	#data = extract_sample_data.create_variant_list(vcf_file_path, sample.sample_name)
-
 	data = pysam_extract.create_master_list(vcf_file_path, sample.sample_name)
 
-	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'vcf_file_path': vcf_file_path, 'data': data})
+	genes = pysam_extract.get_genes_in_file(vcf_file_path, sample.sample_name)
+
+	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'vcf_file_path': vcf_file_path, 'data': data, 'genes': genes})
 
 
 def variant_detail(request):
@@ -63,7 +63,9 @@ def variant_detail(request):
 #finish this later
 def search_page(request):
 
-	query = request.GET['query']
+
+	query = request.GET.get('query')
+
 
 	return render(request, 'VariantDatabase/search_results.html', {'query': query})
 
