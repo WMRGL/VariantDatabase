@@ -13,45 +13,38 @@ def home_page(request):
 	return render(request, 'VariantDatabase/home_page.html', {})
 
 @login_required
-def list_projects(request):
+def list_sections(request):
 
-	all_projects = Project.objects.all()
+	all_sections = Section.objects.all()
 
-	return render(request, 'VariantDatabase/list_projects.html', {'all_projects': all_projects} )
+	return render(request, 'VariantDatabase/list_sections.html', {'all_sections': all_sections} )
 
-@login_required
-def list_batches(request, pk):
-
-	project = get_object_or_404(Project, pk=pk)
-
-	batches_for_project = Batch.objects.filter(project=project)
-
-	return render(request,'VariantDatabase/list_batches.html', {'batches_for_project': batches_for_project, 'project': project})
 
 
 @login_required
-def list_batch_samples(request, pk_project, pk_batch):
+def list_worksheet_samples(request, pk_worksheet):
 
-	batch = get_object_or_404(Batch, pk=pk_batch)
+	worksheet = get_object_or_404(Worksheet, pk=pk_worksheet)
 
-	samples_in_batch = Sample.objects.filter(batch = batch)
+	samples_in_worksheet = Sample.objects.filter(worksheet = worksheet)
 
-	return render(request, 'VariantDatabase/list_batch_samples.html', {'batch': batch, 'samples_in_batch' : samples_in_batch,})
+	return render(request, 'VariantDatabase/list_worksheet_samples.html', {'samples_in_worksheet': samples_in_worksheet})
+
+
 
 @login_required
-def list_sample_variants(request, pk_project, pk_batch, pk_sample):
+def list_sample_variants(request, pk_sample):
 
-	batch = get_object_or_404(Batch, pk=pk_batch)
 
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
-	vcf_file_path = batch.vcf_file
+	vcf_file_path = sample.vcf_file
 
-	data = pysam_extract.create_master_list(vcf_file_path, sample.sample_name)
+	data = pysam_extract.create_master_list(vcf_file_path, sample.name)
 
-	genes = pysam_extract.get_genes_in_file(vcf_file_path, sample.sample_name)
+	genes = pysam_extract.get_genes_in_file(vcf_file_path, sample.name)
 
-	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'vcf_file_path': vcf_file_path, 'data': data, 'genes': genes})
+	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'data': data, 'genes': genes})
 
 
 def variant_detail(request):

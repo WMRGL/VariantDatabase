@@ -3,37 +3,73 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils import timezone
 
-class Project(models.Model):
+class Section(models.Model):
 
-	project_owner = models.ForeignKey('auth.User')
-	project_title = models.CharField(max_length=200)
-	project_description = models.TextField()
-	created_date = models.DateTimeField(default=timezone.now)
-
-	def __str__(self):
-		return self.project_title
-
-
-class Batch(models.Model):
-	batch_name = models.CharField(max_length=100, default = " ")
-	project = models.ForeignKey(Project)
-	batch_date = models.DateTimeField(blank=True, null=True)
-	batch_comment = models.TextField()
-	vcf_file = models.FilePathField(path='/home/cuser/Documents/Project/DatabaseData',recursive=True)
-	vcf_hash = models.TextField(max_length=200)
+	owner = models.ForeignKey('auth.User')
+	title = models.CharField(max_length=200)
+	description = models.TextField()
 
 	def __str__(self):
-		return self.batch_name
+		return self.title
+
+
+	def get_worksheets(self):
+
+		all_worksheets = Worksheet.objects.filter(section=self)
+
+		return all_worksheets
+
+
+
+class Worksheet(models.Model):
+
+	name = models.CharField(max_length=100, default = " ")
+	section = models.ForeignKey(Section)
+	comment = models.TextField()
+
+
+	def __str__(self):
+		return self.name
+
+	def get_status(self):
+
+		pass
 
 class Sample(models.Model):
 
-	sample_name = models.CharField(max_length=50)
+	name = models.CharField(max_length=50)
 	patient_initials = models.CharField(max_length=50)
-	batch = models.ForeignKey(Batch)
+	worksheet = models.ForeignKey(Worksheet)
+	vcf_file = models.FilePathField(path='/home/cuser/Documents/Project/DatabaseData',recursive=True)
+	vcf_hash = models.TextField(max_length=500)
+
 
 	def __str__(self):
-		return self.sample_name
+		return self.name
+
+class SampleStatus(models.Model):
+
+	name = models.CharField(max_length=100)
+
+
+class WorkSheetStatus(models.Model):
+
+	name = models.CharField(max_length=100)	
 
 
 
+class SampleStatusUpdate(models.Model):
+
+	sample = models.ForeignKey(Sample)
+	status = models.ForeignKey(SampleStatus)
+	date = models.DateTimeField(blank=True, null=True)
+	user = models.ForeignKey('auth.User')
+
+
+class WorksheetStatusUpdate(models.Model):
+
+	sample = models.ForeignKey(Worksheet)
+	status = models.ForeignKey(WorkSheetStatus)
+	date = models.DateTimeField(blank=True, null=True)
+	user = models.ForeignKey('auth.User')
 

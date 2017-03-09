@@ -5,64 +5,94 @@
 
     <br>
 
-  	<div class="alert alert-success">
-  		You are viewing the Variations in the file:  {{ vcf_file_path }} Sample : {{ sample.sample_name}}
+    <div class="alert alert-info">
+  		You are viewing information relating to sample:  {{ sample.name }}
 	</div>
 
-	<div class="panel panel-primary">
-      <div class="panel-heading">Filter</div>
-      <div class="panel-body">
 
-      {{genes}}
+    	   <ul class="nav nav-tabs">
 
+			    <li class="active"><a data-toggle="tab" href="#variants">Variants</a></li>
+			    <li><a data-toggle="tab" href="#filter">Filter</a></li>
+			    <li><a data-toggle="tab" href="#QA">QA</a></li>
+			    <li><a data-toggle="tab" href="#history">History</a></li>
 
+  			</ul>
 
+  	<br>
 
-
-
-      </div>
-    </div>
-
-
+  	<div class="tab-content">
 
 
-  	  	<table class = 'table table-hover'>
-
-		<tr>
-			<th> CHROM </th>
-			<th> POS </th>
-			<th> REF </th>
-			<th> ALT </th>
-			<th> GENE </th>
-			<th> GENOTYPE </th>			
-
-
-		</tr>
-
-
-  	{% for variant in data %}
-
-  		
-
-		<tr>
-
-			<td> {{ variant.chrom }} </td>
-			<td> {{ variant.pos }} </td>
-			<td > {{ variant.reference }} </td>
-			<td > {{ variant.alt_alleles }} </td>
-			<td> {{ variant.Gene_refGene }} </td>
-			<td> {{ variant.genotype}} </td>
-
-
-		</tr>
+  		<div id="variants" class="tab-pane fade in active">
 
 
 
 
-  	{% endfor %}
+
+	  	  	<table class = 'table table-hover'>
+
+			<tr>
+				<th> CHROM </th>
+				<th> POS </th>
+				<th> REF </th>
+				<th> ALT </th>
+				<th> GENE </th>
+				<th> GENOTYPE </th>			
 
 
-	</table>
+			</tr>
+
+
+		  	{% for variant in data %}
+
+		  		
+
+				<tr>
+
+					<td> {{ variant.chrom }} </td>
+					<td> {{ variant.pos }} </td>
+					<td > {{ variant.reference }} </td>
+					<td > {{ variant.alt_alleles }} </td>
+					<td> {{ variant.Gene_refGene }} </td>
+					<td> {{ variant.genotype}} </td>
+
+
+				</tr>
+
+
+
+
+		  	{% endfor %}
+
+
+		</table>
+
+		</div>
+
+	<div id="QA" class="tab-pane fade">
+
+	<p> QA goes here </p>
+
+	</div>
+
+
+	<div id="history" class="tab-pane fade">
+
+	<p> Worksheet History goes here </p>
+
+	</div>
+
+	<div id="filter" class="tab-pane fade">
+
+	<p> filter </p>
+
+	</div>
+
+
+
+
+	</div>
 
 
 

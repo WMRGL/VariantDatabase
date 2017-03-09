@@ -1,0 +1,76 @@
+{% extends 'VariantDatabase/base.html' %}
+
+  {% block content %}
+
+  	<br>
+
+  	<div class="alert alert-info">
+  		You are viewing information relating to:  {{ samples_in_worksheet.0.worksheet }}
+	</div>
+
+
+
+
+
+   <ul class="nav nav-tabs">
+
+    <li class="active"><a data-toggle="tab" href="#samples">Samples</a></li>
+    <li><a data-toggle="tab" href="#QA">QA</a></li>
+    <li><a data-toggle="tab" href="#history">History</a></li>
+
+  </ul>
+
+  <br>
+
+  <div class="tab-content">
+
+
+  	<div id="samples" class="tab-pane fade in active">
+
+
+  	<table class = 'table table-hover'>
+
+		<tr>
+			<th> Sample Name </th>
+			<th> Patient Initials </th>
+			<th> Sample Status </th>
+
+
+
+		</tr>
+
+
+		{% for sample in samples_in_worksheet %}
+
+		<tr>
+
+			<td> <a href= "{% url 'list_sample_variants' sample.pk  %}"> {{ sample.name }}   </a> </td>
+			<td> {{ sample.patient_initials }} </td>
+			<td>NA </td>
+		
+
+		</tr>
+
+		{% endfor %}
+
+
+	</table>
+
+	</div>
+
+	<div id="QA" class="tab-pane fade">
+
+	<p> QA goes here </p>
+
+	</div>
+
+
+	<div id="history" class="tab-pane fade">
+
+	<p> Worksheet History goes here </p>
+
+	</div>
+
+	</div>
+     
+  {% endblock %}

@@ -3,10 +3,9 @@ from . import views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
-				url(r'^list_projects$', views.list_projects, name='list_projects'),
-				url(r'^project/(?P<pk>\d+)/$', views.list_batches, name='list_batches'),
-				url(r'^batch/(?P<pk_project>\d+)/(?P<pk_batch>\d+)/$', views.list_batch_samples, name='list_batch_samples'),
-				url(r'^batch/(?P<pk_project>\d+)/(?P<pk_batch>\d+)/(?P<pk_sample>\d+)/$', views.list_sample_variants, name='list_sample_variants'),
+				url(r'^sections$', views.list_sections, name='list_sections'),
+				url(r'^worksheet/(?P<pk_worksheet>\d+)/$', views.list_worksheet_samples, name='list_worksheet_samples'),
+				url(r'^sample/(?P<pk_sample>\d+)/$', views.list_sample_variants, name='list_sample_variants'),
 				url(r'^variant_detail$', views.variant_detail, name='variant_detail'),
 
 

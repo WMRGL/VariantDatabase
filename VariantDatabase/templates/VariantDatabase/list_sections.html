@@ -1,0 +1,80 @@
+{% extends 'VariantDatabase/base.html' %}
+
+  {% block content %}
+
+  	<br>
+
+
+  	
+ 
+	 <ul class="nav nav-tabs">
+
+		{% for section in all_sections %}
+
+
+			<li ><a data-toggle="tab" href= {{ "#"|add:section.description  }}   > {{ section.title }}  </a></li>
+
+
+		{% endfor %}
+
+	</ul>
+
+
+  	<div class="tab-content">
+
+  		<br>
+
+
+		{% for section in all_sections %}
+
+
+		<div id= "{{ section.description }}" class="tab-pane fade">
+
+
+      		 <table class = 'table table-hover'>
+
+			<tr>
+				<th> Name </th>
+				<th> Comment </th>
+				<th> Creation Date  </th>	
+				<th> Chemistry </th>
+				<th> Status  </th>
+
+
+			</tr>
+
+			{% for worksheet in section.get_worksheets %}
+
+
+			<tr>
+
+				<td> <a href= "{% url 'list_worksheet_samples' worksheet.pk  %}"> {{ worksheet.name }}   </a> </td>
+				<td> {{ worksheet.comment }}  </td>
+				<td>  NA </td>
+				<td> NA </td>
+				<td> NA </td>
+
+
+			</tr>
+
+
+			{% endfor %}
+
+
+
+
+			</table>
+
+
+
+
+
+    	</div>
+
+
+		{% endfor %}
+
+	</div>
+
+
+  {% endblock %}
