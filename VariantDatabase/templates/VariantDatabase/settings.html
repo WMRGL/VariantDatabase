@@ -1,0 +1,44 @@
+{% extends 'VariantDatabase/base.html' %}
+
+  {% block content %}
+
+	<br>
+
+  <h4> Variant Display Settings </h3>
+
+  <p> Select the columns you would like to see </p>
+
+  {{ list}}
+
+
+
+  <hr>
+
+
+  <form method='POST' class="form-horizontal"> {% csrf_token %}
+
+  {% for field in all_fields  %}
+
+  	<div class="checkbox">
+  		<label><input type="checkbox" name={{field.information}}>{{field.label}}</label>
+	</div>
+
+
+
+
+
+
+  {% endfor %}
+
+  <br>
+
+
+   <button type="submit" class="btn btn-default">Submit</button>
+
+
+
+   </form>
+
+   <hr>
+
+  {% endblock %}

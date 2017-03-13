@@ -31,9 +31,7 @@ class Worksheet(models.Model):
 	def __str__(self):
 		return self.name
 
-	def get_status(self):
 
-		pass
 
 class Sample(models.Model):
 
@@ -47,18 +45,50 @@ class Sample(models.Model):
 	def __str__(self):
 		return self.name
 
+
+
+
+
 class SampleStatus(models.Model):
 
+	"""
+
+	Model to hold all possible sample statuses e.g. 'undergoing analysis', 'complete'
+
+	"""
+
 	name = models.CharField(max_length=100)
+
+	def __str__(self):
+		return self.name
 
 
 class WorkSheetStatus(models.Model):
 
+	"""
+
+	Model to hold all possible worksheet statuses e.g. 'undergoing analysis', 'complete'
+
+	"""
+
 	name = models.CharField(max_length=100)	
 
-
+	def __str__(self):
+		return self.name
 
 class SampleStatusUpdate(models.Model):
+
+	"""
+	Model to hold the status changes of a sample
+
+	When a the sample is created or its status updated a new edition will be inserted
+
+	Allows the tracking of the sample status
+
+
+	"""
+
+
 
 	sample = models.ForeignKey(Sample)
 	status = models.ForeignKey(SampleStatus)
@@ -68,8 +98,47 @@ class SampleStatusUpdate(models.Model):
 
 class WorksheetStatusUpdate(models.Model):
 
+
+	"""
+	Model to hold the status changes of a sample
+
+	When a the sample is created or its status updated a new edition will be inserted
+
+	Allows the tracking of the sample status
+
+
+	"""
+
 	sample = models.ForeignKey(Worksheet)
 	status = models.ForeignKey(WorkSheetStatus)
 	date = models.DateTimeField(blank=True, null=True)
 	user = models.ForeignKey('auth.User')
+
+class VariantInformation(models.Model):
+
+	"""
+	Model for holding an annotation type in the vcf.
+	
+	User can then select which of these they want to view.
+
+
+	"""
+
+	information  = models.CharField(max_length=50)
+	label = models.CharField(max_length=50, null=True, blank=True)
+	description  = models.TextField()
+
+
+class UserSetting(models.Model):
+
+	"""
+
+	A user's current settings. If a VariantInformation model is present in this for a user 
+	then that column will be displayed
+
+
+	"""
+	user = models.ForeignKey('auth.User')
+	variant_information = models.ForeignKey(VariantInformation)
+
 
