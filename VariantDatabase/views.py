@@ -100,6 +100,7 @@ def settings(request):
 
 	all_fields = VariantInformation.objects.all() #get all possible columns (these will be converted to toggle boxes)
 
+
 	if request.method == 'POST':
 
 		user_settings = UserSetting.objects.filter(user=request.user) #get rid of existing user settings
@@ -118,11 +119,36 @@ def settings(request):
 
 				a.save()
 
+
+
+		#get what the user has just inputted and put into a dictionary - tick_box_dict
+		#This allows us to tick the tickboxes in the html template
+
+		current_user_settings = UserSetting.objects.filter(user=request.user)
+
+		tick_box_dict ={}
+
+		for setting in current_user_settings:
+
+			tick_box_dict[setting.variant_information.information] =True
+
 				
-		return render(request, 'VariantDatabase/settings.html' ,{'all_fields': all_fields})
+		return render(request, 'VariantDatabase/settings.html' ,{'all_fields': all_fields, 'tick_box_dict': tick_box_dict})
 
 
 	else:
 
-		return render(request, 'VariantDatabase/settings.html' ,{'all_fields': all_fields})
+		#get what the current user settings put into a dictionary - tick_box_dict
+		#This allows us to pre-tick the tickboxes in the html template
+
+		current_user_settings = UserSetting.objects.filter(user=request.user)
+
+		tick_box_dict ={}
+
+		for setting in current_user_settings:
+
+			tick_box_dict[setting.variant_information.information] =True
+
+
+		return render(request, 'VariantDatabase/settings.html' ,{'all_fields': all_fields, 'tick_box_dict': tick_box_dict})
 

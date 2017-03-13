@@ -8,7 +8,6 @@
 
   <p> Select the columns you would like to see </p>
 
-  {{ list}}
 
 
 
@@ -19,10 +18,27 @@
 
   {% for field in all_fields  %}
 
+ 	{% if field.information in tick_box_dict %}
+
+ 	
   	<div class="checkbox">
+  		<label><input type="checkbox" name={{field.information}} checked>{{field.label}}</label>
+	</div>
+
+
+
+
+	{% else %}
+
+	  	<div class="checkbox">
   		<label><input type="checkbox" name={{field.information}}>{{field.label}}</label>
 	</div>
 
+
+
+
+
+	{% endif %}
 
 
 

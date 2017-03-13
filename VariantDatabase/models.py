@@ -141,4 +141,10 @@ class UserSetting(models.Model):
 	user = models.ForeignKey('auth.User')
 	variant_information = models.ForeignKey(VariantInformation)
 
+class Variant(models.Model):
 
+	pass
+
+class VariantInstance(models.Model):
+
+	pass
