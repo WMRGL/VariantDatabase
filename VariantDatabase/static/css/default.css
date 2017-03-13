@@ -4,22 +4,6 @@
   border-radius: 0;
 }
 
-/* Set height of the grid so .sidenav can be 100% (adjust as needed) */
-.row.content {height: 1000px}
-
-/* Set gray background color and 100% height */
-.sidenav {
-  padding-top: 20px;
-  background-color: #f1f1f1;
-  height: 100%;
-}
-
-/* Set black background color, white text and some padding */
-header {
-  background-color: #f1f1f1;
-  height: 100px;
-  padding: 15px;
-}
 
 /* On small screens, set height to 'auto' for sidenav and grid */
 @media screen and (max-width: 767px) {
@@ -38,6 +22,7 @@ button{
     margin-left:110px;
     float:none; display:inline-block;
 }
+
 
 table {
     table-layout: fixed; 

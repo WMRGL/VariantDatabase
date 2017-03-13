@@ -6,7 +6,7 @@
     <br>
 
     <div class="alert alert-info">
-  		You are viewing information relating to sample:  {{ sample.name }}
+  		You are viewing information relating to sample:  <strong> {{ sample.name }} </strong>
 	</div>
 
 
@@ -27,10 +27,13 @@
   		<div id="variants" class="tab-pane fade in active">
 
 
+  		
 
 
 
-	  	  	<table class = 'table table-hover'>
+
+
+	  	  	<table id="variant_table" class = 'table table-hover table-bordered'>
 
 			<tr>
 				<th> CHROM </th>
@@ -68,24 +71,46 @@
 
 		</table>
 
+
+
 		</div>
 
 	<div id="QA" class="tab-pane fade">
 
-	<p> QA goes here </p>
+		<p> QA goes here </p>
 
 	</div>
 
 
 	<div id="history" class="tab-pane fade">
 
-	<p> Worksheet History goes here </p>
+		<p> Sample History goes here </p>
 
 	</div>
 
 	<div id="filter" class="tab-pane fade">
 
-	<p> filter </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	</div>
 
