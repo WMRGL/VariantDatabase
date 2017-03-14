@@ -6,7 +6,7 @@
     <br>
 
     <div class="alert alert-info">
-  		You are viewing information relating to sample:  <strong> {{ sample.name }} </strong>
+  		You are viewing information relating to sample:  <strong> {{ sample.name }} </strong> 
 	</div>
 
 
@@ -27,13 +27,15 @@
   		<div id="variants" class="tab-pane fade in active">
 
 
-	  	  	<table id="variant_table" class = 'table table-hover table-bordered'>
+	  	  	<table id="variant_table" class = 'table table-hover table-bordered sortable'>
+
+	  	  	<thead>
 
 			<tr>
-				<th> CHROM </th>
-				<th> POS </th>
-				<th> REF </th>
-				<th> ALT </th>
+				<th data-defaultsort='disabled'> CHROM </th>
+				<th data-defaultsort='disabled'> POS </th>
+				<th data-defaultsort='disabled'> REF </th>
+				<th data-defaultsort='disabled'> ALT </th>
 
 
 				{% for field in field_list %}
@@ -44,10 +46,14 @@
 				{% endfor %}
 
 
-				<th> GENOTYPE </th>			
+				<th data-defaultsort='disabled'> GENOTYPE </th>			
 
 
 			</tr>
+
+			</thead>
+
+			<tbody>
 
 
 		  	{% for variant in data %}
@@ -80,8 +86,12 @@
 
 		  	{% endfor %}
 
+		  	</tbody>
+
 
 		</table>
+
+
 
 
 

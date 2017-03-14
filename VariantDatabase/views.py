@@ -1,8 +1,16 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from VariantDatabase.models import *
 from django.contrib.auth.decorators import login_required
 import imp
 from pysam import VariantFile
+from .forms import *
+from django.utils import timezone
+import hashlib
+
+
+
+
+
 pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/Pysam/pysam_extract.py')
 
 
@@ -68,6 +76,8 @@ def list_sample_variants(request, pk_sample):
 	data = pysam_extract.create_master_list(vcf_file_path, sample.name)
 
 	genes = pysam_extract.get_genes_in_file(vcf_file_path, sample.name)
+
+
 
 	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'data': data, 'genes': genes, 'field_list': field_list})
 
@@ -152,3 +162,100 @@ def settings(request):
 
 		return render(request, 'VariantDatabase/settings.html' ,{'all_fields': all_fields, 'tick_box_dict': tick_box_dict})
 
+
+def error(request):
+
+	message = request.GET.get('message')
+
+	return render(request, 'VariantDatabase/error.html', {'message':message})
+
+
+
+
+def upload_sample(request):
+
+
+	if request.method == "POST":
+
+		form = SampleForm(request.POST)
+
+		if form.is_valid():
+
+			new_sample = form.save(commit=False)
+
+			new_sample.hash = 'None'
+
+			new_sample.save()
+
+			#create new SampleStatusUpdate
+			#The SampleStatusUpdate will be set to 'new'
+
+			inital_status = get_object_or_404(SampleStatus, pk=1)
+
+			new_update = SampleStatusUpdate(sample=new_sample, status=inital_status, user=request.user, date=timezone.now())
+
+			new_update.save()
+
+			#Now we check whether for each of the variants in that file do we have a variant in the Variant Model
+			#If not create one and then create a corresponding VariantSample record
+			#Otherwise just create another VariantSample record
+
+			data = pysam_extract.create_master_list(new_sample.vcf_file, new_sample.name)
+
+			
+
+			try:
+
+				data = pysam_extract.create_master_list(vcf_file_path, new_sample.name)
+
+
+
+			except:
+
+				new_sample.delete()
+				new_update.delete()
+
+				return redirect('error')
+
+			
+
+			for variant in data:
+
+				#see if we have this variant in the database (Variant table) already?
+				#assumes normalisation and one alt allele per variant
+				#assumes chromosome in same format - need to validate?
+
+				chromosome = variant['chrom']
+				pos = str(variant['pos'])
+				ref = variant['reference']
+				alt = variant['alt_alleles'][0]
+
+				hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()
+
+				count = Variant.objects.filter(variant_hash=hash_id).count()
+
+				if count ==0: # new variant
+
+					new_variant = Variant(chromosome=chromosome, position=pos, ref= ref, alt=alt, variant_hash= hash_id)
+
+					new_variant.save()
+
+					new_variant_sample = VariantSample(variant=new_variant, sample=new_sample)
+
+					new_variant_sample.save()
+
+
+				else: #old variant
+
+					existing_variant = get_object_or_404(Variant, variant_hash=hash_id)
+
+					new_variant_sample = VariantSample(variant=existing_variant, sample=new_sample)
+
+					new_variant_sample.save()
+
+
+			return redirect('home_page')
+
+	form = SampleForm
+
+	return render(request, 'VariantDatabase/upload.html', {'form': form})

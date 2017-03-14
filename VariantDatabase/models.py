@@ -39,13 +39,34 @@ class Sample(models.Model):
 	patient_initials = models.CharField(max_length=50)
 	worksheet = models.ForeignKey(Worksheet)
 	vcf_file = models.FilePathField(path='/home/cuser/Documents/Project/DatabaseData',recursive=True)
-	vcf_hash = models.TextField(max_length=500)
+	vcf_hash = models.CharField(max_length=64)
 
 
 	def __str__(self):
 		return self.name
 
+	def already_exists(self, query_name):
 
+		"""
+		Checks if a sample with that name already exists so can be rejected
+
+		"""
+		count = Sample.objects.filter(name=query_name).count()
+
+		if count >0:
+
+			return True
+
+		else:
+
+			return False
+
+
+	def get_status(self):
+
+		 current_status = SampleStatusUpdate.objects.filter(sample=self).order_by('-date')[0].status.name
+
+		 return current_status
 
 
 
@@ -134,7 +155,7 @@ class UserSetting(models.Model):
 	"""
 
 	A user's current settings. If a VariantInformation model is present in this for a user 
-	then that column will be displayed
+	then that column will be displayed in the views_sample_variants view
 
 
 	"""
@@ -143,8 +164,23 @@ class UserSetting(models.Model):
 
 class Variant(models.Model):
 
-	pass
+	chromosome  = models.CharField(max_length=25)
+	position  = models.IntegerField()
+	ref = models.TextField()
+	alt = models.TextField()
+	variant_hash = models.CharField(max_length=64, db_index=True, unique=True)
 
-class VariantInstance(models.Model):
+	def __str__(self):
+		return self.chromosome + str(self.position) + self.ref + self.alt
 
-	pass
+
+	def get_samples_with_variant(self):
+
+		pass
+
+
+
+class VariantSample(models.Model):
+
+	variant = models.ForeignKey(Variant)
+	sample = models.ForeignKey(Sample)
