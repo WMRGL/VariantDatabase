@@ -1,4 +1,5 @@
 from pysam import VariantFile
+import hashlib
 
 
 def create_master_list(file,sample):
@@ -26,6 +27,15 @@ def create_master_list(file,sample):
 		my_dict['alt_alleles'] = rec.alts
 
 		my_dict['quality'] = rec.qual
+
+		chromosome = my_dict['chrom']
+		pos = str(my_dict['pos'])
+		ref = my_dict['reference']
+		alt = my_dict['alt_alleles'][0]
+
+		hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()
+
+		my_dict['hash_id'] = hash_id
 
 
 		for key in rec.info.keys():

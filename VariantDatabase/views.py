@@ -7,10 +7,6 @@ from .forms import *
 from django.utils import timezone
 import hashlib
 
-
-
-
-
 pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/Pysam/pysam_extract.py')
 
 
@@ -23,6 +19,15 @@ def home_page(request):
 @login_required
 def list_sections(request):
 
+	"""
+	This view allows the user to view a section page
+
+	On this page the relevent worksheets will be shown.
+
+	TODO: sort worksheets by status
+
+	"""
+
 	all_sections = Section.objects.all()
 
 	return render(request, 'VariantDatabase/list_sections.html', {'all_sections': all_sections} )
@@ -31,6 +36,11 @@ def list_sections(request):
 
 @login_required
 def list_worksheet_samples(request, pk_worksheet):
+
+	"""
+	This view lists the samples in a particular worksheet
+
+	"""
 
 	worksheet = get_object_or_404(Worksheet, pk=pk_worksheet)
 
@@ -53,9 +63,9 @@ def list_sample_variants(request, pk_sample):
 
 	sample = get_object_or_404(Sample, pk=pk_sample) 
 
-	#Get the user's settings
-	#create a field list containing the custom INFo fields the user requires
-	#this will be passed to the template for rendering
+	#Get the user's settings.
+	#Create a field list containing the custom INFO fields the user requires.
+	#Then this will be passed to the template for rendering.
 
 	user_settings = UserSetting.objects.filter(user=request.user)
 
@@ -70,29 +80,74 @@ def list_sample_variants(request, pk_sample):
 	#Get the genes from the vcf file
 	#Pass these to the template
 
-
 	vcf_file_path = sample.vcf_file
 
-	data = pysam_extract.create_master_list(vcf_file_path, sample.name)
+	data = pysam_extract.create_master_list(vcf_file_path, sample.name) #create variant list
 
 	genes = pysam_extract.get_genes_in_file(vcf_file_path, sample.name)
-
-
 
 	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'data': data, 'genes': genes, 'field_list': field_list})
 
 
-
-
-
 @login_required
-def variant_detail(request):
+def variant_detail(request, pk_sample, variant_hash):
 
-	return render(request, 'VariantDatabase/variant_detail.html', {})
+	sample = get_object_or_404(Sample, pk=pk_sample)
+
+	data = pysam_extract.create_master_list(sample.vcf_file, sample.name)
+
+	variant_sample_data = []
+
+
+	for variant in data:
+
+		hash_id = variant['hash_id']
+
+		if hash_id == variant_hash:
+
+			variant_sample_data.append(variant)
+			break
+
+
+	variant = get_object_or_404(Variant, variant_hash=variant_hash)
+
+
+
+
+
+
+	return render(request, 'VariantDatabase/variant_detail.html', {'variant_sample_data': variant_sample_data, 'variant': variant})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @login_required
 def search_page(request):
+
+	"""
+	This view will allows the user to search for worksheets, samples and variants
+
+	"""
 
 	query = request.GET.get('query')
 
@@ -103,7 +158,16 @@ def search_page(request):
 def settings(request):
 
 	"""
-	View to allow user to customise which columns they would like in the list_sample_variants view
+	This view allows the user to customise which columns they would like in the list_sample_variants view
+
+	If the a checkbox is selected when the form is POSTed then:
+
+		1) Delete all current user settings.
+		2) Loop through the setting tickboxes in the request and create a new UserSetting
+	
+	Otherwise:
+
+		1) Just display the form 
 
 
 	"""
@@ -131,8 +195,8 @@ def settings(request):
 
 
 
-		#get what the user has just inputted and put into a dictionary - tick_box_dict
-		#This allows us to tick the tickboxes in the html template
+		#Get what the user has just inputted and put into a dictionary - tick_box_dict.
+		#This allows us to tick the tickboxes in the html template.
 
 		current_user_settings = UserSetting.objects.filter(user=request.user)
 
@@ -148,8 +212,8 @@ def settings(request):
 
 	else:
 
-		#get what the current user settings put into a dictionary - tick_box_dict
-		#This allows us to pre-tick the tickboxes in the html template
+		#Get what the current user settings put into a dictionary - tick_box_dict.
+		#This allows us to pre-tick the tickboxes in the html template.
 
 		current_user_settings = UserSetting.objects.filter(user=request.user)
 
@@ -165,14 +229,29 @@ def settings(request):
 
 def error(request):
 
-	message = request.GET.get('message')
-
-	return render(request, 'VariantDatabase/error.html', {'message':message})
-
-
+	return render(request, 'VariantDatabase/error.html')
 
 
 def upload_sample(request):
+
+	"""
+	This allows the user to upload a new sample.
+	Ideally an automated process will be set up e.g. take automatically from folder. This can be combined with worksheet creation.
+
+
+	The following occurs when a user uploads a new sample:
+
+		1) new_sample object is created.
+
+		2) new SampleStatusUpdate is created and set to 'new'.
+
+		3) Get all data in vcf and lop through each variant:
+
+			a) If that variant has been seen before then just add another VariantSample instance
+			b) If that variant is new then create a new Variant and VariantSample instance.
+
+
+	"""
 
 
 	if request.method == "POST":
@@ -185,9 +264,14 @@ def upload_sample(request):
 
 			new_sample.hash = 'None'
 
+			if new_sample.already_exists(new_sample.name) ==True:
+
+				return redirect('error')
+
+
 			new_sample.save()
 
-			#create new SampleStatusUpdate
+			#Create new SampleStatusUpdate
 			#The SampleStatusUpdate will be set to 'new'
 
 			inital_status = get_object_or_404(SampleStatus, pk=1)
@@ -200,15 +284,11 @@ def upload_sample(request):
 			#If not create one and then create a corresponding VariantSample record
 			#Otherwise just create another VariantSample record
 
-			data = pysam_extract.create_master_list(new_sample.vcf_file, new_sample.name)
 
-			
-
+			#catch failures
 			try:
 
-				data = pysam_extract.create_master_list(vcf_file_path, new_sample.name)
-
-
+				data = pysam_extract.create_master_list(new_sample.vcf_file, new_sample.name)
 
 			except:
 
@@ -216,14 +296,14 @@ def upload_sample(request):
 				new_update.delete()
 
 				return redirect('error')
-
+			
 			
 
 			for variant in data:
 
-				#see if we have this variant in the database (Variant table) already?
-				#assumes normalisation and one alt allele per variant
-				#assumes chromosome in same format - need to validate?
+				#See if we have this variant in the database (Variant table) already?
+				#Assumes normalisation and one alt allele per variant
+				#Assumes chromosome in same format - need to validate?
 
 				chromosome = variant['chrom']
 				pos = str(variant['pos'])
@@ -232,7 +312,7 @@ def upload_sample(request):
 
 				hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()
 
-				count = Variant.objects.filter(variant_hash=hash_id).count()
+				count = Variant.objects.filter(variant_hash=hash_id).count() #use get rather than filter?
 
 				if count ==0: # new variant
 
@@ -259,3 +339,5 @@ def upload_sample(request):
 	form = SampleForm
 
 	return render(request, 'VariantDatabase/upload.html', {'form': form})
+
+

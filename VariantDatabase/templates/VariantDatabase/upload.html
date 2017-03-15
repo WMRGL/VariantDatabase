@@ -4,23 +4,28 @@
 
 	<br>
 
-<form method="POST" >{% csrf_token %}
-{% for field in form %}
-<fieldset class="control-group">
-    <label class="control-label" for="id_{{ field.name }}">{{ field.label }}</label>
-    <div class="controls">
-        {{ field }}
-        <p class="help-text">{{ field.help_text }} </p>
-    </div>
-</fieldset>
-{% endfor %}
+	<form method="POST" >{% csrf_token %}
 
-<br>
+	{% for field in form %}
 
-<br>
+	<fieldset class="control-group">
 
- <button type="submit" class="save btn btn-default">Save</button>
-</form>
+	    <label class="control-label" for="id_{{ field.name }}">{{ field.label }}</label>
+	    	<div class="controls">
+	        	{{ field }}
+	        	<p class="help-text">{{ field.help_text }} </p>
+	    	</div>
+	</fieldset>
+
+	{% endfor %}
+
+	<br>
+
+	<br>
+
+	 <button type="submit" class="save btn btn-default">Save</button>
+	 
+	</form>
 
 
 	{% endblock %}

@@ -3,76 +3,45 @@
   {% block content %}
   <br>
 
+   <ul class="nav nav-tabs">
 
-  <div class="panel-group">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">
-          <a data-toggle="collapse" href="#collapse1">Summary</a>
-        </h4>
-      </div>
-      <div id="collapse1" class="panel-collapse collapse">
-        <div class="panel-body">Panel Body</div>
-      
-      </div>
-    </div>
+    <li class="active"><a data-toggle="tab" href="#summary">Summary</a></li>
+    <li><a data-toggle="tab" href="#QA">QA</a></li>
+    <li><a data-toggle="tab" href="#samples">Samples</a></li>
+
+  </ul>
+
+  <br>
+
+  <div class="tab-content">
+
+
+    <div id="summary" class="tab-pane fade in active">
+
+    {{ variant_sample_data }}
+
+
   </div>
 
-     <div class="panel-group">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">
-          <a data-toggle="collapse" href="#collapse2">Variant Details</a>
-        </h4>
-      </div>
-      <div id="collapse2" class="panel-collapse collapse">
-        <div class="panel-body">Panel Body</div>
+  <div id="QA" class="tab-pane fade">
 
-      </div>
-    </div>
+  <p> QA goes here </p>
+
   </div>
 
-    <div class="panel-group">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">
-          <a data-toggle="collapse" href="#collapse3">Population Frequency</a>
-        </h4>
-      </div>
-      <div id="collapse3" class="panel-collapse collapse">
-        <div class="panel-body">Panel Body</div>
 
-      </div>
-    </div>
+  <div id="samples" class="tab-pane fade">
+
+  {% for var in variant.get_samples_with_variant %}
+
+  <p> {{ var.sample.name }} </p>
+
+  {% endfor %}
+
   </div>
 
-    <div class="panel-group">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">
-          <a data-toggle="collapse" href="#collapse4">In Silico Prediction</a>
-        </h4>
-      </div>
-      <div id="collapse4" class="panel-collapse collapse">
-        <div class="panel-body">Panel Body</div>
-
-      </div>
-    </div>
   </div>
-
-      <div class="panel-group">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">
-          <a data-toggle="collapse" href="#collapse5">Genome Browser</a>
-        </h4>
-      </div>
-      <div id="collapse5" class="panel-collapse collapse">
-        <div class="panel-body">Panel Body</div>
-
-      </div>
-    </div>
-  </div>
+  
       
 
      

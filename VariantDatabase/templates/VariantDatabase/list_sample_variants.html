@@ -46,7 +46,8 @@
 				{% endfor %}
 
 
-				<th data-defaultsort='disabled'> GENOTYPE </th>			
+				<th data-defaultsort='disabled'> GENOTYPE </th>
+				<th data-defaultsort='disabled'> Detail </th>					
 
 
 			</tr>
@@ -77,6 +78,7 @@
 
 
 					<td> {{ variant.genotype}} </td>
+					<td><a href="{% url 'variant_detail' pk_sample=sample.pk variant_hash=variant.hash_id  %}"> click  </a> </td>
 
 
 				</tr>

@@ -35,11 +35,23 @@ class Worksheet(models.Model):
 
 class Sample(models.Model):
 
+
+	"""
+	The Sample model holds information on a particlar sample
+
+	There can be many samples in a Worksheet
+
+	Each sample has a vcf file associated with it
+
+
+	"""
+
+
 	name = models.CharField(max_length=50)
 	patient_initials = models.CharField(max_length=50)
 	worksheet = models.ForeignKey(Worksheet)
 	vcf_file = models.FilePathField(path='/home/cuser/Documents/Project/DatabaseData',recursive=True)
-	vcf_hash = models.CharField(max_length=64)
+	vcf_hash = models.CharField(max_length=64) #could we use a hash to check whether the vcf has changed?
 
 
 	def __str__(self):
@@ -164,6 +176,16 @@ class UserSetting(models.Model):
 
 class Variant(models.Model):
 
+	"""
+	The Variant model holds unique variants.
+
+	If a variant is seen in another vcf it will not appear twice in this model.
+
+	The variant_hash field is used as a key (sha256)
+
+
+	"""
+
 	chromosome  = models.CharField(max_length=25)
 	position  = models.IntegerField()
 	ref = models.TextField()
@@ -176,11 +198,21 @@ class Variant(models.Model):
 
 	def get_samples_with_variant(self):
 
-		pass
+		samples =VariantSample.objects.filter(variant=self)
+
+		return samples
 
 
 
 class VariantSample(models.Model):
+
+	"""
+	The VariantSample model stores whcih samples a Variant has appeared in.
+
+
+	Allows queries such as 'which other samples have we seen this variant in?'
+
+	"""
 
 	variant = models.ForeignKey(Variant)
 	sample = models.ForeignKey(Sample)
