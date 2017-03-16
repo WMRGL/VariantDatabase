@@ -19,12 +19,15 @@ def validate_input(file_path, sample):
 		for rec in bcf_in.fetch():
 
 			chrom = rec.chrom
+			alt = rec.alts
 
 			if chrom[:3] != 'chr':
 
-				print chrom
-
 				return [False, 'Incorrect chromosome']
+
+			elif len(alt) >1:
+
+				return [False, 'Too many alts']
 
 	except:
 

@@ -6,6 +6,7 @@ from pysam import VariantFile
 from .forms import *
 from django.utils import timezone
 import hashlib
+from django.core.exceptions import ObjectDoesNotExist
 
 pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/Pysam/pysam_extract.py')
 
@@ -300,29 +301,25 @@ def upload_sample(request):
 
 				hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()
 
-				count = Variant.objects.filter(variant_hash=hash_id).count() #use get rather than filter?
 
-				if count ==0: # new variant
+				try:
+
+					new_variant = Variant.objects.get(variant_hash=hash_id)
+
+				except ObjectDoesNotExist:
 
 					new_variant = Variant(chromosome=chromosome, position=pos, ref= ref, alt=alt, variant_hash= hash_id)
 
 					new_variant.save()
 
-					new_variant_sample = VariantSample(variant=new_variant, sample=new_sample)
 
-					new_variant_sample.save()
+				new_variant_sample = VariantSample(variant=new_variant, sample=new_sample)
 
+				new_variant_sample.save()	
 
-				else: #old variant
-
-					existing_variant = get_object_or_404(Variant, variant_hash=hash_id)
-
-					new_variant_sample = VariantSample(variant=existing_variant, sample=new_sample)
-
-					new_variant_sample.save()
+						
 
 			message = new_sample.name + " was successfully uploaded"
-
 
 			return  render(request, 'VariantDatabase/upload.html', {'form': form, 'message': message})
 
