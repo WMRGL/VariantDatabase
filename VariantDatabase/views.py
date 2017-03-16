@@ -113,31 +113,7 @@ def variant_detail(request, pk_sample, variant_hash):
 
 
 
-
-
-
 	return render(request, 'VariantDatabase/variant_detail.html', {'variant_sample_data': variant_sample_data, 'variant': variant})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -264,9 +240,19 @@ def upload_sample(request):
 
 			new_sample.hash = 'None'
 
+			input_validation = pysam_extract.validate_input(new_sample.vcf_file, new_sample.name) 
+
 			if new_sample.already_exists(new_sample.name) ==True:
 
-				return redirect('error')
+				message = 'A sample with that name already exists'
+
+				return render(request, 'VariantDatabase/upload.html', {'form': form, 'message': message})
+
+			elif input_validation[0] == False:
+
+				message = input_validation[1]
+
+				return render(request, 'VariantDatabase/upload.html', {'form': form, 'message': message})
 
 
 			new_sample.save()
@@ -295,7 +281,9 @@ def upload_sample(request):
 				new_sample.delete()
 				new_update.delete()
 
-				return redirect('error')
+				message = 'Could not extract data from that file (Pysam error)'
+
+				return render(request, 'VariantDatabase/upload.html', {'form': form, 'message': message})
 			
 			
 
@@ -333,11 +321,17 @@ def upload_sample(request):
 
 					new_variant_sample.save()
 
+			message = new_sample.name + " was successfully uploaded"
 
-			return redirect('home_page')
+
+			return  render(request, 'VariantDatabase/upload.html', {'form': form, 'message': message})
 
 	form = SampleForm
 
 	return render(request, 'VariantDatabase/upload.html', {'form': form})
 
+def view_all_variants(request):
 
+	all_variants = Variant.objects.all()[:50]
+
+	return render(request, 'VariantDatabase/view_all_variants.html', {'all_variants': all_variants})

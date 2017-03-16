@@ -190,7 +190,7 @@ class Variant(models.Model):
 	position  = models.IntegerField()
 	ref = models.TextField()
 	alt = models.TextField()
-	variant_hash = models.CharField(max_length=64, db_index=True, unique=True)
+	variant_hash = models.CharField(max_length=64, db_index=True, unique=True) #indexed, but do we do more lookups than insertions over time?
 
 	def __str__(self):
 		return self.chromosome + str(self.position) + self.ref + self.alt

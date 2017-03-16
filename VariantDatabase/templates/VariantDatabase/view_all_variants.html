@@ -1,0 +1,41 @@
+{% extends 'VariantDatabase/base.html' %}
+
+  {% block content %}
+
+  	<br>
+
+  	<table class = 'table table-hover'>
+
+		<tr>
+			<th> CHROM </th>
+			<th> POS </th>
+			<th> REF </th>
+			<th> ALLELE </th>
+
+
+
+		</tr>
+
+
+		{% for variant in all_variants %}
+
+		<tr>
+
+			<td> {{variant.chromosome }}</td>
+			<td> {{variant.position }} </td>
+			<td>{{variant.ref }} </td>
+			<td>{{variant.alt }} </td>
+		
+
+		</tr>
+
+		{% endfor %}
+
+
+	</table>
+
+
+
+
+
+   {% endblock %}

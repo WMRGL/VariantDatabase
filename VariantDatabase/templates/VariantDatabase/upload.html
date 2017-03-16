@@ -4,6 +4,17 @@
 
 	<br>
 
+	{% if message %}
+
+	<div class="alert alert-info">
+  	<strong>Attention</strong> {{message}}
+
+  	</div>
+
+  	
+
+  	{% endif %}
+
 	<form method="POST" >{% csrf_token %}
 
 	{% for field in form %}

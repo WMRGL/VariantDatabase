@@ -10,6 +10,7 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^settings$', views.settings, name='settings'),
 				url(r'^upload$', views.upload_sample, name='upload_sample'),
 				url(r'^error$', views.error, name='error'),
+				url(r'^variants$', views.view_all_variants, name='view_all_variants'),
 
 				url(r'^login/$', auth_views.login, {'template_name': 'VariantDatabase/login.html'}, name='login'),
 				url(r'^logout/$', auth_views.logout, {'template_name': 'VariantDatabase/logout.html'}, name='logout'),

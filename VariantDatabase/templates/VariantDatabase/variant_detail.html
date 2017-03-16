@@ -6,8 +6,10 @@
    <ul class="nav nav-tabs">
 
     <li class="active"><a data-toggle="tab" href="#summary">Summary</a></li>
-    <li><a data-toggle="tab" href="#QA">QA</a></li>
+    <li><a data-toggle="tab" href="#QC">QC</a></li>
     <li><a data-toggle="tab" href="#samples">Samples</a></li>
+    <li><a data-toggle="tab" href="#classification">Classification</a></li>
+
 
   </ul>
 
@@ -23,9 +25,9 @@
 
   </div>
 
-  <div id="QA" class="tab-pane fade">
+  <div id="QC" class="tab-pane fade">
 
-  <p> QA goes here </p>
+  <p> QC goes here </p>
 
   </div>
 
@@ -37,6 +39,12 @@
   <p> {{ var.sample.name }} </p>
 
   {% endfor %}
+
+  </div>
+
+  <div id="classification" class="tab-pane fade">
+
+  <p> e.g. pathogenic </p>
 
   </div>
 

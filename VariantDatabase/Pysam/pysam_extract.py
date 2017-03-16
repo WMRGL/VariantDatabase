@@ -1,6 +1,48 @@
 from pysam import VariantFile
 import hashlib
 
+def validate_input(file_path, sample):
+
+	##is it a '.vcf.gz' file
+	ending = file_path[-7:]
+
+	if ending != '.vcf.gz':
+
+		return [False, 'Not a .vcf.gz file']
+
+		#now check chromosomes are in right format and that sample is in file
+	try:
+
+		bcf_in = VariantFile(file_path)
+
+
+		for rec in bcf_in.fetch():
+
+			chrom = rec.chrom
+
+			if chrom[:3] != 'chr':
+
+				print chrom
+
+				return [False, 'Incorrect chromosome']
+
+	except:
+
+		return [False, 'Could not open file']
+
+
+	try:
+
+		sample_vcf = rec.samples[sample]
+
+	except:
+
+		return [False, 'Sample name does not match file']
+
+
+	return [True, 'Success']
+
+
 
 def create_master_list(file,sample):
 
