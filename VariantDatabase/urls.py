@@ -3,14 +3,14 @@ from . import views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
-				url(r'^sections$', views.list_sections, name='list_sections'),
+				url(r'^sections/$', views.list_sections, name='list_sections'),
 				url(r'^worksheet/(?P<pk_worksheet>\d+)/$', views.list_worksheet_samples, name='list_worksheet_samples'),
 				url(r'^sample/(?P<pk_sample>\d+)/$', views.list_sample_variants, name='list_sample_variants'),
 				url(r'^variant_detail/(?P<pk_sample>\d+)/(?P<variant_hash>\w+)/$', views.variant_detail, name='variant_detail'),
-				url(r'^settings$', views.settings, name='settings'),
-				url(r'^upload$', views.upload_sample, name='upload_sample'),
-				url(r'^error$', views.error, name='error'),
-				url(r'^variants$', views.view_all_variants, name='view_all_variants'),
+				url(r'^settings/$', views.settings, name='settings'),
+				url(r'^upload/$', views.upload_sample, name='upload_sample'),
+				url(r'^error/$', views.error, name='error'),
+				url(r'^variants/$', views.view_all_variants, name='view_all_variants'),
 
 				url(r'^login/$', auth_views.login, {'template_name': 'VariantDatabase/login.html'}, name='login'),
 				url(r'^logout/$', auth_views.logout, {'template_name': 'VariantDatabase/logout.html'}, name='logout'),

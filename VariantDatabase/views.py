@@ -7,6 +7,7 @@ from .forms import *
 from django.utils import timezone
 import hashlib
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/Pysam/pysam_extract.py')
 
@@ -71,10 +72,12 @@ def list_sample_variants(request, pk_sample):
 	user_settings = UserSetting.objects.filter(user=request.user)
 
 	field_list = []
+	heading_list = []
 
 	for setting in user_settings:
 
 		field_list.append(setting.variant_information.information.replace('.', '_')) #create a list containing the INFO field IDs needed N.B replace '.' with '_' for template
+		heading_list.append(setting.variant_information.label)
 
 
 	#Get the vcf file and get the data e.g. ref, chrom, INFO
@@ -87,7 +90,7 @@ def list_sample_variants(request, pk_sample):
 
 	genes = pysam_extract.get_genes_in_file(vcf_file_path, sample.name)
 
-	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'data': data, 'genes': genes, 'field_list': field_list})
+	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'data': data, 'genes': genes, 'field_list': field_list, 'heading_list': heading_list})
 
 
 @login_required
@@ -329,6 +332,25 @@ def upload_sample(request):
 
 def view_all_variants(request):
 
-	all_variants = Variant.objects.all()[:50]
+	all_variants = Variant.objects.all()
 
-	return render(request, 'VariantDatabase/view_all_variants.html', {'all_variants': all_variants})
+	paginator = Paginator(all_variants,15)
+
+	page = request.GET.get('page')
+
+	try:
+
+		variants = paginator.page(page)
+
+	except PageNotAnInteger:
+
+		variants =paginator.page(1)
+
+
+	except:
+
+		variants = paginator.page(paginator.num_pages)
+
+
+
+	return render(request, 'VariantDatabase/view_all_variants.html', {'variants': variants})
