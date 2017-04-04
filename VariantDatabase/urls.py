@@ -11,6 +11,8 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^upload/$', views.upload_sample, name='upload_sample'),
 				url(r'^error/$', views.error, name='error'),
 				url(r'^variants/$', views.view_all_variants, name='view_all_variants'),
+				url(r'^all_questions/(?P<pk_interpretation>\d+)/$', views.all_questions, name = 'all_questions'),
+				url(r'^report/(?P<pk_interpretation>\d+)/$', views.report, name = 'report' ),
 
 				url(r'^login/$', auth_views.login, {'template_name': 'VariantDatabase/login.html'}, name='login'),
 				url(r'^logout/$', auth_views.logout, {'template_name': 'VariantDatabase/logout.html'}, name='logout'),

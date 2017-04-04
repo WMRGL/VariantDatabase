@@ -1,0 +1,114 @@
+
+{% extends 'VariantDatabase/base.html' %}
+
+{% block content %}
+
+<br>
+
+<div>
+   
+
+	<ul class="list-group">
+		<li class="list-group-item">User: {{ interpretation.author }}</li>
+	  	<li class="list-group-item">Sample: {{ interpretation.sample }}</li>
+	  	<li class="list-group-item">Variant: {{ interpretation.variant.chromosome }} {{ interpretation.variant.position }} {{ interpretation.variant.ref }} {{ interpretation.variant.alt }} </li>
+	  	<li class="list-group-item">Date: {{ interpretation.date }}</li>
+	</ul>
+
+
+	<div class="panel panel-info">
+  
+    	<div class="panel-heading">Final Classification</div>
+
+    	<div class="panel-body"> <h1>{{ classification }} </h1></div>
+
+  	</div>
+
+
+	<table class = 'table'>
+
+		<tr>
+			<th> Question Number </th>
+			<th> Question text </th>
+			<th> Answer </th>
+			<th> Classification Code </th>
+
+		</tr>
+
+
+		{% for answer in all_answers %}
+
+			{% if answer.user_question.classification.text.0 == 'P' and answer.user_answer == '1' %}
+
+				<tr class = "danger">
+
+			{% elif answer.user_question.classification.text.0 == 'B' and answer.user_answer == '1'  %}
+
+				<tr class = "Success">
+
+			{% else %}
+
+				<tr>
+
+			{% endif %}
+
+
+			<td> {{ answer.user_question.pk }} </td>
+
+			<td> {{answer.user_question.text|linebreaksbr }} </td>
+
+
+
+			{% if answer.user_answer == '1' %}
+
+				<td> Yes </td>
+
+			{% elif answer.user_answer == '2' %}
+
+				<td> No </td>
+
+			{% elif answer.user_answer == '3' %}
+
+				<td> Unknown </td>
+
+			{% elif answer.user_answer == '4' %}
+
+				<td> Not Answered </td>
+
+
+
+
+			{% else %}
+
+				<td> {{answer.user_answer}} </td>
+
+			{% endif %}
+
+
+			{% if answer.user_answer == '1' %}
+
+
+				<td> {{answer.user_question.classification.text }} </td>
+
+			{% else %}
+
+			<td></td>
+
+			{% endif %}
+			</tr>
+
+
+		{% endfor %}
+
+	</table>
+
+
+
+
+
+
+</div>
+
+<br>
+    
+{% endblock %}

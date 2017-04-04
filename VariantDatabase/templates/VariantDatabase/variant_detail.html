@@ -44,7 +44,73 @@
 
   <div id="classification" class="tab-pane fade">
 
-  <p> e.g. pathogenic </p>
+
+      <table id="variant_table" class = 'table table-hover'>
+
+          <thead>
+
+          <tr>
+            <th> User </th>
+            <th> Date </th>
+            <th> Result </th>
+            <th> View </th>
+
+          </tr>
+
+
+          </thead>
+
+
+        {% for classification in classifications %}
+
+
+      <tr>
+
+          <td> {{ classification.author}} </td>
+          <td> {{ classification.date}} </td>
+          <td> {{ classification.get_classification}} </td>
+          <td>  <a href="{% url 'report' pk_interpretation=classification.pk %}"> View </a> </td>
+
+
+      </tr>
+
+
+      {% endfor %}
+
+
+
+
+      </table>
+
+
+
+
+
+
+
+
+        <hr>
+
+
+        <div class="panel panel-success">
+        <div class="panel-heading">Classify This Variant</div>
+        <div class="panel-body"> <form class="form-horizontal" method="post">{% csrf_token %}
+
+            {{ form.as_p }}
+
+        <br>
+
+        <div class="form-actions">
+
+            <button type="submit" class="btn btn-primary">Create New</button>
+
+        </div>
+    
+        </form>
+
+        </div>
+
+    </div>
 
   </div>
 

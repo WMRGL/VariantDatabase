@@ -136,8 +136,35 @@ def variant_detail(request, pk_sample, variant_hash):
 	variant = get_object_or_404(Variant, variant_hash=variant_hash)
 
 
+	classifications = Interpretation.objects.filter(variant=variant)
 
-	return render(request, 'VariantDatabase/variant_detail.html', {'variant_sample_data': variant_sample_data, 'variant': variant})
+
+	if request.method == "POST":
+
+		form = InterpretationForm(request.POST)
+
+
+		if form.is_valid():
+
+			interpretation = form.save(commit=False)
+			interpretation.author = request.user
+			interpretation.variant = variant
+			interpretation.sample = sample
+			interpretation.date = timezone.now()
+			interpretation.finished = False
+			interpretation.save()
+
+
+			return redirect(all_questions, interpretation.pk)
+
+
+	else:
+
+		form = InterpretationForm()
+
+
+
+	return render(request, 'VariantDatabase/variant_detail.html', {'variant_sample_data': variant_sample_data, 'variant': variant, 'form': form, 'classifications': classifications})
 
 
 
@@ -374,3 +401,70 @@ def view_all_variants(request):
 
 
 	return render(request, 'VariantDatabase/view_all_variants.html', {'variants': variants})
+
+
+def all_questions(request, pk_interpretation):
+
+	interpretation = get_object_or_404(Interpretation, pk = pk_interpretation)
+
+
+
+	if request.method == 'POST':
+
+		dict = {'questions_1': [1],'questions_2': [2], 'questions_3': [3], 'questions_4': [4], 
+				'questions_5': [5], 'questions_6': [6], 'questions_7': [7], 'questions_8': [8], 
+				'questions_9': [9], 'questions_10': [10], 'questions_11': [11], 'questions_12': [12], 
+				'questions_13': [13], 'questions_14': [14], 'questions_15': [15], 'questions_16': [16], 
+				'questions_17': [17], 'questions_18': [18], 'questions_19': [19], 'questions_20': [20], 
+				'questions_21': [21], 'questions_22': [22], 'questions_23': [23], 'questions_24': [24], 
+				'questions_25': [25], 'questions_26': [26], 'questions_27': [27], 'questions_28': [28] } #dictionary holds names of fields of AllAnswersForm along with a list holding the Question Number
+
+
+		for key in dict:
+
+			dict[key] = dict[key]+[ request.POST.get(key)] #Add the User's answer from the AllAnswersForm to the dictionary
+
+
+		for key in dict:
+
+			question_number = dict[key][0] 
+
+			question = get_object_or_404(Question, pk = question_number)
+
+			UserAnswer.objects.create(interpretation = interpretation, user_question = question, user_answer= dict[key][1], date = timezone.now()) #now create a UserAnswer instance with that info
+
+
+		interpretation.finished = True
+
+		interpretation.save()
+		return redirect('report', pk_interpretation)
+
+
+	else:
+
+
+		all_questions = Question.objects.all()
+
+		question_form = AllAnswersForm()
+
+		list_of_fields =[]
+
+		for field in question_form:
+
+			list_of_fields.append(field)
+
+
+		zipped = zip(all_questions, list_of_fields) #combine 
+
+
+	return render(request, 'VariantDatabase/all_questions.html', {'zipped': zipped, 'interpretation': interpretation})
+
+def report(request, pk_interpretation):
+
+	interpretation = get_object_or_404(Interpretation, pk= pk_interpretation)
+
+	all_answers = UserAnswer.objects.filter(interpretation=pk_interpretation).order_by('user_answer', 'user_question__classification')
+
+	classification = interpretation.get_classification()
+
+	return render(request, 'VariantDatabase/report.html', {'all_answers' : all_answers, 'interpretation': interpretation, 'classification': classification})

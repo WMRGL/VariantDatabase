@@ -1,0 +1,53 @@
+{% extends 'VariantDatabase/base.html' %}
+
+{% block content %}
+
+
+<br>
+<form method="POST" class="post-form">{% csrf_token %}
+
+
+
+
+
+
+
+
+	
+	<table class="table table-hover">
+
+		<tr>
+
+			<th> Question Classification </th>
+			<th> Question Text </th>
+			<th> Answer </th>
+
+		</tr>
+
+		{% for question, field in zipped %}
+
+
+		<tr>
+
+
+			<td> {{ question.classification }} </td>
+			<td> {{ question.text|linebreaksbr }} </td>
+			<td> {{ field }} </td>
+
+
+		</tr>
+
+
+		{% endfor %}
+
+
+
+		</table>
+
+    <button type="submit" class="save btn btn-default">Save</button>
+	</form>
+
+
+
+
+{% endblock %}

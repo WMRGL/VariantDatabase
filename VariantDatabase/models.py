@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.utils import timezone
+from variant_classifier import classify
+
 
 class Section(models.Model):
 
@@ -217,3 +219,69 @@ class VariantSample(models.Model):
 	variant = models.ForeignKey(Variant)
 	sample = models.ForeignKey(Sample)
 
+
+
+
+
+
+class ClassificationCode(models.Model):
+
+	text = models.CharField(max_length = 25)
+
+	def __str__(self):
+
+		return self.text
+
+class Question(models.Model):
+
+	text = models.CharField(max_length =300)
+	description = models.TextField()
+	start = models.BooleanField()
+	end = models.BooleanField()
+	classification = models.ForeignKey(ClassificationCode, null=True)
+
+	def __str__(self):
+		return self.text
+
+
+class Interpretation(models.Model):
+
+	author = models.ForeignKey('auth.User')
+	variant = models.ForeignKey(Variant)
+	sample = models.ForeignKey(Sample)
+	finished = models.BooleanField()
+	date = models.DateTimeField(default = timezone.now)
+
+	def __str__(self):
+
+		return str(self.pk)
+
+
+	def get_classification(self):
+
+		all_answers = UserAnswer.objects.filter(interpretation=self.pk)
+
+		classifications =[]
+
+		for answer in all_answers:
+
+			if answer.user_answer ==  '1':
+
+				classifications.append(answer.user_question.classification.text)
+
+		final_classification =classify(classifications)
+
+		return final_classification
+
+
+class UserAnswer(models.Model):
+
+	interpretation = models.ForeignKey(Interpretation)
+	user_question = models.ForeignKey(Question, null=True )
+	date = models.DateTimeField(default = timezone.now)
+	user_answer = models.CharField(max_length=30, default="")
+
+
+	def __str__(self):
+
+		return str(self.pk)
