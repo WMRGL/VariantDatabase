@@ -34,6 +34,19 @@ class Worksheet(models.Model):
 		return self.name
 
 
+	def get_status(self):
+
+		try:
+
+	 		current_status = WorksheetStatusUpdate.objects.filter(sample=self).order_by('-date')[0].status.name
+
+	 	except:
+
+	 		current_status = 'No Status Found'
+
+	 	return current_status
+
+
 
 class Sample(models.Model):
 
@@ -78,9 +91,19 @@ class Sample(models.Model):
 
 	def get_status(self):
 
-		 current_status = SampleStatusUpdate.objects.filter(sample=self).order_by('-date')[0].status.name
+		try:
 
-		 return current_status
+			current_status = SampleStatusUpdate.objects.filter(sample=self).order_by('-date')[0].status.name
+
+		except:
+
+
+			current_status = 'No Status Found'
+
+		return current_status
+
+
+
 
 
 
