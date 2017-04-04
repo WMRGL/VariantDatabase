@@ -216,3 +216,4 @@ class VariantSample(models.Model):
 
 	variant = models.ForeignKey(Variant)
 	sample = models.ForeignKey(Sample)
+

@@ -27,15 +27,15 @@
   		<div id="variants" class="tab-pane fade in active">
 
 
-	  	  	<table id="variant_table" class = 'table table-hover sortable'>
+	  	  	<table id="variant_table" class = 'table table-hover'>
 
 	  	  	<thead>
 
 			<tr>
-				<th data-defaultsort='disabled'> CHROM </th>
-				<th data-defaultsort='disabled'> POS </th>
-				<th data-defaultsort='disabled'> REF </th>
-				<th data-defaultsort='disabled'> ALT </th>
+				<th> CHROM </th>
+				<th> POS </th>
+				<th> REF </th>
+				<th> ALT </th>
 
 
 				{% for heading in heading_list %}
@@ -46,8 +46,8 @@
 				{% endfor %}
 
 
-				<th data-defaultsort='disabled'> GENOTYPE </th>
-				<th data-defaultsort='disabled'> Detail </th>					
+				<th> GENOTYPE </th>
+				<th> Detail </th>					
 
 
 			</tr>
@@ -57,9 +57,8 @@
 			<tbody>
 
 
-		  	{% for variant in data %}
+		  	{% for variant in variants %}
 
-		  		
 
 				<tr>
 
@@ -92,6 +91,24 @@
 
 
 		</table>
+
+		    <ul class='pager'>
+	  	 <span class="current">
+            Page {{ variants.number }} of {{ variants.paginator.num_pages }}.
+        </span>
+
+
+    
+        {% if variants.has_previous %}
+             <li><a href="?page={{ variants.previous_page_number }}">Previous</a> </li>
+        {% endif %}
+
+       
+
+        {% if variants.has_next %}
+          <li>  <a href="?page={{ variants.next_page_number }}">Next</a> </li>
+        {% endif %}
+    </ul>
 
 
 

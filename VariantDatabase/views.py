@@ -88,9 +88,29 @@ def list_sample_variants(request, pk_sample):
 
 	data = pysam_extract.create_master_list(vcf_file_path, sample.name) #create variant list
 
+
+	paginator = Paginator(data,50)
+
+	page = request.GET.get('page')
+
+	try:
+
+		variants = paginator.page(page)
+
+	except PageNotAnInteger:
+
+		variants =paginator.page(1)
+
+
+	except:
+
+		variants = paginator.page(paginator.num_pages)
+
+
+
 	genes = pysam_extract.get_genes_in_file(vcf_file_path, sample.name)
 
-	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'data': data, 'genes': genes, 'field_list': field_list, 'heading_list': heading_list})
+	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'variants': variants, 'genes': genes, 'field_list': field_list, 'heading_list': heading_list})
 
 
 @login_required
