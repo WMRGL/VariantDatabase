@@ -1,6 +1,60 @@
 from pysam import VariantFile
 import hashlib
 
+def get_fields(csq_info_string):
+
+	"""
+	This function takes the CSQ info field from the header and breaks it up into a list
+
+
+	"""
+
+	index =  csq_info_string.index('Format:') +8
+
+	return csq_info_string[index:len(csq_info_string)-3].split('|')
+
+
+def get_variant_csq(variant_csq_string):
+
+	"""
+
+	This funtion takes the CSQ field for a particualr variant and breaks it up into a list
+
+
+	"""
+
+	variant_csq_string = variant_csq_string.split(',') # if we ahev more than one transcript break it up
+
+	master_list =[]
+
+	for string in variant_csq_string:
+
+		master_list.append(string.split('|'))
+
+
+	return master_list
+
+
+def create_csq_dict(field_list, var_csq):
+	"""
+	combine the CSQ info fields from the header and the csq data for a particular variant into a dictionary
+
+
+	"""
+
+	zipped = zip(field_list, var_csq)
+
+	dict = {}
+
+	for info in zipped:
+
+		dict[info[0]] = info[1]
+
+
+	return dict
+
+
+
 def validate_input(file_path, sample):
 
 	##is it a '.vcf.gz' file
@@ -51,46 +105,76 @@ def create_master_list(file,sample):
 
 	bcf_in = VariantFile(file)
 
+	try:
+
+		csq_fields = str(bcf_in.header.info['CSQ'].record)
+
+		csq_fields = get_fields(csq_fields)
+
+	except:
+
+		pass
+
 	master_list =[]
 
 	for rec in bcf_in.fetch():
 
-		my_dict = {}
+		variant_data_dict = {}
 
 		sample_vcf = rec.samples[sample]
 
-		my_dict['genotype'] = sample_vcf['GT']
+		variant_data_dict['genotype'] = sample_vcf['GT']
 
-		my_dict['pos'] = rec.pos
+		variant_data_dict['pos'] = rec.pos
 
-		my_dict['chrom'] = rec.chrom
+		variant_data_dict['chrom'] = rec.chrom
 
-		my_dict['reference'] = rec.ref
+		variant_data_dict['reference'] = rec.ref
 
-		my_dict['format'] = rec.format.keys()
+		variant_data_dict['format'] = rec.format.keys()
 
-		my_dict['alt_alleles'] = rec.alts
+		variant_data_dict['alt_alleles'] = rec.alts
 
-		my_dict['quality'] = rec.qual
+		variant_data_dict['quality'] = rec.qual
 
-		chromosome = my_dict['chrom']
-		pos = str(my_dict['pos'])
-		ref = my_dict['reference']
-		alt = my_dict['alt_alleles'][0]
+		chromosome = variant_data_dict['chrom']
+		pos = str(variant_data_dict['pos'])
+		ref = variant_data_dict['reference']
+		alt = variant_data_dict['alt_alleles'][0]
 
 		hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()
 
-		my_dict['hash_id'] = hash_id
+		variant_data_dict['hash_id'] = hash_id
 
 
 		for key in rec.info.keys():
 
-			new_key = key.replace('.', '_')
+			if key == 'CSQ':
 
-			my_dict[new_key] = rec.info[key]
+				csq_data = str(rec.info['CSQ'][0]) #if we ahve annoated with merged then there will be possibley more than 1 annotation for each transcript
+
+				csq_data = get_variant_csq(csq_data)
+
+				csq_dict = create_csq_dict(csq_fields, csq_data[0]) 
+
+				for key in csq_dict:
+
+					new_key = key.replace('.', '_')
+
+					variant_data_dict['vep-'+new_key] = csq_dict[key]
+
+			else:
 
 
-		master_list.append(my_dict) 
+
+				new_key = key.replace('.', '_')
+
+				variant_data_dict[new_key] = rec.info[key]
+
+			
+
+
+		master_list.append(variant_data_dict) 
 
 
 
@@ -111,7 +195,6 @@ def get_genes_in_file(file, sample):
 
 				gene_list.append(gene)
 
-
 		else:
 
 			return 'An error occured - can not find Gene.refGene key in info field'
@@ -122,10 +205,17 @@ def get_genes_in_file(file, sample):
 
 
 
-
-
-
 if __name__ == '__main__':
 
 
-	print create_master_list("merged-sorted.vcf.gz",'205908-3-D17-01112-JH_S3' )
+	for x in create_master_list("data/205908-2-D16-48971-MH_S2.unified.annovar.wmrgldb-sorted.vcf.gz",'205908-2-D16-48971-MH_S2' ):
+
+		print ""
+
+		print x
+
+	
+
+    #  create_master_list("205908-2-D16-48971-MH_S2.unified.annovar.wmrgldb-sorted.vcf.gz",'205908-2-D16-48971-MH_S2' ):
+
+    #create_master_list("data/out2-sorted.vcf.gz",'WS61594_14000835'
