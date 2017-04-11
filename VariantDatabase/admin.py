@@ -14,7 +14,7 @@ admin.site.register(VariantSample)
 admin.site.register(SampleStatus)
 admin.site.register(WorkSheetStatus)
 admin.site.register(SampleStatusUpdate)
-
+admin.site.register(WorksheetStatusUpdate)
 admin.site.register(ClassificationCode)
 admin.site.register(Question)
 admin.site.register(Interpretation)

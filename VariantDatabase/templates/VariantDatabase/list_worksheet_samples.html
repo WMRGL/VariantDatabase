@@ -56,9 +56,50 @@
 
 	<div id="QC" class="tab-pane fade">
 
-	<p> QA goes here </p>
+	<p> QC goes here </p>
+
+
+		{% if worksheet.awaiting_qc_approval   %}
+
+
+
+
+	    <div class="panel panel-success">
+        <div class="panel-heading">Approve QC</div>
+        <div class="panel-body"> <form class="form-horizontal" method="post">{% csrf_token %}
+
+            {{ form.as_p }}
+
+        <br>
+
+        <div class="form-actions">
+
+            <button type="submit" class="btn btn-primary">Approve</button>
+
+        </div>
+    
+        </form>
+
+        </div>
+        </div>
+
+	{% else %}
+
+
+	<p> QC approved </p>
+
+	{% endif  %}
+
+
+
+        
 
 	</div>
+
+
+
+
+
 
 
 	<div id="history" class="tab-pane fade">

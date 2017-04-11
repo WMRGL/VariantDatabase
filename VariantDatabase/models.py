@@ -38,13 +38,31 @@ class Worksheet(models.Model):
 
 		try:
 
-	 		current_status = WorksheetStatusUpdate.objects.filter(sample=self).order_by('-date')[0].status.name
+	 		current_status = WorksheetStatusUpdate.objects.filter(worksheet=self).order_by('-date')[0].status.name
 
 	 	except:
 
 	 		current_status = 'No Status Found'
 
 	 	return current_status
+
+
+
+
+	def awaiting_qc_approval(self):
+
+
+		status = self.get_status()
+
+		if status == 'Awaiting QC Check' or status == 'No Status Found':
+
+			return True
+
+		else:
+
+			return False
+
+
 
 
 
@@ -167,7 +185,7 @@ class WorksheetStatusUpdate(models.Model):
 
 	"""
 
-	sample = models.ForeignKey(Worksheet)
+	worksheet = models.ForeignKey(Worksheet)
 	status = models.ForeignKey(WorkSheetStatus)
 	date = models.DateTimeField(blank=True, null=True)
 	user = models.ForeignKey('auth.User')
@@ -215,7 +233,7 @@ class Variant(models.Model):
 	position  = models.IntegerField()
 	ref = models.TextField()
 	alt = models.TextField()
-	variant_hash = models.CharField(max_length=64, db_index=True, unique=True) #indexed, but do we do more lookups than insertions over time?
+	variant_hash = models.CharField(max_length=64, db_index=True, unique=True)
 
 	def __str__(self):
 		return self.chromosome + str(self.position) + self.ref + self.alt

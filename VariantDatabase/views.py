@@ -46,9 +46,40 @@ def list_worksheet_samples(request, pk_worksheet):
 
 	worksheet = get_object_or_404(Worksheet, pk=pk_worksheet)
 
+	if request.method == 'POST':
+
+		form = WorksheetStatusUpdateForm(request.POST)
+
+		if form.is_valid():
+
+			worksheet_status = get_object_or_404(WorkSheetStatus, pk = '2')
+
+			worksheet_update = form.save(commit=False)
+
+			worksheet_update.worksheet = worksheet
+
+			worksheet_update.status = worksheet_status
+
+			worksheet_update.date = timezone.now()
+
+			worksheet_update.user = request.user
+
+			worksheet_update.save()
+
+			return redirect(list_worksheet_samples, pk_worksheet)
+
+
+	else:
+
+		form = WorksheetStatusUpdateForm()
+
+
+
+
+
 	samples_in_worksheet = Sample.objects.filter(worksheet = worksheet)
 
-	return render(request, 'VariantDatabase/list_worksheet_samples.html', {'samples_in_worksheet': samples_in_worksheet})
+	return render(request, 'VariantDatabase/list_worksheet_samples.html', {'samples_in_worksheet': samples_in_worksheet, 'form': form, 'worksheet': worksheet})
 
 
 

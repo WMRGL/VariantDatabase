@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Sample, Interpretation
+from .models import Sample, Interpretation, WorksheetStatusUpdate
 
 class SampleForm(forms.ModelForm):
 
@@ -16,6 +16,15 @@ class InterpretationForm(forms.ModelForm):
 
 		model = Interpretation
 		fields = ()
+
+class WorksheetStatusUpdateForm(forms.ModelForm):
+
+	class Meta:
+
+		model = WorksheetStatusUpdate
+		fields = ()
+
+
 
 
 class AllAnswersForm(forms.Form):
