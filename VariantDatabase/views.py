@@ -8,7 +8,7 @@ from django.utils import timezone
 import hashlib
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from django.core.cache import cache
 pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/Pysam/pysam_extract.py')
 
 
@@ -117,7 +117,19 @@ def list_sample_variants(request, pk_sample):
 
 	vcf_file_path = sample.vcf_file
 
-	data = pysam_extract.create_master_list(vcf_file_path, sample.name) #create variant list
+
+
+
+	#avoid recalculating using cache
+	data = cache.get(sample.name)
+
+	if data == None:
+
+		data = pysam_extract.create_master_list_canonical(vcf_file_path, sample.name) #create variant list
+		cache.set(sample.name, data, 600)
+
+
+	vep_annotated = pysam_extract.vep_annotated(vcf_file_path)
 
 
 	paginator = Paginator(data,50)
@@ -141,11 +153,22 @@ def list_sample_variants(request, pk_sample):
 
 	genes = pysam_extract.get_genes_in_file(vcf_file_path, sample.name)
 
-	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'variants': variants, 'genes': genes, 'field_list': field_list, 'heading_list': heading_list})
+	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'variants': variants, 'genes': genes, 'field_list': field_list, 'heading_list': heading_list, 'vep': vep_annotated})
 
 
 @login_required
 def variant_detail(request, pk_sample, variant_hash):
+
+	"""
+	This view displays the detial for a particular variant.
+
+	It combines - sample specific annoation data e.g. pulled from the vcf
+				- Global variant data e.g. chr, pos, ref that are associated with all variants of the type
+				- Allows classification
+	"""
+
+
+
 
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
@@ -170,7 +193,7 @@ def variant_detail(request, pk_sample, variant_hash):
 	classifications = Interpretation.objects.filter(variant=variant)
 
 
-	if request.method == "POST":
+	if request.method == "POST": #if user has asked to do a new classification
 
 		form = InterpretationForm(request.POST)
 
@@ -308,6 +331,8 @@ def upload_sample(request):
 			a) If that variant has been seen before then just add another VariantSample instance
 			b) If that variant is new then create a new Variant and VariantSample instance.
 
+			NEW c) if the variant is new gets the genes and creates a new VariantGene object(s)
+
 
 	"""
 
@@ -379,8 +404,24 @@ def upload_sample(request):
 				pos = str(variant['pos'])
 				ref = variant['reference']
 				alt = variant['alt_alleles'][0]
-
 				hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()
+
+				try:
+
+
+					gene_list = pysam_extract.get_variant_genes_list(variant['transcript_data'])
+
+					hgvs = pysam_extract.get_hgvs(variant['transcript_data'])
+
+					rs_number = pysam_extract.get_rs_number(variant['transcript_data'])
+
+				except:
+
+					gene_list = []
+
+					hgvs = "None"
+
+					rs_number = "None"
 
 
 				try:
@@ -389,9 +430,30 @@ def upload_sample(request):
 
 				except ObjectDoesNotExist:
 
-					new_variant = Variant(chromosome=chromosome, position=pos, ref= ref, alt=alt, variant_hash= hash_id)
+					new_variant = Variant(chromosome=chromosome, position=pos, ref= ref, alt=alt, variant_hash= hash_id, HGVS = hgvs, rs_number=rs_number, last_updated= timezone.now())
 
 					new_variant.save()
+
+
+					
+
+					#Create new VariantGene objects if required
+
+					for gene in gene_list:
+
+						try:
+
+							gene_model = Gene.objects.get(name = gene)
+
+						except ObjectDoesNotExist:
+
+							gene_model = Gene(name=gene)
+							gene_model.save()
+						
+
+						new_variant_gene = VariantGene(gene =gene_model, variant = new_variant)
+						
+						new_variant_gene.save()
 
 
 				new_variant_sample = VariantSample(variant=new_variant, sample=new_sample)
@@ -404,11 +466,19 @@ def upload_sample(request):
 
 			return  render(request, 'VariantDatabase/upload.html', {'form': form, 'message': message})
 
+
 	form = SampleForm
 
 	return render(request, 'VariantDatabase/upload.html', {'form': form})
 
 def view_all_variants(request):
+
+	""""
+	View all variants - pulls from Variant Model
+
+
+
+	"""
 
 	all_variants = Variant.objects.all()
 
@@ -491,6 +561,13 @@ def all_questions(request, pk_interpretation):
 	return render(request, 'VariantDatabase/all_questions.html', {'zipped': zipped, 'interpretation': interpretation})
 
 def report(request, pk_interpretation):
+
+	"""
+	A report of the classification (ACMG guidlines)
+
+
+
+	"""
 
 	interpretation = get_object_or_404(Interpretation, pk= pk_interpretation)
 

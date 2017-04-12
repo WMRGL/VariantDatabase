@@ -234,6 +234,12 @@ class Variant(models.Model):
 	ref = models.TextField()
 	alt = models.TextField()
 	variant_hash = models.CharField(max_length=64, db_index=True, unique=True)
+	HGVS =models.TextField()
+	last_updated =  models.DateTimeField(default = timezone.now)
+	rs_number = models.CharField(max_length =50)
+	
+
+
 
 	def __str__(self):
 		return self.chromosome + str(self.position) + self.ref + self.alt
@@ -244,6 +250,13 @@ class Variant(models.Model):
 		samples =VariantSample.objects.filter(variant=self)
 
 		return samples
+
+
+	def get_genes(self):
+
+		genes = VariantGene.objects.filter(variant =self)
+
+		return genes
 
 
 
@@ -259,6 +272,7 @@ class VariantSample(models.Model):
 
 	variant = models.ForeignKey(Variant)
 	sample = models.ForeignKey(Sample)
+
 
 
 
@@ -326,3 +340,31 @@ class UserAnswer(models.Model):
 	def __str__(self):
 
 		return str(self.pk)
+
+
+class Gene(models.Model):
+
+	"""
+	Stores genes that have been seen before
+
+
+	"""
+
+	name = models.CharField(max_length=50, db_index=True, unique=True)
+
+
+
+class VariantGene(models.Model):
+
+	"""
+	Allows genes and variants to be associated
+
+
+	"""
+
+	gene = models.ForeignKey(Gene)
+	variant = models.ForeignKey(Variant)
+
+	def __str__(self):
+
+		return self.gene.name

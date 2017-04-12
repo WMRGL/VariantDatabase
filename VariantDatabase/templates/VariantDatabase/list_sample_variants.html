@@ -38,6 +38,10 @@
 				<th> ALT </th>
 
 
+
+
+
+
 				{% for heading in heading_list %}
 
 
@@ -47,7 +51,8 @@
 
 
 				<th> GENOTYPE </th>
-				<th> Detail </th>					
+				<th> Detail </th>
+			
 
 
 			</tr>
@@ -67,10 +72,22 @@
 					<td > {{ variant.reference }} </td>
 					<td > {{ variant.alt_alleles }} </td>
 
+
+
+
+
+
+
+
+
 					{% for field in field_list %}
 
 
-					<td >  {{ variant|get_item:field }} </td>
+
+
+						<td >  {{ variant|get_item:field }} </td>
+
+
 
 					{% endfor %}
 
@@ -78,6 +95,8 @@
 
 					<td> {{ variant.genotype}} </td>
 					<td><a href="{% url 'variant_detail' pk_sample=sample.pk variant_hash=variant.hash_id  %}"> View  </a> </td>
+
+			
 
 
 				</tr>

@@ -10,7 +10,7 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^settings/$', views.settings, name='settings'),
 				url(r'^upload/$', views.upload_sample, name='upload_sample'),
 				url(r'^error/$', views.error, name='error'),
-				url(r'^variants/$', views.view_all_variants, name='view_all_variants'),
+				url(r'^view_all_variants/$', views.view_all_variants, name='view_all_variants'),
 				url(r'^all_questions/(?P<pk_interpretation>\d+)/$', views.all_questions, name = 'all_questions'),
 				url(r'^report/(?P<pk_interpretation>\d+)/$', views.report, name = 'report' ),
 

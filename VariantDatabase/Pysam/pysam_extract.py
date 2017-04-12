@@ -18,21 +18,12 @@ def get_variant_csq(variant_csq_string):
 
 	"""
 
-	This funtion takes the CSQ field for a particualr variant and breaks it up into a list
+	This function takes the CSQ field for a particualr variant and breaks it up into a list
 
 
 	"""
 
-	variant_csq_string = variant_csq_string.split(',') # if we ahev more than one transcript break it up
-
-	master_list =[]
-
-	for string in variant_csq_string:
-
-		master_list.append(string.split('|'))
-
-
-	return master_list
+	return variant_csq_string.split('|')
 
 
 def create_csq_dict(field_list, var_csq):
@@ -117,6 +108,7 @@ def create_master_list(file,sample):
 
 	master_list =[]
 
+
 	for rec in bcf_in.fetch():
 
 		variant_data_dict = {}
@@ -146,40 +138,38 @@ def create_master_list(file,sample):
 
 		variant_data_dict['hash_id'] = hash_id
 
-
+		
 		for key in rec.info.keys():
+
+			new_key = key.replace('.', '_')
 
 			if key == 'CSQ':
 
-				csq_data = str(rec.info['CSQ'][0]) #if we ahve annoated with merged then there will be possibley more than 1 annotation for each transcript
+				csq_data = rec.info['CSQ']
 
-				csq_data = get_variant_csq(csq_data)
+				all_transcript__dict ={}
 
-				csq_dict = create_csq_dict(csq_fields, csq_data[0]) 
+				for transcript in csq_data:
 
-				for key in csq_dict:
+					transcript_data = get_variant_csq(transcript)
 
-					new_key = key.replace('.', '_')
+					transcript_dict =  create_csq_dict(csq_fields, transcript_data)
+					
+					transcript_name = transcript_dict['Feature']
 
-					variant_data_dict['vep-'+new_key] = csq_dict[key]
+					all_transcript__dict[transcript_name] = transcript_dict
+
+				variant_data_dict['transcript_data'] = all_transcript__dict
+
 
 			else:
 
-
-
-				new_key = key.replace('.', '_')
-
 				variant_data_dict[new_key] = rec.info[key]
 
-			
 
-
-		master_list.append(variant_data_dict) 
-
-
+		master_list.append(variant_data_dict)
 
 	return master_list
-
 
 def get_genes_in_file(file, sample):
 
@@ -203,19 +193,225 @@ def get_genes_in_file(file, sample):
 	return list(set(gene_list))
 
 
+def get_canonical_transcript(transcript_data):
 
+
+	for transcript in transcript_data:
+
+		if transcript_data[transcript]['PICK'] == '1':
+
+			return transcript_data[transcript]
+
+
+	return transcript_data[0]
+
+			
+def get_transcript_names(transcript_data):
+
+	transcript_names = []
+
+	for transcript in transcript_data:
+
+		transcript_names.append((transcript,transcript_data[transcript]['SYMBOL'] ))
+
+
+	return transcript_names
+
+
+
+def get_variant_genes(transcript_data):
+
+
+	genes =[]
+
+	for transcript in transcript_data:
+
+		gene_name = transcript_data[transcript]['SYMBOL']
+
+		if gene_name != "":
+
+			genes.append(gene_name)
+
+		
+
+	genes = list(set(genes))
+
+	return ", ".join(genes)
+
+def get_variant_genes_list(transcript_data):
+
+
+	genes =[]
+
+	for transcript in transcript_data:
+
+		gene_name = transcript_data[transcript]['SYMBOL']
+
+		if gene_name != "":
+
+			genes.append(gene_name)
+
+	return list(set(genes))
+
+	
+
+def create_master_list_canonical(file,sample):
+
+	bcf_in = VariantFile(file)
+
+	try:
+
+		csq_fields = str(bcf_in.header.info['CSQ'].record)
+
+		csq_fields = get_fields(csq_fields)
+
+	except:
+
+		pass
+
+	master_list =[]
+
+
+	for rec in bcf_in.fetch():
+
+		variant_data_dict = {}
+
+		sample_vcf = rec.samples[sample]
+
+		variant_data_dict['genotype'] = sample_vcf['GT']
+
+		variant_data_dict['pos'] = rec.pos
+
+		variant_data_dict['chrom'] = rec.chrom
+
+		variant_data_dict['reference'] = rec.ref
+
+		variant_data_dict['format'] = rec.format.keys()
+
+		variant_data_dict['alt_alleles'] = rec.alts
+
+		variant_data_dict['quality'] = rec.qual
+
+		chromosome = variant_data_dict['chrom']
+		pos = str(variant_data_dict['pos'])
+		ref = variant_data_dict['reference']
+		alt = variant_data_dict['alt_alleles'][0]
+
+		hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()
+
+		variant_data_dict['hash_id'] = hash_id
+
+		
+		for key in rec.info.keys():
+
+			new_key = key.replace('.', '_')
+
+			if key == 'CSQ':
+
+				csq_data = rec.info['CSQ']
+
+				all_transcript__dict ={}
+
+				for transcript in csq_data:
+
+
+
+					transcript_data = get_variant_csq(transcript)
+
+					transcript_dict =  create_csq_dict(csq_fields, transcript_data)
+
+					
+					
+					transcript_name = transcript_dict['Feature']
+
+					all_transcript__dict[transcript_name] = transcript_dict
+
+
+				variant_data_dict['transcript_data'] = all_transcript__dict
+
+				variant_data_dict['all_genes'] = get_variant_genes(variant_data_dict['transcript_data'])
+
+
+				variant_data_dict['transcript_data'] = get_canonical_transcript(   variant_data_dict['transcript_data'])
+
+				for k in variant_data_dict['transcript_data']:
+
+					variant_data_dict[k] = variant_data_dict['transcript_data'][k]
+
+				variant_data_dict['transcript_data'] =""
+
+
+			else:
+
+				variant_data_dict[new_key] = rec.info[key]
+
+
+		master_list.append(variant_data_dict)
+
+	return master_list
+
+
+
+def vep_annotated(file):
+
+
+	bcf_in = VariantFile(file)
+
+	
+	try:
+
+		bcf_in.header.info['CSQ'].record
+
+		return True
+
+	except:
+
+		return False
+
+def get_hgvs(transcript_data):
+
+
+	hgvs_names = []
+
+	for transcript in transcript_data:
+
+		hgvs = transcript_data[transcript]['HGVSc']
+
+		if hgvs != "":
+
+			hgvs_names.append(hgvs)
+
+
+	return ", ".join(hgvs_names)
+
+
+def get_rs_number(transcript_data):
+
+	rs_numbers = []
+
+	for transcript in transcript_data:
+
+		rs_number = transcript_data[transcript]['Existing_variation']
+
+		if rs_number != "":
+
+			rs_numbers.append(rs_number)
+
+
+	return "".join(list(set(rs_numbers)))
 
 if __name__ == '__main__':
 
 
-	for x in create_master_list("data/205908-2-D16-48971-MH_S2.unified.annovar.wmrgldb-sorted.vcf.gz",'205908-2-D16-48971-MH_S2' ):
 
-		print ""
+	#  create_master_list("205908-2-D16-48971-MH_S2.unified.annovar.wmrgldb-sorted.vcf.gz",'205908-2-D16-48971-MH_S2' ):
 
-		print x
+	#print create_master_list("data/out2-sorted.vcf.gz",'WS61594_14000835')
 
-	
+	x = create_master_list("data/out7-sorted.vcf.gz",'WS61594_14000835' )
 
-    #  create_master_list("205908-2-D16-48971-MH_S2.unified.annovar.wmrgldb-sorted.vcf.gz",'205908-2-D16-48971-MH_S2' ):
+	print get_canonical_transcript(x[1]['transcript_data'])
 
-    #create_master_list("data/out2-sorted.vcf.gz",'WS61594_14000835'
+	print  get_transcript_names(x[1]['transcript_data'])
+
+	print  get_variant_genes(x[1]['transcript_data'])
