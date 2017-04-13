@@ -83,7 +83,7 @@ class Sample(models.Model):
 	name = models.CharField(max_length=50)
 	patient_initials = models.CharField(max_length=50)
 	worksheet = models.ForeignKey(Worksheet)
-	vcf_file = models.FilePathField(path='/home/cuser/Documents/Project/DatabaseData',recursive=True)
+	vcf_file = models.TextField()
 	vcf_hash = models.CharField(max_length=64) #could we use a hash to check whether the vcf has changed?
 
 
@@ -358,7 +358,6 @@ class VariantGene(models.Model):
 
 	"""
 	Allows genes and variants to be associated
-
 
 	"""
 
