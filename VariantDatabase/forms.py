@@ -2,12 +2,7 @@ from django import forms
 
 from .models import Sample, Interpretation, WorksheetStatusUpdate
 
-class SampleForm(forms.ModelForm):
 
-	class Meta:
-
-		model = Sample
-		fields = ('name', 'patient_initials', 'worksheet', 'vcf_file',)
 
 
 class InterpretationForm(forms.ModelForm):

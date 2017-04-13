@@ -3,8 +3,8 @@ from VariantDatabase.models import *
 import django.contrib.auth  
 from django.contrib.auth.models import User
 import hashlib
-
-
+import sys
+import time
 import imp
 from django.db import transaction
 from django.utils import timezone
@@ -83,9 +83,13 @@ class Command(BaseCommand):
 		try:
 
 			data = pysam_extract.create_master_list(vcf_file_path, sample_name)
-
+			total_variants = len(data)
 			self.stdout.write(self.style.SUCCESS('Loaded data using pysam_extract - proceeding'))
-			self.stdout.write(self.style.SUCCESS(str(len(data))+ ' variants detected'))
+			self.stdout.write(self.style.SUCCESS(str(total_variants)+ ' variants detected'))
+
+
+
+
 
 			annotation_type = pysam_extract.vep_annotated(vcf_file_path)
 
@@ -128,6 +132,7 @@ class Command(BaseCommand):
 			new_sample.save()
 
 			self.stdout.write(self.style.SUCCESS('Sample '+ new_sample.name + ' created'))
+			self.stdout.write(self.style.SUCCESS('Processing Variants'))
 
 			# Create a new sample Status
 
@@ -146,6 +151,12 @@ class Command(BaseCommand):
 			var_count = 0
 
 			for variant in data:
+
+				sys.stdout.write("\r" + str(round((float(var_count+1)/total_variants)*100)) + " %" )
+				sys.stdout.flush()
+
+
+
 
 				chromosome = variant['chrom']
 				pos = str(variant['pos'])
@@ -214,6 +225,8 @@ class Command(BaseCommand):
 
 				var_count = var_count +1
 
+
+			self.stdout.write(self.style.SUCCESS('\n'))
 			self.stdout.write(self.style.SUCCESS('Complete'))
 			self.stdout.write(self.style.SUCCESS(str(var_count)+ ' variants in file'))
 			self.stdout.write(self.style.SUCCESS(str(new_variant_count)+ '  new variants inserted into database'))

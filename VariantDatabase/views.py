@@ -308,169 +308,7 @@ def settings(request):
 		return render(request, 'VariantDatabase/settings.html' ,{'all_fields': all_fields, 'tick_box_dict': tick_box_dict})
 
 
-def error(request):
-
-	return render(request, 'VariantDatabase/error.html')
-
-
-def upload_sample(request):
-
-	"""
-	This allows the user to upload a new sample.
-	Ideally an automated process will be set up e.g. take automatically from folder. This can be combined with worksheet creation.
-
-
-	The following occurs when a user uploads a new sample:
-
-		1) new_sample object is created.
-
-		2) new SampleStatusUpdate is created and set to 'new'.
-
-		3) Get all data in vcf and lop through each variant:
-
-			a) If that variant has been seen before then just add another VariantSample instance
-			b) If that variant is new then create a new Variant and VariantSample instance.
-
-			NEW c) if the variant is new gets the genes and creates a new VariantGene object(s)
-
-
-	"""
-
-
-	if request.method == "POST":
-
-		form = SampleForm(request.POST)
-
-		if form.is_valid():
-
-			new_sample = form.save(commit=False)
-
-			new_sample.hash = 'None'
-
-			input_validation = pysam_extract.validate_input(new_sample.vcf_file, new_sample.name) 
-
-			if new_sample.already_exists(new_sample.name) ==True:
-
-				message = 'A sample with that name already exists'
-
-				return render(request, 'VariantDatabase/upload.html', {'form': form, 'message': message})
-
-			elif input_validation[0] == False:
-
-				message = input_validation[1]
-
-				return render(request, 'VariantDatabase/upload.html', {'form': form, 'message': message})
-
-
-			new_sample.save()
-
-			#Create new SampleStatusUpdate
-			#The SampleStatusUpdate will be set to 'new'
-
-			inital_status = get_object_or_404(SampleStatus, pk=1)
-
-			new_update = SampleStatusUpdate(sample=new_sample, status=inital_status, user=request.user, date=timezone.now())
-
-			new_update.save()
-
-			#Now we check whether for each of the variants in that file do we have a variant in the Variant Model
-			#If not create one and then create a corresponding VariantSample record
-			#Otherwise just create another VariantSample record
-
-
-			#catch failures
-			try:
-
-				data = pysam_extract.create_master_list(new_sample.vcf_file, new_sample.name)
-
-			except:
-
-				new_sample.delete()
-				new_update.delete()
-
-				message = 'Could not extract data from that file (Pysam error)'
-
-				return render(request, 'VariantDatabase/upload.html', {'form': form, 'message': message})
-			
-			
-
-			for variant in data:
-
-				#See if we have this variant in the database (Variant table) already?
-				#Assumes normalisation and one alt allele per variant
-				#Assumes chromosome in same format - need to validate?
-
-				chromosome = variant['chrom']
-				pos = str(variant['pos'])
-				ref = variant['reference']
-				alt = variant['alt_alleles'][0]
-				hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()
-
-				try:
-
-
-					gene_list = pysam_extract.get_variant_genes_list(variant['transcript_data'])
-
-					hgvs = pysam_extract.get_hgvs(variant['transcript_data'])
-
-					rs_number = pysam_extract.get_rs_number(variant['transcript_data'])
-
-				except:
-
-					gene_list = []
-
-					hgvs = "None"
-
-					rs_number = "None"
-
-
-				try:
-
-					new_variant = Variant.objects.get(variant_hash=hash_id)
-
-				except ObjectDoesNotExist:
-
-					new_variant = Variant(chromosome=chromosome, position=pos, ref= ref, alt=alt, variant_hash= hash_id, HGVS = hgvs, rs_number=rs_number, last_updated= timezone.now())
-
-					new_variant.save()
-
-
-					
-
-					#Create new VariantGene objects if required
-
-					for gene in gene_list:
-
-						try:
-
-							gene_model = Gene.objects.get(name = gene)
-
-						except ObjectDoesNotExist:
-
-							gene_model = Gene(name=gene)
-							gene_model.save()
-						
-
-						new_variant_gene = VariantGene(gene =gene_model, variant = new_variant)
-						
-						new_variant_gene.save()
-
-
-				new_variant_sample = VariantSample(variant=new_variant, sample=new_sample)
-
-				new_variant_sample.save()	
-
-						
-
-			message = new_sample.name + " was successfully uploaded"
-
-			return  render(request, 'VariantDatabase/upload.html', {'form': form, 'message': message})
-
-
-	form = SampleForm
-
-	return render(request, 'VariantDatabase/upload.html', {'form': form})
-
+@login_required
 def view_all_variants(request):
 
 	""""
@@ -503,7 +341,7 @@ def view_all_variants(request):
 
 	return render(request, 'VariantDatabase/view_all_variants.html', {'variants': variants})
 
-
+@login_required
 def all_questions(request, pk_interpretation):
 
 	interpretation = get_object_or_404(Interpretation, pk = pk_interpretation)
@@ -560,6 +398,7 @@ def all_questions(request, pk_interpretation):
 
 	return render(request, 'VariantDatabase/all_questions.html', {'zipped': zipped, 'interpretation': interpretation})
 
+@login_required
 def report(request, pk_interpretation):
 
 	"""
