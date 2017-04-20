@@ -1,0 +1,155 @@
+{% extends 'VariantDatabase/base.html' %}
+
+  {% block content %}
+
+
+    <br>
+
+    <div class="alert alert-info">
+  		You are viewing information relating to sample:  <strong> {{ sample.name }} </strong> 
+	</div>
+
+
+    	   <ul class="nav nav-tabs">
+
+			    <li class="active"><a data-toggle="tab" href="#summary">Summary</a></li>
+			    <li><a data-toggle="tab" href="#variants">Variants</a></li>
+			    <li><a data-toggle="tab" href="#QC">QC</a></li>
+			    <li><a data-toggle="tab" href="#history">History</a></li>
+
+  			</ul>
+
+  	<br>
+
+  	<div class="tab-content">
+
+  	<div id="summary" class="tab-pane fade in active">
+
+  		<table id="variant_table" class = 'table table-hover'>
+
+	  	  	<thead>
+
+			<tr>
+				<th> Variant </th>
+				<th> REF </th>
+				<th> ALT </th>
+				<th> Consequence </th>
+
+				<th> Max_AF </th>
+
+				<th> Genes </th>
+
+				<th> Detail </th>
+
+
+			</tr>
+
+
+			</thead>
+
+			<tbody>
+				
+					{% for variant in variants %}
+
+					<tr>
+
+						<td> {{ variant.variant.chromosome }} {{ variant.variant.position }} </td>
+
+
+
+						<td>  {{ variant.variant.ref|truncatechars:9 }} </td>
+
+						<td>  {{ variant.variant.alt|truncatechars:9 }} </td>
+
+						<td>  {{ variant.variant.worst_consequence }} </td>
+
+						<td>  {{ variant.variant.max_af }} </td>
+
+						<td>       {% for gene in variant.variant.get_genes %}
+
+
+       									{{ gene }} 
+
+
+      								{% endfor %} 
+
+      					</td>
+
+      					<td><a href="{% url 'variant_detail' pk_sample=sample.pk variant_hash=variant.variant.variant_hash  %}"> View  </a>   </td>
+
+
+
+
+
+					</tr>
+
+
+					{% endfor %}
+
+
+				</tbody>
+
+
+				</table>
+
+<ul class='pager'>
+	  	 <span class="current">
+            Page {{ variants.number }} of {{ variants.paginator.num_pages }}.
+        </span>
+
+
+    
+        {% if variants.has_previous %}
+             <li><a href="?page={{ variants.previous_page_number }}">Previous</a> </li>
+        {% endif %}
+
+       
+
+        {% if variants.has_next %}
+          <li>  <a href="?page={{ variants.next_page_number }}">Next</a> </li>
+        {% endif %}
+    </ul>
+
+
+
+  		</div>
+
+  	
+
+
+
+	<div id="variants" class="tab-pane fade">
+
+		<p> <a href= "{% url 'list_sample_variants' sample.pk  %}"> {{ sample.name }}   </a> </p>
+
+	</div>
+
+
+	<div id="QC" class="tab-pane fade">
+
+		<p> Sample QC goes here </p>
+
+	</div>
+
+	<div id="history" class="tab-pane fade">
+
+	<p> history </p>
+	</div>
+
+	</div>
+
+
+
+
+	
+
+
+
+     
+ {% endblock %}  
+  
+  
+ 
+  
+  
+  

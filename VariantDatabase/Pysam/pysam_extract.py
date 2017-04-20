@@ -193,6 +193,26 @@ def get_genes_in_file(file, sample):
 	return list(set(gene_list))
 
 
+def get_canonical_transcript_name(transcript_data):
+
+	try:
+
+
+		for transcript in transcript_data:
+
+			if transcript_data[transcript]['PICK'] == '1':
+
+				return transcript_data[transcript]['Feature']
+
+	except:
+
+		return "None"
+
+
+	
+
+
+
 def get_canonical_transcript(transcript_data):
 
 
@@ -368,21 +388,61 @@ def vep_annotated(file):
 
 		return False
 
-def get_hgvs(transcript_data):
+def get_hgvsc(transcript_data):
 
 
 	hgvs_names = []
 
 	for transcript in transcript_data:
 
-		hgvs = transcript_data[transcript]['HGVSc']
+		try:
+
+			hgvs = transcript_data[transcript]['HGVSc']
+
+		except:
+
+			return "None"
+
+		if hgvs != "":
+
+			hgvs_names.append(hgvs)
+
+	if hgvs_names == False:
+
+		return "None"
+
+
+	return ", ".join(hgvs_names)
+
+
+def get_hgvsp(transcript_data):
+
+
+	hgvs_names = []
+
+	for transcript in transcript_data:
+
+		try:
+
+			hgvs = transcript_data[transcript]['HGVSp']
+
+		except:
+
+			return "None"
 
 		if hgvs != "":
 
 			hgvs_names.append(hgvs)
 
 
+	if hgvs_names == False:
+
+		return "None"
+
+
 	return ", ".join(hgvs_names)
+
+
 
 
 def get_rs_number(transcript_data):
@@ -391,14 +451,167 @@ def get_rs_number(transcript_data):
 
 	for transcript in transcript_data:
 
-		rs_number = transcript_data[transcript]['Existing_variation']
+		try:
+
+			rs_number = transcript_data[transcript]['Existing_variation']
+
+		except:
+
+			return "None"
+
+
 
 		if rs_number != "":
 
 			rs_numbers.append(rs_number)
 
+	if rs_number == False:
+
+		return "None"
+
 
 	return "".join(list(set(rs_numbers)))
+
+
+def get_max_af(transcript_data):
+
+
+	for transcript in transcript_data:
+
+		max_af = transcript_data[transcript]['MAX_AF']
+
+		break
+
+	if max_af =="":
+
+		return 0.0
+
+	else:
+
+		return float(max_af)
+
+
+def get_allele_frequencies(transcript_data):
+
+
+	for transcript in transcript_data:
+
+		af = transcript_data[transcript]['AF']
+		afr_af = transcript_data[transcript]['AFR_AF']
+		amr_af = transcript_data[transcript]['AMR_AF']
+		eur_af = transcript_data[transcript]['EUR_AF']
+		eas_af = transcript_data[transcript]['EAS_AF']
+		sas_af = transcript_data[transcript]['SAS_AF']
+		exac_af = transcript_data[transcript]['ExAC_AF']
+		exac_adj_af = transcript_data[transcript]['ExAC_Adj_AF']
+		exac_afr_af = transcript_data[transcript]['ExAC_AFR_AF']
+		exac_amr_af = transcript_data[transcript]['ExAC_AMR_AF']
+		exac_eas_af = transcript_data[transcript]['ExAC_EAS_AF']
+		exac_fin_af = transcript_data[transcript]['ExAC_FIN_AF']
+		exac_nfe_af = transcript_data[transcript]['ExAC_NFE_AF']
+		exac_oth_af = transcript_data[transcript]['ExAC_OTH_AF']
+		exac_sas_af = transcript_data[transcript]['ExAC_SAS_AF']
+
+		break
+
+
+
+	allele_freqs = [af,afr_af, amr_af,eur_af,eas_af,sas_af,exac_af,exac_adj_af,exac_afr_af,exac_amr_af,exac_eas_af,exac_fin_af,exac_nfe_af,exac_oth_af,exac_sas_af]
+
+	new_allele_freqs =[]
+
+	for allele_freq in allele_freqs:
+
+
+		if '&' in allele_freq:
+
+			allele_freq = allele_freq.split('&')
+
+			new_allele_freqs.append(float(max(allele_freq)))
+
+
+
+		elif allele_freq == "":
+
+			new_allele_freqs.append(0.0)
+
+
+		else:
+
+			new_allele_freqs.append(float(allele_freq))
+
+
+	return new_allele_freqs
+
+
+
+
+def worst_consequence(transcript_data):
+
+	vep_consequences = ["transcript_ablation", "splice_acceptor_variant", "splice_donor_variant",  "stop_gained", "frameshift_variant",
+						"stop_lost", "start_lost", "transcript_amplification", "inframe_insertion", "inframe_deletion", "missense_variant",
+						"protein_altering_variant", "splice_region_variant", "incomplete_terminal_codon_variant", "stop_retained_variant",
+						"synonymous_variant", "coding_sequence_variant", "mature_miRNA_variant", "5_prime_UTR_variant", "3_prime_UTR_variant",
+						"non_coding_transcript_exon_variant", "intron_variant", "NMD_transcript_variant", "non_coding_transcript_variant",
+						"upstream_gene_variant", "downstream_gene_variant", "TFBS_ablation", "TFBS_amplification", "TF_binding_site_variant",
+						"regulatory_region_ablation", "regulatory_region_amplification", "feature_elongation", "regulatory_region_variant",
+						"feature_truncation", "intergenic_variant"]
+
+	consequences = []
+
+	for transcript in transcript_data:
+
+		try:
+
+			consequence = transcript_data[transcript]['Consequence']
+
+		except:
+
+			return "None"
+
+
+
+
+
+
+		if consequence != "":
+
+			consequence = consequence.split('&')
+
+			for x in consequence:
+
+				consequences.append(x)
+
+
+
+
+
+
+	if consequences == False:
+
+		return "None"
+
+
+	worst = 100
+
+	for consequence in consequences:
+
+		index = vep_consequences.index(consequence)
+
+
+
+		if index < worst:
+
+			worst = index
+
+	return vep_consequences[worst]
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
 

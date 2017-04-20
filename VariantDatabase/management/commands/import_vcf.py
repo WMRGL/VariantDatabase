@@ -129,6 +129,7 @@ class Command(BaseCommand):
 			new_sample.patient_initials = options['patient_initials'][0]
 			new_sample.worksheet = worksheet
 			new_sample.vcf_file = vcf_file_path
+			new_sample.visible = False
 			new_sample.save()
 
 			self.stdout.write(self.style.SUCCESS('Sample '+ new_sample.name + ' created'))
@@ -149,11 +150,11 @@ class Command(BaseCommand):
 			new_variant_count = 0
 			new_gene_count = 0
 			var_count = 0
+			var_sample_count = 0
 
 			for variant in data:
 
-				sys.stdout.write("\r" + str(round((float(var_count+1)/total_variants)*100)) + " %" )
-				sys.stdout.flush()
+
 
 
 
@@ -162,30 +163,43 @@ class Command(BaseCommand):
 				pos = str(variant['pos'])
 				ref = variant['reference']
 				alt = variant['alt_alleles'][0]
-				hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()
+				hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()				
 
+		
 
-				# Some of the following may fail so wrap in try-except
-				
+				gene_list = pysam_extract.get_variant_genes_list(variant['transcript_data'])
 
-				try:
+				hgvsc = pysam_extract.get_hgvsc(variant['transcript_data'])
 
+				hgvsp = pysam_extract.get_hgvsp(variant['transcript_data'])
 
-					gene_list = pysam_extract.get_variant_genes_list(variant['transcript_data'])
+				rs_number = pysam_extract.get_rs_number(variant['transcript_data'])
 
-					hgvs = pysam_extract.get_hgvs(variant['transcript_data'])
+				worst_consequence = pysam_extract.worst_consequence(variant['transcript_data'])
 
-					rs_number = pysam_extract.get_rs_number(variant['transcript_data'])
+				worst_consequence = Consequence.objects.get(name=worst_consequence)
 
-				except:
+				canonical = pysam_extract.get_canonical_transcript_name(variant['transcript_data'])
 
-					gene_list = []
+				max_af = pysam_extract.get_max_af(variant['transcript_data'])
 
-					hgvs = "None"
+				allele_frequencies = pysam_extract.get_allele_frequencies(variant['transcript_data'])
 
-					rs_number = "None"
-
-
+				af = allele_frequencies[0]
+				afr_af = allele_frequencies[1]
+				amr_af = allele_frequencies[2]
+				eur_af = allele_frequencies[3]
+				eas_af = allele_frequencies[4]
+				sas_af = allele_frequencies[5]
+				exac_af = allele_frequencies[6]
+				exac_adj_af = allele_frequencies[7]
+				exac_afr_af = allele_frequencies[8]
+				exac_amr_af = allele_frequencies[9]
+				exac_eas_af = allele_frequencies[10]
+				exac_fin_af = allele_frequencies[11]
+				exac_nfe_af = allele_frequencies[12]
+				exac_oth_af = allele_frequencies[13]
+				exac_sas_af = allele_frequencies[14]
 
 				#Look for a variant in the database if we have not seen it before create a new one 
 
@@ -195,7 +209,13 @@ class Command(BaseCommand):
 
 				except Variant.DoesNotExist:
 
-					new_variant = Variant(chromosome=chromosome, position=pos, ref= ref, alt=alt, variant_hash= hash_id, HGVS = hgvs, rs_number=rs_number, last_updated= timezone.now())
+					new_variant = Variant(chromosome=chromosome, position=pos,
+										 ref= ref, alt=alt, variant_hash= hash_id, HGVSc = hgvsc, rs_number=rs_number,
+										 last_updated= timezone.now(), HGVSp= hgvsp, worst_consequence=worst_consequence,
+										 canonical_transcript = canonical, max_af= max_af,  af=af,  afr_af=afr_af, amr_af=amr_af,
+										 eur_af=eur_af, eas_af=eas_af, sas_af=sas_af, exac_af=exac_af, exac_adj_af=exac_adj_af,
+										 exac_afr_af= exac_afr_af, exac_amr_af=exac_amr_af,exac_eas_af=exac_eas_af, exac_fin_af=exac_fin_af,
+										 exac_nfe_af = exac_nfe_af, exac_oth_af=exac_oth_af, exac_sas_af=exac_sas_af)
 
 					new_variant.save()
 
@@ -219,18 +239,29 @@ class Command(BaseCommand):
 						new_variant_gene.save()
 
 
-				new_variant_sample = VariantSample(variant=new_variant, sample=new_sample)
 
-				new_variant_sample.save()
+				if new_variant.worst_consequence.impact <=13 and new_variant.max_af <0.05: # only create this model with interesting variants - needs work
+
+
+					new_variant_sample = VariantSample(variant=new_variant, sample=new_sample)
+
+					new_variant_sample.save()
+
+					var_sample_count = var_sample_count +1
+
+
 
 				var_count = var_count +1
 
+			new_sample.visible = True
 
-			self.stdout.write(self.style.SUCCESS('\n'))
+			new_sample.save()
+
 			self.stdout.write(self.style.SUCCESS('Complete'))
 			self.stdout.write(self.style.SUCCESS(str(var_count)+ ' variants in file'))
 			self.stdout.write(self.style.SUCCESS(str(new_variant_count)+ '  new variants inserted into database'))
 			self.stdout.write(self.style.SUCCESS(str(new_gene_count)+ '  new genes inserted into database'))
+			self.stdout.write(self.style.SUCCESS(str(var_sample_count)+ ' variants in summary   '))
 
 			complete = True
 

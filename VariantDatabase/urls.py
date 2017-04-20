@@ -5,7 +5,18 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^sections/$', views.list_sections, name='list_sections'),
 				url(r'^worksheet/(?P<pk_worksheet>\d+)/$', views.list_worksheet_samples, name='list_worksheet_samples'),
-				url(r'^sample/(?P<pk_sample>\d+)/$', views.list_sample_variants, name='list_sample_variants'),
+
+
+
+				url(r'^sample/(?P<pk_sample>\d+)/summary/$', views.sample_summary, name='sample_summary'),
+				url(r'^sample/(?P<pk_sample>\d+)/variants$', views.list_sample_variants, name='list_sample_variants'),
+
+
+
+
+
+
+
 				url(r'^variant_detail/(?P<pk_sample>\d+)/(?P<variant_hash>\w+)/$', views.variant_detail, name='variant_detail'),
 				url(r'^settings/$', views.settings, name='settings'),
 				url(r'^view_all_variants/$', views.view_all_variants, name='view_all_variants'),

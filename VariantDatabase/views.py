@@ -77,7 +77,7 @@ def list_worksheet_samples(request, pk_worksheet):
 
 
 
-	samples_in_worksheet = Sample.objects.filter(worksheet = worksheet)
+	samples_in_worksheet = Sample.objects.filter(worksheet = worksheet, visible=True)
 
 	return render(request, 'VariantDatabase/list_worksheet_samples.html', {'samples_in_worksheet': samples_in_worksheet, 'form': form, 'worksheet': worksheet})
 
@@ -118,8 +118,6 @@ def list_sample_variants(request, pk_sample):
 	vcf_file_path = sample.vcf_file
 
 
-
-
 	#avoid recalculating using cache
 	data = cache.get(sample.name)
 
@@ -151,9 +149,81 @@ def list_sample_variants(request, pk_sample):
 
 
 
-	genes = pysam_extract.get_genes_in_file(vcf_file_path, sample.name)
 
-	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'variants': variants, 'genes': genes, 'field_list': field_list, 'heading_list': heading_list, 'vep': vep_annotated})
+	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'variants': variants, 'field_list': field_list, 'heading_list': heading_list, 'vep': vep_annotated})
+
+
+
+
+def sample_summary(request, pk_sample ):
+
+
+	"""
+	This view displays the variants from a vcf file in a html table.
+
+	The columns that are present can be configured in the user settings page.
+
+
+	"""
+
+	sample = get_object_or_404(Sample, pk=pk_sample) 
+
+	#Get the user's settings.
+	#Create a field list containing the custom INFO fields the user requires.
+	#Then this will be passed to the template for rendering
+	#Get the vcf file and get the data e.g. ref, chrom, INFO
+	#Get the genes from the vcf file
+	#Pass these to the template
+
+	vcf_file_path = sample.vcf_file
+
+
+	#avoid recalculating using cache
+	data = cache.get(sample.name+"summary")
+
+	if data == None:
+
+		data = VariantSample.objects.filter(sample=sample).order_by('variant__worst_consequence__impact')
+
+		 #create variant list
+		cache.set(sample.name+"summary", data, 600)
+
+
+	paginator = Paginator(data,50)
+
+	page = request.GET.get('page')
+
+	try:
+
+		variants = paginator.page(page)
+
+	except PageNotAnInteger:
+
+		variants =paginator.page(1)
+
+
+	except:
+
+		variants = paginator.page(paginator.num_pages)
+
+
+
+
+	return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'variants': variants})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @login_required
@@ -372,7 +442,7 @@ def all_questions(request, pk_interpretation):
 
 			UserAnswer.objects.create(interpretation = interpretation, user_question = question, user_answer= dict[key][1], date = timezone.now()) #now create a UserAnswer instance with that info
 
-
+		interpretation.classification = interpretation.get_classification()
 		interpretation.finished = True
 
 		interpretation.save()

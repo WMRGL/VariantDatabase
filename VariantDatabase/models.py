@@ -84,7 +84,7 @@ class Sample(models.Model):
 	patient_initials = models.CharField(max_length=50)
 	worksheet = models.ForeignKey(Worksheet)
 	vcf_file = models.TextField()
-	vcf_hash = models.CharField(max_length=64) #could we use a hash to check whether the vcf has changed?
+	visible = models.BooleanField()
 
 
 	def __str__(self):
@@ -119,9 +119,6 @@ class Sample(models.Model):
 			current_status = 'No Status Found'
 
 		return current_status
-
-
-
 
 
 
@@ -217,6 +214,18 @@ class UserSetting(models.Model):
 	user = models.ForeignKey('auth.User')
 	variant_information = models.ForeignKey(VariantInformation)
 
+
+
+class Consequence(models.Model):
+
+	name = models.CharField(max_length = 100, primary_key =True)
+	impact = models.IntegerField()
+
+	def __str__(self):
+		return self.name
+
+
+
 class Variant(models.Model):
 
 	"""
@@ -224,22 +233,39 @@ class Variant(models.Model):
 
 	If a variant is seen in another vcf it will not appear twice in this model.
 
-	The variant_hash field is used as a key (sha256)
+	The variant_hash field is used as a key (sha256) chr+pos+ref+alt
 
 
 	"""
-
+	variant_hash = models.CharField(max_length=64, primary_key = True)
 	chromosome  = models.CharField(max_length=25)
 	position  = models.IntegerField()
 	ref = models.TextField()
 	alt = models.TextField()
-	variant_hash = models.CharField(max_length=64, db_index=True, unique=True)
-	HGVS =models.TextField()
+	HGVSc =models.TextField()
+	HGVSp = models.TextField()
 	last_updated =  models.DateTimeField(default = timezone.now)
 	rs_number = models.CharField(max_length =50)
-	
+	worst_consequence = models.ForeignKey(Consequence)
+	canonical_transcript = models.TextField()
+	clinical_sig = models.TextField()
 
-
+	max_af = models.FloatField()
+	af = models.FloatField()
+	afr_af = models.FloatField()
+	amr_af = models.FloatField()
+	eur_af = models.FloatField()
+	eas_af = models.FloatField()
+	sas_af = models.FloatField()
+	exac_af = models.FloatField()
+	exac_adj_af = models.FloatField()
+	exac_afr_af = models.FloatField()
+	exac_amr_af = models.FloatField()
+	exac_eas_af = models.FloatField()
+	exac_fin_af = models.FloatField()
+	exac_nfe_af = models.FloatField()
+	exac_oth_af = models.FloatField()
+	exac_sas_af = models.FloatField()
 
 	def __str__(self):
 		return self.chromosome + str(self.position) + self.ref + self.alt
@@ -257,6 +283,80 @@ class Variant(models.Model):
 		genes = VariantGene.objects.filter(variant =self)
 
 		return genes
+
+
+	def hgvsc_list(self):
+
+		hgvs_list = []
+
+		split = self.HGVSc.split(",")
+
+		return split
+
+	def hgvsp_list(self):
+
+		hgvs_list = []
+
+		split = self.HGVSp.split(",")
+
+		return split
+
+
+	def display_ids(self):
+
+		variant_ids = self.rs_number.split("&")
+
+		return variant_ids
+
+
+	def rated_as_pathogenic(self):
+
+
+		classifications = Interpretation.objects.filter(variant=self)
+
+		path_classifications = ["Pathogenic (Ia)","Pathogenic (Ib)","Pathogenic (Ic)", "Pathogenic (Id)", "Pathogenic (II)", "Pathogenic (IIIa)",
+							"Pathogenic (IIIb)", "Pathogenic (IIIc)", "Likely Pathogenic (I)", "Likely Pathogenic (II)", "Likely Pathogenic (III)",
+							"Likely Pathogenic (IV)", "Likely Pathogenic (V)", "Likely Pathogenic (VI)"
+							]
+
+		if classifications == False:
+
+			return False
+
+		else:
+
+
+			for classification in classifications:
+
+				if classification.classification in path_classifications:
+
+					return True
+
+
+		return False
+
+
+	def variants_in_same_position(self):
+
+		variant_list = Variant.objects.filter(chromosome=self.chromosome, position =self.position).exclude(variant_hash =self.variant_hash)
+
+		return variant_list
+
+
+	def variants_in_similar_position(self):
+
+		range = 50
+
+		variant_list = Variant.objects.filter(chromosome=self.chromosome, position__range=(self.position-range,self.position+range )).exclude(variant_hash =self.variant_hash)
+
+		return variant_list
+
+
+
+
+
+
+
 
 
 
@@ -306,6 +406,7 @@ class Interpretation(models.Model):
 	sample = models.ForeignKey(Sample)
 	finished = models.BooleanField()
 	date = models.DateTimeField(default = timezone.now)
+	classification = models.CharField(max_length =25)
 
 	def __str__(self):
 
@@ -367,3 +468,5 @@ class VariantGene(models.Model):
 	def __str__(self):
 
 		return self.gene.name
+
+

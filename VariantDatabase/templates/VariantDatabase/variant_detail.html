@@ -20,10 +20,265 @@
 
     <div id="summary" class="tab-pane fade in active">
 
-    {{ variant_sample_data }}
+    
+
+
+
+
+
+
+    <div class = "row">
+
+    <div class = 'col-sm-4'>
+
+
+
+    <table class = 'table table-bordered' >
+
+
+
+    <thead>
+    <tr>
+
+      <th colspan="2">Summary</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <tr>
+      <td> Chromsome </td>
+      <td> {{ variant.chromosome }} </td>
+
+    </tr>
+
+    <tr>
+      <td> Position </td>
+      <td> {{ variant.position }} </td>
+
+    </tr>
+
+    <tr>
+      <td> Ref </td>
+      <td> {{ variant.ref }} </td>
+
+    </tr>
+
+    <tr>
+      <td> Alt </td>
+      <td> {{ variant.alt }} </td>
+
+    </tr>
+
+    <tr>
+      <td> ID </td>
+      <td> {{ variant.display_ids|join:", " }} </td>
+
+    </tr>
+
+
+    <tr>
+      <td> Genes </td>
+      <td>
+
+      {% for gene in variant.get_genes %}
+
+
+       {{ gene }} 
+
+
+      {% endfor %}
+
+
+
+
+      </td>
+
+    </tr>
+
+
+    <tr>
+      <td> Worst Consequence </td>
+      <td> {{ variant.worst_consequence }} </td>
+
+    </tr>
+
+
+    
+    <tr>
+      <td> Rated as Pathogenic </td>
+      <td> {{ variant.rated_as_pathogenic     }} </td>
+
+    </tr>
+
+    <tr>
+      <td> Similar </td>
+
+
+      {% if variant.variants_in_similar_position %}
+
+
+      <td> {{ variant.variants_in_similar_position   }} </td>
+
+      {% else %}
+
+
+      <td> None </td>
+
+
+      {% endif %}
+
+
+
+
+    </tr>
+
+    </tbody>
+    </table>
+
+    </div>
+
+
+    <div class = 'col-sm-2'>
+
+        <table class = 'table table-bordered' >
+
+
+
+          <thead>
+            <tr>
+
+              <th>HGVSc</th>
+            </tr>
+          </thead>
+
+         <tbody>
+
+          {% for hgvs in variant.hgvsc_list %}
+
+           <tr>
+
+   
+      
+                <td> {{ hgvs }} </td>
+
+    
+
+          </tr>
+  
+        {% endfor %}
+
+    </tbody>
+    </table>
+
+    </div>
+
+
+
+
+
+        <div class = 'col-sm-2'>
+
+        <table class = 'table table-bordered' >
+
+
+
+          <thead>
+            <tr>
+
+              <th>HGVSp</th>
+            </tr>
+          </thead>
+
+         <tbody>
+
+          {% for hgvs in variant.hgvsp_list %}
+
+           <tr>
+
+   
+      
+                <td> {{ hgvs }} </td>
+
+    
+
+          </tr>
+  
+        {% endfor %}
+
+    </tbody>
+    </table>
+
+    </div>
+
+
+
+    </div>
+
+    <hr>
+
+    <h3> Transcripts </h3>
+
+    <hr>
+
+
+  
+
+
+<div class="panel-group" id="accordion">
+
+
+
+{% for transcript in variant_sample_data.0.transcript_data %}
+
+
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{forloop.counter}}">
+        {{ transcript }}             </a>
+      </h4>
+    </div>
+
+    {% if forloop.first %}
+
+
+      <div id="collapse{{forloop.counter}}" class="panel-collapse collapse in">
+
+    {% else %}
+
+      <div id="collapse{{forloop.counter}}" class="panel-collapse collapse">
+
+    {% endif %}
+    
+      <div class="panel-body">{{ variant_sample_data.0.transcript_data|get_item:transcript }}</div>
+    </div>
+  </div>
+
+{% endfor %}
+
+
+
 
 
   </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   <div id="QC" class="tab-pane fade">
 
@@ -113,6 +368,9 @@
     </div>
 
   </div>
+
+  <br>
+  <br>
 
   </div>
   
