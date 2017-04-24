@@ -185,6 +185,8 @@ class Command(BaseCommand):
 
 				allele_frequencies = pysam_extract.get_allele_frequencies(variant['transcript_data'])
 
+				clin_sig = pysam_extract.get_clin_sig(variant['transcript_data'])
+
 				af = allele_frequencies[0]
 				afr_af = allele_frequencies[1]
 				amr_af = allele_frequencies[2]
@@ -200,6 +202,8 @@ class Command(BaseCommand):
 				exac_nfe_af = allele_frequencies[12]
 				exac_oth_af = allele_frequencies[13]
 				exac_sas_af = allele_frequencies[14]
+				esp_aa_af = allele_frequencies[15]
+				esp_ea_af = allele_frequencies[16]
 
 				#Look for a variant in the database if we have not seen it before create a new one 
 
@@ -215,7 +219,7 @@ class Command(BaseCommand):
 										 canonical_transcript = canonical, max_af= max_af,  af=af,  afr_af=afr_af, amr_af=amr_af,
 										 eur_af=eur_af, eas_af=eas_af, sas_af=sas_af, exac_af=exac_af, exac_adj_af=exac_adj_af,
 										 exac_afr_af= exac_afr_af, exac_amr_af=exac_amr_af,exac_eas_af=exac_eas_af, exac_fin_af=exac_fin_af,
-										 exac_nfe_af = exac_nfe_af, exac_oth_af=exac_oth_af, exac_sas_af=exac_sas_af)
+										 exac_nfe_af = exac_nfe_af, exac_oth_af=exac_oth_af, exac_sas_af=exac_sas_af,esp_aa_af=esp_aa_af,esp_ea_af=esp_ea_af,clinical_sig=clin_sig)
 
 					new_variant.save()
 

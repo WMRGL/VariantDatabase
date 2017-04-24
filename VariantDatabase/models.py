@@ -266,6 +266,8 @@ class Variant(models.Model):
 	exac_nfe_af = models.FloatField()
 	exac_oth_af = models.FloatField()
 	exac_sas_af = models.FloatField()
+	esp_ea_af = models.FloatField()
+	esp_aa_af = models.FloatField()
 
 	def __str__(self):
 		return self.chromosome + str(self.position) + self.ref + self.alt

@@ -491,6 +491,23 @@ def get_max_af(transcript_data):
 		return float(max_af)
 
 
+def get_clin_sig(transcript_data):
+
+
+	for transcript in transcript_data:
+
+		clin_sig = transcript_data[transcript]['CLIN_SIG']
+
+		break
+
+	if clin_sig =="":
+
+		return 0.0
+
+	else:
+
+		return clin_sig
+
 def get_allele_frequencies(transcript_data):
 
 
@@ -511,12 +528,14 @@ def get_allele_frequencies(transcript_data):
 		exac_nfe_af = transcript_data[transcript]['ExAC_NFE_AF']
 		exac_oth_af = transcript_data[transcript]['ExAC_OTH_AF']
 		exac_sas_af = transcript_data[transcript]['ExAC_SAS_AF']
+		esp_aa_af = transcript_data[transcript]['AA_AF']
+		esp_ea_af = transcript_data[transcript]['EA_AF']
 
 		break
 
 
 
-	allele_freqs = [af,afr_af, amr_af,eur_af,eas_af,sas_af,exac_af,exac_adj_af,exac_afr_af,exac_amr_af,exac_eas_af,exac_fin_af,exac_nfe_af,exac_oth_af,exac_sas_af]
+	allele_freqs = [af,afr_af, amr_af,eur_af,eas_af,sas_af,exac_af,exac_adj_af,exac_afr_af,exac_amr_af,exac_eas_af,exac_fin_af,exac_nfe_af,exac_oth_af,exac_sas_af, esp_aa_af, esp_ea_af]
 
 	new_allele_freqs =[]
 

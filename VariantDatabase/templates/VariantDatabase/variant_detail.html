@@ -3,6 +3,7 @@
   {% block content %}
   <br>
 
+
    <ul class="nav nav-tabs">
 
     <li class="active"><a data-toggle="tab" href="#summary">Summary</a></li>
@@ -21,11 +22,6 @@
     <div id="summary" class="tab-pane fade in active">
 
     
-
-
-
-
-
 
     <div class = "row">
 
@@ -131,6 +127,14 @@
 
 
 
+
+    </tr>
+
+
+    <tr>
+      <td> ClinVar Clin Sig </td>
+      <td> {{ variant.clinical_sig }} </td>
+
     </tr>
 
     </tbody>
@@ -211,6 +215,97 @@
 
     </div>
 
+            <div class = 'col-sm-2'>
+
+        <table class = 'table table-bordered' >
+
+
+
+          <thead >
+            <tr>
+
+              <th colspan="2">Frequency</th>
+            </tr>
+          </thead>
+
+         <tbody>
+
+
+         <tr>
+            <td> Max AF </td> 
+            <td> {{variant.max_af}} </td>
+
+         </tr>
+
+         <tr>
+            <td> 1000G AF </td> 
+            <td>
+
+                  <a id="1000g" href="#" data-toggle="popover" title="1000G Pop AF" data-content='<ul class="list-group">
+  <li class="list-group-item">AFR AF : {{ variant.afr_af}}</li>
+  <li class="list-group-item">AMR AF : {{ variant.amr_af}}</li>
+  <li class="list-group-item">EUR AF : {{ variant.eur_af}}</li>
+  <li class="list-group-item">EAS AF : {{ variant.eas_af}}</li>
+  <li class="list-group-item">SAS AF : {{ variant.sas_af}}</li>
+
+
+
+</ul>' >{{variant.af}}</a>
+
+
+
+
+
+
+              </td>
+
+         </tr>
+
+          <tr>
+            <td> ExAC AF </td> 
+
+            <td>
+                              <a id="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-content='<ul class="list-group">
+  <li class="list-group-item">ADJ AF : {{ variant.exac_adj_af}}</li>
+  <li class="list-group-item">AFR AF : {{ variant.exac_afr_af}}</li>
+  <li class="list-group-item">AMR AF : {{ variant.exac_amr_af}}</li>
+  <li class="list-group-item">EAS AF : {{ variant.exac_eas_af}}</li>
+  <li class="list-group-item">FIN AF : {{ variant.exac_fin_af}}</li>
+  <li class="list-group-item">NFE AF : {{ variant.exac_nfe_af}}</li>
+  <li class="list-group-item">OTH AF : {{ variant.exac_oth_af}}</li>
+  <li class="list-group-item">SAS AF : {{ variant.exac_sas_af}}</li>
+
+
+</ul>' >{{variant.exac_af}}</a>
+</td>
+
+         </tr>
+
+         <tr>
+
+         <td> ESP AA AF </td>
+
+         <td> {{variant.esp_aa_af }} </td>
+
+
+         </tr>
+
+         <tr>
+
+         <td> ESP EA AF </td>
+
+         <td> {{variant.esp_ea_af }} </td>
+
+
+         </tr>
+
+
+        </tbody>
+        </table>
+
+        </div>
+
+
 
 
     </div>
@@ -237,14 +332,14 @@
     <div class="panel-heading">
       <h4 class="panel-title">
         <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{forloop.counter}}">
-        {{ transcript }}             </a>
+        {{ transcript }}      </a>
       </h4>
     </div>
 
     {% if forloop.first %}
 
 
-      <div id="collapse{{forloop.counter}}" class="panel-collapse collapse in">
+      <div id="collapse{{forloop.counter}}" class="panel-collapse collapse">
 
     {% else %}
 
@@ -252,7 +347,98 @@
 
     {% endif %}
     
-      <div class="panel-body">{{ variant_sample_data.0.transcript_data|get_item:transcript }}</div>
+      <div class="panel-body">
+
+    <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Annotation</th>
+        <th>Data</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Symbol</td>
+        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'SYMBOL' }}</td>
+
+      </tr>
+
+      <tr>
+        <td>Feature</td>
+        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'Feature' }}</td>
+
+      </tr>
+
+      <tr>
+        <td>Consequence</td>
+        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'Consequence' }}</td>
+
+      </tr>
+
+      <tr>
+        <td>Codons</td>
+        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'Codons' }}</td>
+
+      </tr>
+
+      <tr>
+        <td>Exon</td>
+        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'EXON' }}</td>
+
+      </tr>
+
+      <tr>
+        <td>Intron</td>
+        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'INTRON' }}</td>
+
+      </tr>
+
+      <tr>
+        <td>CDS Position</td>
+        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'CDS_position' }}</td>
+
+      </tr>
+
+      <tr>
+        <td>cDNA Position</td>
+        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'cDNA_position' }}</td>
+
+      </tr>
+
+      <tr>
+        <td>HGVSc</td>
+        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'HGVSc' }}</td>
+
+      </tr>
+      <tr>
+        <td>HGVSp</td>
+        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'HGVSp' }}</td>
+
+      </tr>
+
+      <tr>
+        <td>Pick</td>
+        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'PICK' }}</td>
+
+      </tr>
+
+
+
+
+
+
+
+
+
+
+
+    </tbody>
+  </table>
+
+
+
+
+      </div>
     </div>
   </div>
 
@@ -374,7 +560,23 @@
 
   </div>
   
-      
+
+<script>
+$(document).ready(function(){
+    $('#1000g').popover({title: "", content: "", html: true, placement: "bottom", trigger: "hover"}); 
+});
+</script>
+
+
+<script>
+$(document).ready(function(){
+    $('#exac').popover({title: "", content: "", html: true, placement: "bottom",trigger: "hover"}); 
+});
+</script>
+
+
 
      
   {% endblock %}
+
+
