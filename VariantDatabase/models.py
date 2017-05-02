@@ -3,6 +3,9 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils import timezone
 from variant_classifier import classify
+import imp
+
+pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/Pysam/pysam_extract.py')
 
 
 class Section(models.Model):
@@ -354,10 +357,107 @@ class Variant(models.Model):
 		return variant_list
 
 
+	def same_codon_missense(self):
+		"""
+		Is the variant in the same codon as an existing variant in the DB?
+
+		"""
+
+		if self.worst_consequence.name == 'missense_variant':
+
+			same_codon = []
+
+			range =2
+
+			variant_list = variant_list = Variant.objects.filter(chromosome=self.chromosome, position__range=(self.position-range,self.position+range )).exclude(variant_hash =self.variant_hash)
+
+			
+			transcript_dict = {}
+
+			self_var_hgvsp = self.hgvsp_list()
+
+			for hgvsp in self_var_hgvsp:
+
+				transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
+
+				transcript_dict[transcript] = codon
+
+
+			for variant in variant_list:
+
+				if variant.worst_consequence.name == 'missense_variant':
+
+					var_hgvsp_list = variant.hgvsp_list()
+
+					for hgvsp in var_hgvsp_list:
+
+						transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
+
+						if transcript in transcript_dict:
+
+							if transcript_dict[transcript] == codon:
+
+								same_codon.append(variant)
+
+		else:
+
+			return False
 
 
 
+		return list(set(same_codon))
 
+
+
+	def same_codon_missense2(self):
+		"""
+		Is the variant in the same codon as an existing variant in the DB?
+
+		"""
+
+		if self.worst_consequence.name == 'missense_variant':
+
+			same_codon = []
+
+			range =2
+
+			variant_list = variant_list = Variant.objects.filter(chromosome=self.chromosome, position__range=(self.position-range,self.position+range )).exclude(variant_hash =self.variant_hash)
+
+			
+			transcript_list =[]
+
+			self_var_hgvsp = self.hgvsp_list()
+
+			for hgvsp in self_var_hgvsp:
+
+				transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
+
+				transcript_list.append((transcript.strip(), codon))
+
+
+			for variant in variant_list:
+
+				var_hgvsp_list = variant.hgvsp_list()
+
+				transcript_list_vars =[]
+
+				for hgvsp in var_hgvsp_list:
+
+					transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
+
+					transcript_list_vars.append((transcript.strip(),codon))
+
+					#return set(transcript_list) & set( transcript_list_vars)
+
+					both = set(transcript_list) & set(transcript_list_vars)
+
+
+					if len(both) >0:
+
+						same_codon.append(variant)
+
+
+			return list(set(same_codon))
 
 
 

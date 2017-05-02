@@ -155,10 +155,6 @@ class Command(BaseCommand):
 			for variant in data:
 
 
-
-
-
-
 				chromosome = variant['chrom']
 				pos = str(variant['pos'])
 				ref = variant['reference']

@@ -1,5 +1,6 @@
 from pysam import VariantFile
 import hashlib
+import re
 
 def get_fields(csq_info_string):
 
@@ -626,7 +627,11 @@ def worst_consequence(transcript_data):
 	return vep_consequences[worst]
 
 
+def extract_codon_from_hgvs(hgvsp):
 
+	transcript, codon= hgvsp.split(':p.')[0], hgvsp.split(':p.')[1]
+
+	return transcript, re.findall(r'\d+', codon)[0]
 
 
 

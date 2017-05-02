@@ -5,6 +5,48 @@
   	<br>
 
 
+
+<div class="alert alert-info">
+
+
+	<p> Search using a gene name here:  </p>
+
+	<br>
+
+  	<form action="/view_all_variants/" method="get">
+    <label for="gene_name">Gene Name: </label>
+    <input id="gene_name" type="text" name="gene_name">
+    <input type="submit" value="OK">
+	</form>
+
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+{% if gene_name %}
+
+
+{% if variants|length_is:"0" %}
+
+<div class="alert alert-danger">
+  <strong>Error!</strong> No gene with that name found.
+</div>
+
+{% else %}
+
+
+
 <table id="variant_table" class = 'table table-hover'>
 
 	  	  	<thead>
@@ -85,19 +127,19 @@
 
     
         {% if variants.has_previous %}
-             <li><a href="?page={{ variants.previous_page_number }}">Previous</a> </li>
+             <li><a href="?gene_name={{gene_name}}&page={{ variants.previous_page_number }}">Previous</a> </li>
         {% endif %}
 
        
 
         {% if variants.has_next %}
-          <li>  <a href="?page={{ variants.next_page_number }}">Next</a> </li>
+          <li>  <a href="?gene_name={{gene_name}}&page={{ variants.next_page_number }}">Next</a> </li>
         {% endif %}
     </ul>
 
 
-
-
+{% endif %}
+{% endif %}
 
 
    {% endblock %}

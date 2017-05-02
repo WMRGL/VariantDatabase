@@ -387,10 +387,23 @@ def view_all_variants(request):
 
 
 	"""
+	
 
-	all_variants = Variant.objects.all()
 
-	paginator = Paginator(all_variants,15)
+	gene_name = request.GET.get('gene_name')
+
+	if gene_name is not None:
+
+		gene_name = gene_name.upper()
+
+
+	variants = VariantGene.objects.filter(gene__name= gene_name).values('variant')
+
+	variants = Variant.objects.filter(variant_hash__in=variants)
+
+	
+
+	paginator = Paginator(variants,15)
 
 	page = request.GET.get('page')
 
@@ -407,9 +420,33 @@ def view_all_variants(request):
 
 		variants = paginator.page(paginator.num_pages)
 
+	
+
+	return render(request, 'VariantDatabase/view_all_variants.html', {'variants': variants, 'gene_name': gene_name})
 
 
-	return render(request, 'VariantDatabase/view_all_variants.html', {'variants': variants})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @login_required
 def all_questions(request, pk_interpretation):
