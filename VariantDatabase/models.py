@@ -57,7 +57,7 @@ class Worksheet(models.Model):
 
 		status = self.get_status()
 
-		if status == 'Awaiting QC Check' or status == 'No Status Found':
+		if status == 'New Worksheet -  Awaiting QC Check' or status == 'No Status Found':
 
 			return True
 
@@ -65,7 +65,17 @@ class Worksheet(models.Model):
 
 			return False
 
+	def get_history(self):
 
+		try:
+
+	 		current_status = WorksheetStatusUpdate.objects.filter(worksheet=self).order_by('date')
+
+	 	except:
+
+	 		current_status = []
+
+	 	return current_status
 
 
 
@@ -122,6 +132,22 @@ class Sample(models.Model):
 			current_status = 'No Status Found'
 
 		return current_status
+
+
+
+	def get_history(self):
+
+		try:
+
+			current_status = SampleStatusUpdate.objects.filter(sample=self).order_by('-date')
+
+		except:
+
+
+			current_status = []
+
+		return current_status
+
 
 
 
@@ -272,6 +298,8 @@ class Variant(models.Model):
 	esp_ea_af = models.FloatField()
 	esp_aa_af = models.FloatField()
 
+	count = models.IntegerField()
+
 	def __str__(self):
 		return self.chromosome + str(self.position) + self.ref + self.alt
 
@@ -357,59 +385,8 @@ class Variant(models.Model):
 		return variant_list
 
 
+
 	def same_codon_missense(self):
-		"""
-		Is the variant in the same codon as an existing variant in the DB?
-
-		"""
-
-		if self.worst_consequence.name == 'missense_variant':
-
-			same_codon = []
-
-			range =2
-
-			variant_list = variant_list = Variant.objects.filter(chromosome=self.chromosome, position__range=(self.position-range,self.position+range )).exclude(variant_hash =self.variant_hash)
-
-			
-			transcript_dict = {}
-
-			self_var_hgvsp = self.hgvsp_list()
-
-			for hgvsp in self_var_hgvsp:
-
-				transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
-
-				transcript_dict[transcript] = codon
-
-
-			for variant in variant_list:
-
-				if variant.worst_consequence.name == 'missense_variant':
-
-					var_hgvsp_list = variant.hgvsp_list()
-
-					for hgvsp in var_hgvsp_list:
-
-						transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
-
-						if transcript in transcript_dict:
-
-							if transcript_dict[transcript] == codon:
-
-								same_codon.append(variant)
-
-		else:
-
-			return False
-
-
-
-		return list(set(same_codon))
-
-
-
-	def same_codon_missense2(self):
 		"""
 		Is the variant in the same codon as an existing variant in the DB?
 
@@ -437,24 +414,24 @@ class Variant(models.Model):
 
 			for variant in variant_list:
 
-				var_hgvsp_list = variant.hgvsp_list()
+				if variant.worst_consequence.name == 'missense_variant':
 
-				transcript_list_vars =[]
+					var_hgvsp_list = variant.hgvsp_list()
 
-				for hgvsp in var_hgvsp_list:
+					transcript_list_vars =[]
 
-					transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
+					for hgvsp in var_hgvsp_list:
 
-					transcript_list_vars.append((transcript.strip(),codon))
+						transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
 
-					#return set(transcript_list) & set( transcript_list_vars)
+						transcript_list_vars.append((transcript.strip(),codon))
 
-					both = set(transcript_list) & set(transcript_list_vars)
+						both = set(transcript_list) & set(transcript_list_vars)
 
 
-					if len(both) >0:
+						if len(both) >0:
 
-						same_codon.append(variant)
+							same_codon.append(variant)
 
 
 			return list(set(same_codon))

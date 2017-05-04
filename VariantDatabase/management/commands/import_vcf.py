@@ -201,11 +201,15 @@ class Command(BaseCommand):
 				esp_aa_af = allele_frequencies[15]
 				esp_ea_af = allele_frequencies[16]
 
+
+
 				#Look for a variant in the database if we have not seen it before create a new one 
 
 				try:
 
 					new_variant = Variant.objects.get(variant_hash=hash_id)
+					new_variant.count = new_variant.count+1
+					new_variant.save()
 
 				except Variant.DoesNotExist:
 
@@ -215,7 +219,7 @@ class Command(BaseCommand):
 										 canonical_transcript = canonical, max_af= max_af,  af=af,  afr_af=afr_af, amr_af=amr_af,
 										 eur_af=eur_af, eas_af=eas_af, sas_af=sas_af, exac_af=exac_af, exac_adj_af=exac_adj_af,
 										 exac_afr_af= exac_afr_af, exac_amr_af=exac_amr_af,exac_eas_af=exac_eas_af, exac_fin_af=exac_fin_af,
-										 exac_nfe_af = exac_nfe_af, exac_oth_af=exac_oth_af, exac_sas_af=exac_sas_af,esp_aa_af=esp_aa_af,esp_ea_af=esp_ea_af,clinical_sig=clin_sig)
+										 exac_nfe_af = exac_nfe_af, exac_oth_af=exac_oth_af, exac_sas_af=exac_sas_af,esp_aa_af=esp_aa_af,esp_ea_af=esp_ea_af,clinical_sig=clin_sig, count=1)
 
 					new_variant.save()
 

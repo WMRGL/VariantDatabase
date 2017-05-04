@@ -56,7 +56,7 @@
 
 	<div id="QC" class="tab-pane fade">
 
-	<p> QC goes here </p>
+	
 
 
 		{% if worksheet.awaiting_qc_approval   %}
@@ -64,9 +64,11 @@
 
 
 
-	    <div class="panel panel-success">
+	    <div class="panel panel-danger">
         <div class="panel-heading">Approve QC</div>
         <div class="panel-body"> <form class="form-horizontal" method="post">{% csrf_token %}
+
+        <p> Please check and then approve the QA </p>
 
             {{ form.as_p }}
 
@@ -86,7 +88,10 @@
 	{% else %}
 
 
-	<p> QC approved </p>
+	<div class="alert alert-success">
+  		<strong>Success!</strong> QA Approved
+	</div>
+
 
 	{% endif  %}
 
@@ -104,7 +109,46 @@
 
 	<div id="history" class="tab-pane fade">
 
-	<p> Worksheet History goes here </p>
+	
+
+
+		<table class = 'table table-hover'>
+
+		<thead>
+
+		<tr>
+			<th> Change </th>
+			<th> Date </th>
+			<th>User </th> 
+
+		</tr>
+
+
+
+		</thead>
+
+		<tbody>
+
+		{% for change in history %}
+
+			<tr>
+
+				<td> {{ change.status.name }} </td>
+				<td> {{ change.date }} </td>
+				<td> {{ change.user }} </td>
+
+			</tr>
+
+		{% endfor %}
+
+
+
+		</tbody>
+
+
+		</table>
+
+
 
 	</div>
 

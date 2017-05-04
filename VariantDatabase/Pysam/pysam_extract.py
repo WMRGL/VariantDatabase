@@ -503,7 +503,7 @@ def get_clin_sig(transcript_data):
 
 	if clin_sig =="":
 
-		return 0.0
+		return None
 
 	else:
 

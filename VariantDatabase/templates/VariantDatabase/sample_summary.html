@@ -120,7 +120,15 @@
 
 	<div id="variants" class="tab-pane fade">
 
-		<p> <a href= "{% url 'list_sample_variants' sample.pk  %}"> {{ sample.name }}   </a> </p>
+
+
+    	<div class="alert alert-info">
+  			<a href= "{% url 'list_sample_variants' sample.pk  %}" class="btn btn-info" role="button">View VCF</a>
+		</div>
+
+
+
+
 
 	</div>
 

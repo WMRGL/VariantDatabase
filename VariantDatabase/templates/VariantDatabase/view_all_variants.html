@@ -29,18 +29,38 @@
 </div>
 
 
-
-
-
-
-
 {% if gene_name %}
 
 
 {% if variants|length_is:"0" %}
 
 <div class="alert alert-danger">
-  <strong>Error!</strong> No gene with that name found.
+  
+
+  {% if alts|length_is:"0" %}
+
+  		<strong>Error!</strong> No gene with that name found.
+
+  {% else %}
+
+  		<strong>Error!</strong> No gene with that name found.
+  		<p> Did you mean:
+
+  		{% for gene in alts %}
+
+  			<a href="?gene_name={{ gene.name }}">{{ gene.name }}</a> 
+
+
+  			
+
+
+  		{% endfor %}
+
+
+
+  {% endif %}
+
+
 </div>
 
 {% else %}

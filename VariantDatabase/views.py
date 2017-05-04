@@ -46,6 +46,8 @@ def list_worksheet_samples(request, pk_worksheet):
 
 	worksheet = get_object_or_404(Worksheet, pk=pk_worksheet)
 
+	history = worksheet.get_history()
+
 	if request.method == 'POST':
 
 		form = WorksheetStatusUpdateForm(request.POST)
@@ -79,7 +81,7 @@ def list_worksheet_samples(request, pk_worksheet):
 
 	samples_in_worksheet = Sample.objects.filter(worksheet = worksheet, visible=True)
 
-	return render(request, 'VariantDatabase/list_worksheet_samples.html', {'samples_in_worksheet': samples_in_worksheet, 'form': form, 'worksheet': worksheet})
+	return render(request, 'VariantDatabase/list_worksheet_samples.html', {'samples_in_worksheet': samples_in_worksheet, 'form': form, 'worksheet': worksheet, 'history': history})
 
 
 
@@ -292,18 +294,6 @@ def variant_detail(request, pk_sample, variant_hash):
 
 
 
-@login_required
-def search_page(request):
-
-	"""
-	This view will allows the user to search for worksheets, samples and variants
-
-	"""
-
-	query = request.GET.get('query')
-
-	return render(request, 'VariantDatabase/search_results.html', {'query': query})
-
 
 @login_required
 def settings(request):
@@ -388,7 +378,7 @@ def view_all_variants(request):
 
 	"""
 	
-
+	alts =[]
 
 	gene_name = request.GET.get('gene_name')
 
@@ -396,12 +386,30 @@ def view_all_variants(request):
 
 		gene_name = gene_name.upper()
 
+		try:
+
+			gene = Gene.objects.get(name=gene_name)
+
+		except:
+
+			alts  =Gene.objects.filter(name__icontains=gene_name)
+
+			if len(alts) <5:
+
+				alts = alts
+
+			else:
+
+				alts =[]
+
+
+
+
 
 	variants = VariantGene.objects.filter(gene__name= gene_name).values('variant')
 
 	variants = Variant.objects.filter(variant_hash__in=variants)
 
-	
 
 	paginator = Paginator(variants,15)
 
@@ -422,7 +430,7 @@ def view_all_variants(request):
 
 	
 
-	return render(request, 'VariantDatabase/view_all_variants.html', {'variants': variants, 'gene_name': gene_name})
+	return render(request, 'VariantDatabase/view_all_variants.html', {'variants': variants, 'gene_name': gene_name, 'alts': alts})
 
 
 
