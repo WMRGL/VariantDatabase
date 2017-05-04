@@ -208,40 +208,93 @@ class Command(BaseCommand):
 				try:
 
 					new_variant = Variant.objects.get(variant_hash=hash_id)
-					new_variant.count = new_variant.count+1
+					new_variant.count = new_variant.allele_count+1
 					new_variant.save()
 
 				except Variant.DoesNotExist:
 
 					new_variant = Variant(chromosome=chromosome, position=pos,
-										 ref= ref, alt=alt, variant_hash= hash_id, HGVSc = hgvsc, rs_number=rs_number,
-										 last_updated= timezone.now(), HGVSp= hgvsp, worst_consequence=worst_consequence,
-										 canonical_transcript = canonical, max_af= max_af,  af=af,  afr_af=afr_af, amr_af=amr_af,
-										 eur_af=eur_af, eas_af=eas_af, sas_af=sas_af, exac_af=exac_af, exac_adj_af=exac_adj_af,
-										 exac_afr_af= exac_afr_af, exac_amr_af=exac_amr_af,exac_eas_af=exac_eas_af, exac_fin_af=exac_fin_af,
-										 exac_nfe_af = exac_nfe_af, exac_oth_af=exac_oth_af, exac_sas_af=exac_sas_af,esp_aa_af=esp_aa_af,esp_ea_af=esp_ea_af,clinical_sig=clin_sig, count=1)
+					 ref= ref, alt=alt, variant_hash= hash_id, HGVSc = hgvsc, rs_number=rs_number,
+					 last_updated= timezone.now(), HGVSp= hgvsp, worst_consequence=worst_consequence,
+					 max_af= max_af,  af=af,  afr_af=afr_af, amr_af=amr_af,
+					 eur_af=eur_af, eas_af=eas_af, sas_af=sas_af, exac_af=exac_af, exac_adj_af=exac_adj_af,
+					 exac_afr_af= exac_afr_af, exac_amr_af=exac_amr_af,exac_eas_af=exac_eas_af, exac_fin_af=exac_fin_af,
+					 exac_nfe_af = exac_nfe_af, exac_oth_af=exac_oth_af, exac_sas_af=exac_sas_af,esp_aa_af=esp_aa_af,esp_ea_af=esp_ea_af,clinical_sig=clin_sig, allele_count=1)
 
 					new_variant.save()
 
 					new_variant_count = new_variant_count+1
 
+
 					for gene in gene_list:
 
 						try:
 
-							gene_model = Gene.objects.get(name = gene)
+							gene_model = Gene.objects.get(name = gene[0])
 
 						except Gene.DoesNotExist:
 
-							gene_model = Gene(name=gene)
+							gene_model = Gene(name=gene[0], strand = gene[1])
 							gene_model.save()
 							new_gene_count = new_gene_count+1
+
+						#new_variant_gene = VariantGene(gene =gene_model, variant = new_variant)
+						
+						#new_variant_gene.save()
+
+						
+					#Now create transcripts
+
+
+					for key in variant['transcript_data']:
+
 						
 
-						new_variant_gene = VariantGene(gene =gene_model, variant = new_variant)
-						
-						new_variant_gene.save()
+						try:
 
+							transcript_model = Transcript.objects.get(name=key)
+
+						except Transcript.DoesNotExist:
+
+							canonical = variant['transcript_data'][key]['CANONICAL']
+
+							if canonical == 'YES':
+
+								canonical = True
+							else:
+
+								canonical = False
+
+
+							gene = variant['transcript_data'][key]['SYMBOL']
+
+							if gene != "":
+
+
+								gene = Gene.objects.get(name=gene)
+
+								transcript_model = Transcript(name = key, canonical=canonical, gene =gene)
+
+								transcript_model.save()
+
+							else:
+								transcript_model = Transcript(name = key, canonical=canonical)
+
+								transcript_model.save()
+
+
+						#now create transcriptvariant model
+
+						consequence = variant['transcript_data'][key]['Consequence']
+						exon = variant['transcript_data'][key]['EXON']
+						intron = variant['transcript_data'][key]['INTRON']
+						hgvsc_t = variant['transcript_data'][key]['HGVSc']
+						hgvsp_t = variant['transcript_data'][key]['HGVSp']
+
+
+						variant_transcript = VariantTranscript(variant = new_variant, transcript=transcript_model, consequence=consequence, exon=exon, intron = intron, hgvsc =hgvsc_t, hgvsp = hgvsp_t)
+
+						variant_transcript.save()
 
 
 				if new_variant.worst_consequence.impact <=13 and new_variant.max_af <0.05: # only create this model with interesting variants - needs work

@@ -267,10 +267,11 @@ def get_variant_genes_list(transcript_data):
 	for transcript in transcript_data:
 
 		gene_name = transcript_data[transcript]['SYMBOL']
+		strand = transcript_data[transcript]['STRAND']
 
 		if gene_name != "":
 
-			genes.append(gene_name)
+			genes.append((gene_name, strand))
 
 	return list(set(genes))
 
@@ -503,7 +504,7 @@ def get_clin_sig(transcript_data):
 
 	if clin_sig =="":
 
-		return None
+		return "None"
 
 	else:
 
@@ -632,6 +633,23 @@ def extract_codon_from_hgvs(hgvsp):
 	transcript, codon= hgvsp.split(':p.')[0], hgvsp.split(':p.')[1]
 
 	return transcript, re.findall(r'\d+', codon)[0]
+
+
+def process_exon_intron(exon_or_intron):
+
+	"""
+	returns the number e.g. converts 11/12 to 11
+
+	"""
+
+	if exon_or_intron == "":
+
+		return -1
+
+	else:
+
+		return int(exon_or_intron.split('/')[0])
+
 
 
 

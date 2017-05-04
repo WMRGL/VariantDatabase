@@ -255,6 +255,71 @@ class Consequence(models.Model):
 
 
 
+
+
+
+
+
+class Gene(models.Model):
+
+	"""
+	Stores genes that have been seen before
+
+
+	"""
+
+	name = models.CharField(max_length=50, db_index=True, unique=True)
+	strand = models.IntegerField()
+
+
+	def __str__(self):
+		return self.name
+
+
+
+	def get_all_variants(self):
+
+
+		variants = VariantTranscript.objects.filter(transcript__gene = self).values('variant').distinct()
+
+		variants = Variant.objects.filter(variant_hash__in=variants)
+
+		if self.strand == -1:
+
+			variants = variants.order_by('-position')
+
+		else:
+
+			variants = variants.order_by('position')
+
+		return variants
+
+
+
+
+
+
+
+
+
+class Transcript(models.Model):
+
+	name = models.CharField(max_length=64, primary_key=True)
+	canonical = models.BooleanField()
+	gene = models.ForeignKey(Gene, null=True)
+
+	def __str__(self):
+		return self.name
+
+
+
+
+
+
+
+
+
+
 class Variant(models.Model):
 
 	"""
@@ -276,7 +341,6 @@ class Variant(models.Model):
 	last_updated =  models.DateTimeField(default = timezone.now)
 	rs_number = models.CharField(max_length =50)
 	worst_consequence = models.ForeignKey(Consequence)
-	canonical_transcript = models.TextField()
 	clinical_sig = models.TextField()
 
 	max_af = models.FloatField()
@@ -298,7 +362,7 @@ class Variant(models.Model):
 	esp_ea_af = models.FloatField()
 	esp_aa_af = models.FloatField()
 
-	count = models.IntegerField()
+	allele_count = models.IntegerField()
 
 	def __str__(self):
 		return self.chromosome + str(self.position) + self.ref + self.alt
@@ -313,9 +377,20 @@ class Variant(models.Model):
 
 	def get_genes(self):
 
-		genes = VariantGene.objects.filter(variant =self)
+		variant_transcripts = VariantTranscript.objects.filter(variant =self)
 
-		return genes
+		my_list = []
+
+		for var in variant_transcripts:
+
+			if var.transcript.gene is not None:
+
+				my_list.append(var.transcript.gene)
+
+
+		return list(set(my_list))
+
+
 
 
 	def hgvsc_list(self):
@@ -433,8 +508,13 @@ class Variant(models.Model):
 
 							same_codon.append(variant)
 
+			if len(list(set(same_codon))) == 0:
 
-			return list(set(same_codon))
+				return None
+			else:
+
+
+				return list(set(same_codon))
 
 
 
@@ -522,15 +602,6 @@ class UserAnswer(models.Model):
 		return str(self.pk)
 
 
-class Gene(models.Model):
-
-	"""
-	Stores genes that have been seen before
-
-
-	"""
-
-	name = models.CharField(max_length=50, db_index=True, unique=True)
 
 
 
@@ -547,5 +618,23 @@ class VariantGene(models.Model):
 	def __str__(self):
 
 		return self.gene.name
+
+
+class VariantTranscript(models.Model):
+
+	variant = models.ForeignKey(Variant)
+	transcript = models.ForeignKey(Transcript)
+	consequence = models.TextField()
+	exon = models.CharField(max_length =25)
+	intron = models.CharField(max_length =25)
+	hgvsc = models.TextField()
+	hgvsp = models.TextField()
+
+	def __str__(self):
+
+		return self.variant.chromosome+str(self.variant.position)
+
+
+
 
 

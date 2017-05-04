@@ -211,25 +211,14 @@ def sample_summary(request, pk_sample ):
 
 
 
-	return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'variants': variants})
+	return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants})
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-@login_required
 def variant_detail(request, pk_sample, variant_hash):
+
+
 
 	"""
 	This view displays the detial for a particular variant.
@@ -379,6 +368,7 @@ def view_all_variants(request):
 	"""
 	
 	alts =[]
+	variants =[]
 
 	gene_name = request.GET.get('gene_name')
 
@@ -386,9 +376,12 @@ def view_all_variants(request):
 
 		gene_name = gene_name.upper()
 
+
 		try:
 
 			gene = Gene.objects.get(name=gene_name)
+
+			return redirect(view_gene, gene.name)
 
 		except:
 
@@ -402,54 +395,9 @@ def view_all_variants(request):
 
 				alts =[]
 
-
-
-
-
-	variants = VariantGene.objects.filter(gene__name= gene_name).values('variant')
-
-	variants = Variant.objects.filter(variant_hash__in=variants)
-
-
-	paginator = Paginator(variants,15)
-
-	page = request.GET.get('page')
-
-	try:
-
-		variants = paginator.page(page)
-
-	except PageNotAnInteger:
-
-		variants =paginator.page(1)
-
-
-	except:
-
-		variants = paginator.page(paginator.num_pages)
-
 	
 
 	return render(request, 'VariantDatabase/view_all_variants.html', {'variants': variants, 'gene_name': gene_name, 'alts': alts})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -530,3 +478,18 @@ def report(request, pk_interpretation):
 	classification = interpretation.get_classification()
 
 	return render(request, 'VariantDatabase/report.html', {'all_answers' : all_answers, 'interpretation': interpretation, 'classification': classification})
+
+
+def view_gene(request, gene_pk):
+
+	gene_pk = gene_pk.upper()
+
+	gene = Gene.objects.get(name=gene_pk)
+
+	variants = gene.get_all_variants()
+
+	return render(request,'VariantDatabase/gene.html', {'variants': variants, 'gene': gene})
+
+
+def view_detached_variant(request):
+	pass

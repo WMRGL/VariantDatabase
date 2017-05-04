@@ -10,7 +10,7 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 
 				url(r'^sample/(?P<pk_sample>\d+)/summary/$', views.sample_summary, name='sample_summary'),
 				url(r'^sample/(?P<pk_sample>\d+)/variants$', views.list_sample_variants, name='list_sample_variants'),
-
+				url(r'^gene/(?P<gene_pk>\w+)/$', views.view_gene, name='view_gene'),
 
 
 

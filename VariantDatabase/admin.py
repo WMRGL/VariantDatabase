@@ -22,3 +22,7 @@ admin.site.register(UserAnswer)
 admin.site.register(Gene)
 admin.site.register(VariantGene)
 admin.site.register(Consequence)
+
+admin.site.register(Transcript)
+
+admin.site.register(VariantTranscript)
