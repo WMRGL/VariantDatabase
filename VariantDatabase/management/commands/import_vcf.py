@@ -154,14 +154,14 @@ class Command(BaseCommand):
 
 			for variant in data:
 
-
+				genotype = variant['genotype']
 				chromosome = variant['chrom']
 				pos = str(variant['pos'])
 				ref = variant['reference']
 				alt = variant['alt_alleles'][0]
 				hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()				
 
-		
+				allele_count = pysam_extract.count_alleles(genotype)
 
 				gene_list = pysam_extract.get_variant_genes_list(variant['transcript_data'])
 
@@ -208,7 +208,8 @@ class Command(BaseCommand):
 				try:
 
 					new_variant = Variant.objects.get(variant_hash=hash_id)
-					new_variant.count = new_variant.allele_count+1
+					new_variant.count = new_variant.allele_count+allele_count
+					new_variant.sample_count = new_variant.allele_count+1
 					new_variant.save()
 
 				except Variant.DoesNotExist:
@@ -219,7 +220,7 @@ class Command(BaseCommand):
 					 max_af= max_af,  af=af,  afr_af=afr_af, amr_af=amr_af,
 					 eur_af=eur_af, eas_af=eas_af, sas_af=sas_af, exac_af=exac_af, exac_adj_af=exac_adj_af,
 					 exac_afr_af= exac_afr_af, exac_amr_af=exac_amr_af,exac_eas_af=exac_eas_af, exac_fin_af=exac_fin_af,
-					 exac_nfe_af = exac_nfe_af, exac_oth_af=exac_oth_af, exac_sas_af=exac_sas_af,esp_aa_af=esp_aa_af,esp_ea_af=esp_ea_af,clinical_sig=clin_sig, allele_count=1)
+					 exac_nfe_af = exac_nfe_af, exac_oth_af=exac_oth_af, exac_sas_af=exac_sas_af,esp_aa_af=esp_aa_af,esp_ea_af=esp_ea_af,clinical_sig=clin_sig, allele_count=allele_count, sample_count=1)
 
 					new_variant.save()
 
@@ -290,9 +291,15 @@ class Command(BaseCommand):
 						intron = variant['transcript_data'][key]['INTRON']
 						hgvsc_t = variant['transcript_data'][key]['HGVSc']
 						hgvsp_t = variant['transcript_data'][key]['HGVSp']
+						codons = variant['transcript_data'][key]['Codons']
+						cdna_position = variant['transcript_data'][key]['cDNA_position']
+						cds_position = variant['transcript_data'][key]['CDS_position']
+						protein_position = variant['transcript_data'][key]['Protein_position']
+						amino_acids = variant['transcript_data'][key]['Amino_acids']
 
 
-						variant_transcript = VariantTranscript(variant = new_variant, transcript=transcript_model, consequence=consequence, exon=exon, intron = intron, hgvsc =hgvsc_t, hgvsp = hgvsp_t)
+						variant_transcript = VariantTranscript(variant = new_variant, transcript=transcript_model, consequence=consequence, exon=exon, intron = intron, hgvsc =hgvsc_t, hgvsp = hgvsp_t,codons=codons,cdna_position=cdna_position, protein_position=protein_position, amino_acids=amino_acids)
+											
 
 						variant_transcript.save()
 

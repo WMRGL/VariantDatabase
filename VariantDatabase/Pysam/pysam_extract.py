@@ -650,7 +650,17 @@ def process_exon_intron(exon_or_intron):
 
 		return int(exon_or_intron.split('/')[0])
 
+def count_alleles(genotype):
 
+	count = 0
+
+	for allele in genotype:
+
+		if allele == 1:
+
+			count = count+1
+
+	return count
 
 
 

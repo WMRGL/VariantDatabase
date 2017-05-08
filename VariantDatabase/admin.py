@@ -20,7 +20,7 @@ admin.site.register(Question)
 admin.site.register(Interpretation)
 admin.site.register(UserAnswer)
 admin.site.register(Gene)
-admin.site.register(VariantGene)
+#admin.site.register(VariantGene)
 admin.site.register(Consequence)
 
 admin.site.register(Transcript)

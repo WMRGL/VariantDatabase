@@ -17,7 +17,10 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 
 
 
-				url(r'^variant_detail/(?P<pk_sample>\d+)/(?P<variant_hash>\w+)/$', views.variant_detail, name='variant_detail'),
+				url(r'^sample/(?P<pk_sample>\d+)/variant/(?P<variant_hash>\w+)/$', views.variant_detail, name='variant_detail'),
+				url(r'^variant/(?P<variant_hash>\w+)/$', views.view_detached_variant, name='view_detached_variant'),
+
+
 				url(r'^settings/$', views.settings, name='settings'),
 				url(r'^view_all_variants/$', views.view_all_variants, name='view_all_variants'),
 				url(r'^all_questions/(?P<pk_interpretation>\d+)/$', views.all_questions, name = 'all_questions'),

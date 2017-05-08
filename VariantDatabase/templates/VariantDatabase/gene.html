@@ -2,9 +2,49 @@
 
   {% block content %}
 
+
+<style>
+.center {
+    height:35px; 
+    width:130px; 
+    margin: 0px ; 
+    margin-left:0;
+    float:none; display:inline-block;
+
+
+}
+</style>
+
+
+
+
+
+
+
+
+
   	<br>
 
-  	{{ gene.strand }}
+  	 <h1>{{ gene.name }} </h1>
+
+  	 <hr>
+
+
+<a href="?filter=all" class="btn btn-primary center" role="button" >All</a>
+<a href="?filter=lof" class="btn btn-primary center" role="button" data-toggle="tooltip" data-placement="top" title="Loss of Function Variants">LOF</a>
+<a href="?filter=lofplus" class="btn btn-primary center" role="button" data-toggle="tooltip" data-placement="top" title="Loss of Function, Missense and inframe indels">LOF + Extra</a>
+
+
+
+  	 <hr>
+
+{% if variants|length_is:"0" %}
+
+	<div class="alert alert-danger">
+  		<strong> Alert! </strong> No variants found.
+
+
+ {% else %}
 
 <table id="variant_table" class = 'table table-hover'>
 
@@ -20,6 +60,8 @@
 				<th> Max_AF </th>
 
 				<th> Genes </th>
+
+				<th> Detail </th>
 
 				
 
@@ -58,7 +100,7 @@
       					</td>
 
       					
-
+      					<td>  <a href= "{% url 'view_detached_variant' variant.variant_hash  %}"> View  </a> </td>
 
 
 
@@ -74,5 +116,16 @@
 
 				</table>
 
+{% endif %}
 
-   {% endblock %}
+
+
+<script>
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();   
+});
+</script>
+
+
+
+{% endblock %}}

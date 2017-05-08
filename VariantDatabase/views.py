@@ -479,17 +479,41 @@ def report(request, pk_interpretation):
 
 	return render(request, 'VariantDatabase/report.html', {'all_answers' : all_answers, 'interpretation': interpretation, 'classification': classification})
 
-
+@login_required
 def view_gene(request, gene_pk):
+
+	consequence_filter = request.GET.get('filter')
+
+	if consequence_filter == 'all':
+
+		consequence_filter = 100
+
+	elif consequence_filter =='lof':
+
+		consequence_filter = 8
+
+	elif consequence_filter == 'lofplus':
+
+		consequence_filter = 13
+
+	else:
+
+		consequence_filter =100
+
 
 	gene_pk = gene_pk.upper()
 
 	gene = Gene.objects.get(name=gene_pk)
 
-	variants = gene.get_all_variants()
+	variants = gene.get_all_variants(consequence_filter)
 
 	return render(request,'VariantDatabase/gene.html', {'variants': variants, 'gene': gene})
 
+@login_required
+def view_detached_variant(request, variant_hash):
+	
+	variant = get_object_or_404(Variant, variant_hash=variant_hash)
 
-def view_detached_variant(request):
-	pass
+	transcripts = VariantTranscript.objects.filter(variant = variant)
+
+	return render(request, 'VariantDatabase/variant_view.html', {'variant': variant, 'transcripts': transcripts } )

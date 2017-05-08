@@ -1,0 +1,578 @@
+{% extends 'VariantDatabase/base.html' %}
+
+  {% block content %}
+  <br>
+
+
+   <ul class="nav nav-tabs">
+
+    <li class="active"><a data-toggle="tab" href="#summary">Summary</a></li>
+    <li><a data-toggle="tab" href="#classification">Classification</a></li>
+
+
+  </ul>
+
+  <br>
+
+  <div class="tab-content">
+
+
+    <div id="summary" class="tab-pane fade in active">
+
+    
+
+    <div class = "row">
+
+    <div class = 'col-sm-4'>
+
+
+
+    <table class = 'table table-bordered' >
+
+
+
+    <thead>
+    <tr>
+
+      <th colspan="2">Summary</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <tr>
+      <td> Chromsome </td>
+      <td> {{ variant.chromosome }} </td>
+
+    </tr>
+
+    <tr>
+      <td> Position </td>
+      <td> {{ variant.position }} </td>
+
+    </tr>
+
+    <tr>
+      <td> Ref </td>
+      <td> {{ variant.ref }} </td>
+
+    </tr>
+
+    <tr>
+      <td> Alt </td>
+      <td> {{ variant.alt }} </td>
+
+    </tr>
+
+    <tr>
+      <td> ID </td>
+      <td> {{ variant.display_ids|join:", " }} </td>
+
+    </tr>
+
+
+    <tr>
+      <td> Genes </td>
+      <td>
+
+      {% for gene in variant.get_genes %}
+
+
+       {{ gene }} 
+
+
+      {% endfor %}
+
+
+      </td>
+
+    </tr>
+
+
+    <tr>
+      <td> Worst Consequence </td>
+      <td> {{ variant.worst_consequence }} </td>
+
+    </tr>
+
+
+    
+    <tr>
+      <td> Rated as Pathogenic </td>
+      <td> {{ variant.rated_as_pathogenic     }} </td>
+
+    </tr>
+
+    <tr>
+      <td> Similar </td>
+
+
+      {% if variant.variants_in_similar_position %}
+
+
+      <td> {{ variant.variants_in_similar_position   }} </td>
+
+      {% else %}
+
+
+      <td> None </td>
+
+
+      {% endif %}
+
+
+
+
+
+    </tr>
+
+
+    <tr>
+      <td> ClinVar Clin Sig </td>
+      <td> {{ variant.clinical_sig }} </td>
+
+    </tr>
+
+    <tr>
+      <td> Same codon </td>
+      <td> {{ variant.same_codon_missense }} </td>
+
+    </tr>
+
+
+
+    </tbody>
+    </table>
+
+    </div>
+
+
+    <div class = 'col-sm-2'>
+
+        <table class = 'table table-bordered' >
+
+
+
+          <thead>
+            <tr>
+
+              <th>HGVSc</th>
+            </tr>
+          </thead>
+
+         <tbody>
+
+          {% for hgvs in variant.hgvsc_list %}
+
+           <tr>
+
+   
+      
+                <td> {{ hgvs }} </td>
+
+    
+
+          </tr>
+  
+        {% endfor %}
+
+    </tbody>
+    </table>
+
+    </div>
+
+
+
+
+
+        <div class = 'col-sm-2'>
+
+        <table class = 'table table-bordered' >
+
+
+
+          <thead>
+            <tr>
+
+              <th>HGVSp</th>
+            </tr>
+          </thead>
+
+         <tbody>
+
+          {% for hgvs in variant.hgvsp_list %}
+
+           <tr>
+
+   
+      
+                <td> {{ hgvs }} </td>
+
+    
+
+          </tr>
+  
+        {% endfor %}
+
+    </tbody>
+    </table>
+
+    </div>
+
+            <div class = 'col-sm-2'>
+
+        <table class = 'table table-bordered' >
+
+
+
+          <thead >
+            <tr>
+
+              <th colspan="2">Frequency</th>
+            </tr>
+          </thead>
+
+         <tbody>
+
+
+         <tr>
+            <td> Max AF </td> 
+            <td> {{variant.max_af}} </td>
+
+         </tr>
+
+         <tr>
+            <td> 1000G AF </td> 
+            <td>
+
+                  <a id="1000g" href="#" data-toggle="popover" title="1000G Pop AF" data-content='<ul class="list-group">
+  <li class="list-group-item">AFR AF : {{ variant.afr_af}}</li>
+  <li class="list-group-item">AMR AF : {{ variant.amr_af}}</li>
+  <li class="list-group-item">EUR AF : {{ variant.eur_af}}</li>
+  <li class="list-group-item">EAS AF : {{ variant.eas_af}}</li>
+  <li class="list-group-item">SAS AF : {{ variant.sas_af}}</li>
+
+
+
+</ul>' >{{variant.af}}</a>
+
+
+
+
+
+
+              </td>
+
+         </tr>
+
+          <tr>
+            <td> ExAC AF </td> 
+
+            <td>
+                              <a id="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-content='<ul class="list-group">
+  <li class="list-group-item">ADJ AF : {{ variant.exac_adj_af}}</li>
+  <li class="list-group-item">AFR AF : {{ variant.exac_afr_af}}</li>
+  <li class="list-group-item">AMR AF : {{ variant.exac_amr_af}}</li>
+  <li class="list-group-item">EAS AF : {{ variant.exac_eas_af}}</li>
+  <li class="list-group-item">FIN AF : {{ variant.exac_fin_af}}</li>
+  <li class="list-group-item">NFE AF : {{ variant.exac_nfe_af}}</li>
+  <li class="list-group-item">OTH AF : {{ variant.exac_oth_af}}</li>
+  <li class="list-group-item">SAS AF : {{ variant.exac_sas_af}}</li>
+
+
+</ul>' >{{variant.exac_af}}</a>
+</td>
+
+         </tr>
+
+         <tr>
+
+         <td> ESP AA AF </td>
+
+         <td> {{variant.esp_aa_af }} </td>
+
+
+         </tr>
+
+         <tr>
+
+         <td> ESP EA AF </td>
+
+         <td> {{variant.esp_ea_af }} </td>
+
+
+         </tr>
+
+
+        </tbody>
+        </table>
+
+        </div>
+
+
+
+
+    </div>
+
+    <hr>
+
+    <h3> Transcripts </h3>
+
+    <hr>
+
+
+  
+
+
+<div class="panel-group" id="accordion">
+
+
+
+{% for transcript in transcripts %}
+
+
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{forloop.counter}}">
+        {{ transcript.transcript.name }}      </a>
+      </h4>
+    </div>
+
+    {% if forloop.first %}
+
+
+      <div id="collapse{{forloop.counter}}" class="panel-collapse collapse">
+
+    {% else %}
+
+      <div id="collapse{{forloop.counter}}" class="panel-collapse collapse">
+
+    {% endif %}
+    
+      <div class="panel-body">
+
+    <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Annotation</th>
+        <th>Data</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Symbol</td>
+        <td> {{ transcript.transcript.get_gene }}</td>
+
+      </tr>
+
+      <tr>
+        <td>Feature</td>
+        <td> {{ transcript.transcript.name }}  </td>
+
+      </tr>
+
+      <tr>
+        <td>Consequence</td>
+        <td>{{ transcript.consequence }}  </td>
+
+      </tr>
+
+      <tr>
+        <td>Codons</td>
+        <td>{{ transcript.codons }} </td>
+
+      </tr>
+
+      <tr>
+        <td>Exon</td>
+        <td>{{transcript.exon }}</td>
+
+      </tr>
+
+      <tr>
+        <td>Intron</td>
+        <td> {{transcript.intron }}</td>
+
+      </tr>
+
+      <tr>
+        <td>AA</td>
+        <td>{{ transcript.amino_acids}} </td>
+
+      </tr>
+
+      <tr>
+        <td>cDNA Position</td>
+        <td>{{transcript.cdna_position }} </td>
+
+      </tr>
+
+      <tr>
+        <td>HGVSc</td>
+        <td>{{transcript.hgvsc }} </td>
+
+      </tr>
+      <tr>
+        <td>HGVSp</td>
+        <td>{{transcript.hgvsp }}  </td>
+
+      </tr>
+
+
+
+
+
+
+
+
+
+
+
+    </tbody>
+  </table>
+
+
+
+
+      </div>
+    </div>
+  </div>
+
+{% endfor %}
+
+
+
+
+
+  </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <div id="classification" class="tab-pane fade">
+
+  {% if classifications|length > 0 %}
+
+
+      <table id="variant_table" class = 'table table-hover'>
+
+          <thead>
+
+          <tr>
+            <th> User </th>
+            <th> Date </th>
+            <th> Result </th>
+            <th> View </th>
+
+          </tr>
+
+
+          </thead>
+
+
+        {% for classification in classifications %}
+
+
+      <tr>
+
+          <td> {{ classification.author}} </td>
+          <td> {{ classification.date}} </td>
+          <td> {{ classification.get_classification}} </td>
+          <td>  <a href="{% url 'report' pk_interpretation=classification.pk %}"> View </a> </td>
+
+
+      </tr>
+
+
+      {% endfor %}
+
+
+
+
+      </table>
+
+      {% else %}
+
+      <div class="alert alert-info">
+        No classifications for this variant.
+      </div>
+
+
+
+     
+      {% endif %}
+
+
+
+        <hr>
+
+
+        <div class="panel panel-success">
+        <div class="panel-heading">Classify This Variant</div>
+        <div class="panel-body"> <form class="form-horizontal" method="post">{% csrf_token %}
+
+            {{ form.as_p }}
+
+        <br>
+
+        <div class="form-actions">
+
+            <button type="submit" class="btn btn-primary">Classify</button>
+
+        </div>
+    
+        </form>
+
+
+
+        </div>
+
+        
+
+    </div>
+
+  </div>
+
+  <br>
+  <br>
+
+  </div>
+  
+
+<script>
+$(document).ready(function(){
+    $('#1000g').popover({title: "", content: "", html: true, placement: "bottom", trigger: "hover"}); 
+});
+</script>
+
+
+<script>
+$(document).ready(function(){
+    $('#exac').popover({title: "", content: "", html: true, placement: "bottom",trigger: "hover"}); 
+});
+</script>
+
+
+
+     
+  {% endblock %}
+
+

@@ -277,12 +277,12 @@ class Gene(models.Model):
 
 
 
-	def get_all_variants(self):
+	def get_all_variants(self, consequence_filter):
 
 
 		variants = VariantTranscript.objects.filter(transcript__gene = self).values('variant').distinct()
 
-		variants = Variant.objects.filter(variant_hash__in=variants)
+		variants = Variant.objects.filter(variant_hash__in=variants).filter(worst_consequence__impact__lte=consequence_filter)
 
 		if self.strand == -1:
 
@@ -297,11 +297,6 @@ class Gene(models.Model):
 
 
 
-
-
-
-
-
 class Transcript(models.Model):
 
 	name = models.CharField(max_length=64, primary_key=True)
@@ -310,6 +305,17 @@ class Transcript(models.Model):
 
 	def __str__(self):
 		return self.name
+
+	def get_gene(self):
+
+		if self.gene is not None:
+
+			return self.gene.name
+
+		else:
+
+			return None
+
 
 
 
@@ -363,6 +369,7 @@ class Variant(models.Model):
 	esp_aa_af = models.FloatField()
 
 	allele_count = models.IntegerField()
+	sample_count = models.IntegerField()
 
 	def __str__(self):
 		return self.chromosome + str(self.position) + self.ref + self.alt
@@ -517,8 +524,6 @@ class Variant(models.Model):
 				return list(set(same_codon))
 
 
-
-
 class VariantSample(models.Model):
 
 	"""
@@ -531,6 +536,7 @@ class VariantSample(models.Model):
 
 	variant = models.ForeignKey(Variant)
 	sample = models.ForeignKey(Sample)
+
 
 
 
@@ -601,25 +607,6 @@ class UserAnswer(models.Model):
 
 		return str(self.pk)
 
-
-
-
-
-class VariantGene(models.Model):
-
-	"""
-	Allows genes and variants to be associated
-
-	"""
-
-	gene = models.ForeignKey(Gene)
-	variant = models.ForeignKey(Variant)
-
-	def __str__(self):
-
-		return self.gene.name
-
-
 class VariantTranscript(models.Model):
 
 	variant = models.ForeignKey(Variant)
@@ -630,9 +617,45 @@ class VariantTranscript(models.Model):
 	hgvsc = models.TextField()
 	hgvsp = models.TextField()
 
+	codons = models.TextField()
+	cdna_position = models.CharField(max_length=20)
+	protein_position = models.CharField(max_length=20)
+	amino_acids = models.TextField()
+
 	def __str__(self):
 
 		return self.variant.chromosome+str(self.variant.position)
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+
+class VariantGene(models.Model):
+
+
+	Allows genes and variants to be associated
+
+
+
+	gene = models.ForeignKey(Gene)
+	variant = models.ForeignKey(Variant)
+
+	def __str__(self):
+
+		return self.gene.name
+
+"""
+
 
 
 
