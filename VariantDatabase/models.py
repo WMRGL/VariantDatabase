@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 from variant_classifier import classify
 import imp
-
+from django.db.models import Q
 pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/Pysam/pysam_extract.py')
 
 
@@ -333,7 +333,7 @@ class Variant(models.Model):
 
 	If a variant is seen in another vcf it will not appear twice in this model.
 
-	The variant_hash field is used as a key (sha256) chr+pos+ref+alt
+	The variant_hash field is used as a key (sha256) chr+pos+ref++alt N.B note "+" to seperate ref and alt
 
 
 	"""
@@ -451,22 +451,6 @@ class Variant(models.Model):
 		return False
 
 
-	def variants_in_same_position(self):
-
-		variant_list = Variant.objects.filter(chromosome=self.chromosome, position =self.position).exclude(variant_hash =self.variant_hash)
-
-		return variant_list
-
-
-	def variants_in_similar_position(self):
-
-		range = 50
-
-		variant_list = Variant.objects.filter(chromosome=self.chromosome, position__range=(self.position-range,self.position+range )).exclude(variant_hash =self.variant_hash)
-
-		return variant_list
-
-
 
 	def same_codon_missense(self):
 		"""
@@ -490,6 +474,10 @@ class Variant(models.Model):
 			for hgvsp in self_var_hgvsp:
 
 				transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
+
+				if transcript == False:
+
+					return None
 
 				transcript_list.append((transcript.strip(), codon))
 
@@ -522,6 +510,144 @@ class Variant(models.Model):
 
 
 				return list(set(same_codon))
+
+
+	def get_other_alleles(self):
+
+		other_alleles = Variant.objects.filter(chromosome=self.chromosome,position=self.position).exclude(variant_hash =self.variant_hash)
+
+		return other_alleles
+
+
+	def get_similar(self):
+
+		"""
+		if variant is missense returns variants in the same codon
+		elif codon is frameshift, transcript ablation, stop-gained, stop-lost, start-lost returns similar in the same gene
+		elif splice returns splice in the same gene
+		elif inframe indels returns same in same gene
+		elif transcript amplification returns others in same gene
+
+		"""
+
+		variants = None
+
+		condition_one = ['missense_variant']
+		condition_two = ['transcript_ablation', 'stop_gained' ,'frameshift_variant','stop_lost','start_lost']
+		condition_three = ['splice_acceptor_variant', 'splice_donor_variant', 'splice_region_variant']
+		conditon_four =['inframe_insertion', 'inframe_deletion']
+		condition_five = ['transcript_amplification']
+
+
+		if self.worst_consequence.name in condition_one :
+
+			return self.same_codon_missense()
+
+		elif self.worst_consequence.name in condition_two:
+
+			my_list =[]
+
+			genes = self.get_genes()
+
+			for gene in genes:
+
+
+
+				variants = VariantTranscript.objects.filter(transcript__gene = gene).values('variant').distinct() #get variants in same gene
+
+				variants = Variant.objects.filter(variant_hash__in=variants).filter(Q(worst_consequence__name = 'transcript_ablation') |  Q(worst_consequence__name = 'stop_gained') | Q(worst_consequence__name = 'frameshift_variant')| Q(worst_consequence__name = 'stop_lost')| Q(worst_consequence__name = 'start_lost'))
+
+				variants = variants.exclude(variant_hash =self.variant_hash)
+
+				my_list.append(variants)
+
+			return list(set(my_list))
+
+
+		elif self.worst_consequence.name in condition_three:
+
+			my_list =[]
+
+			genes = self.get_genes()
+
+			for gene in genes:
+
+				variants = VariantTranscript.objects.filter(transcript__gene = gene).values('variant').distinct() #get variants in same gene
+
+				variants = Variant.objects.filter(variant_hash__in=variants).filter(Q(worst_consequence__name = 'splice_acceptor_variant') |  Q(worst_consequence__name = 'splice_donor_variant') | Q(worst_consequence__name = 'splice_region_variant'))
+
+				variants = variants.exclude(variant_hash =self.variant_hash)
+
+				my_list.append(variants)
+
+			return list(set(my_list))
+
+		elif self.worst_consequence.name in condition_four:
+
+			my_list =[]
+
+			genes = self.get_genes()
+
+			for gene in genes:
+
+				variants = VariantTranscript.objects.filter(transcript__gene = gene).values('variant').distinct() #get variants in same gene
+
+				variants = Variant.objects.filter(variant_hash__in=variants).filter(Q(worst_consequence__name = 'inframe_insertion') |  Q(worst_consequence__name = 'inframe_deletion'))
+
+				variants = variants.exclude(variant_hash =self.variant_hash)
+
+				my_list.append(variants)
+
+			return list(set(my_list))
+
+		elif self.worst_consequence.name in condition_five:
+
+			my_list =[]
+
+			genes = self.get_genes()
+
+			for gene in genes:
+
+				variants = VariantTranscript.objects.filter(transcript__gene = gene).values('variant').distinct() #get variants in same gene
+
+				variants = Variant.objects.filter(variant_hash__in=variants).filter(Q(worst_consequence__name = 'transcript_amplification'))
+
+				variants = variants.exclude(variant_hash =self.variant_hash)
+
+				my_list.append(variants)
+
+			return list(set(my_list))
+
+		else:
+
+			return None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class VariantSample(models.Model):
@@ -625,39 +751,3 @@ class VariantTranscript(models.Model):
 	def __str__(self):
 
 		return self.variant.chromosome+str(self.variant.position)
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-
-class VariantGene(models.Model):
-
-
-	Allows genes and variants to be associated
-
-
-
-	gene = models.ForeignKey(Gene)
-	variant = models.ForeignKey(Variant)
-
-	def __str__(self):
-
-		return self.gene.name
-
-"""
-
-
-
-
-
-

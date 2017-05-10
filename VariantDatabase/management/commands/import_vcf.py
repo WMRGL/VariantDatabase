@@ -159,7 +159,7 @@ class Command(BaseCommand):
 				pos = str(variant['pos'])
 				ref = variant['reference']
 				alt = variant['alt_alleles'][0]
-				hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()				
+				hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()				
 
 				allele_count = pysam_extract.count_alleles(genotype)
 

@@ -135,7 +135,7 @@ def create_master_list(file,sample):
 		ref = variant_data_dict['reference']
 		alt = variant_data_dict['alt_alleles'][0]
 
-		hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()
+		hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
 
 		variant_data_dict['hash_id'] = hash_id
 
@@ -319,7 +319,7 @@ def create_master_list_canonical(file,sample):
 		ref = variant_data_dict['reference']
 		alt = variant_data_dict['alt_alleles'][0]
 
-		hash_id = hashlib.sha256(chromosome+pos+ref+alt).hexdigest()
+		hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
 
 		variant_data_dict['hash_id'] = hash_id
 
@@ -630,7 +630,13 @@ def worst_consequence(transcript_data):
 
 def extract_codon_from_hgvs(hgvsp):
 
-	transcript, codon= hgvsp.split(':p.')[0], hgvsp.split(':p.')[1]
+	try:
+
+		transcript, codon= hgvsp.split(':p.')[0], hgvsp.split(':p.')[1]
+
+	except:
+
+		return False, False
 
 	return transcript, re.findall(r'\d+', codon)[0]
 

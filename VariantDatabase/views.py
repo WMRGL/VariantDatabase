@@ -514,6 +514,15 @@ def view_detached_variant(request, variant_hash):
 	
 	variant = get_object_or_404(Variant, variant_hash=variant_hash)
 
+	other_alleles = variant.get_other_alleles()
+
 	transcripts = VariantTranscript.objects.filter(variant = variant)
 
-	return render(request, 'VariantDatabase/variant_view.html', {'variant': variant, 'transcripts': transcripts } )
+
+
+	classifications = Interpretation.objects.filter(variant=variant)
+
+
+
+
+	return render(request, 'VariantDatabase/variant_view.html', {'variant': variant, 'transcripts': transcripts, 'other_alleles': other_alleles, 'classifications': classifications } )

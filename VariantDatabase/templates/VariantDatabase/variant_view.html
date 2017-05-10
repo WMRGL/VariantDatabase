@@ -3,6 +3,35 @@
   {% block content %}
   <br>
 
+  {% if other_alleles|length_is:"0" %}
+
+
+  {% else %}
+
+
+  <div class="alert alert-danger">
+    <strong>Alert!</strong> This is a multiallelic variant. Other variants at this position:
+
+    {% for allele in other_alleles %}
+
+
+        <a href= "{% url 'view_detached_variant' allele.variant_hash  %}"> {{ allele.chromosome }}   {{ allele.position }} {{ allele.ref }} > {{ allele.alt }}</a>
+
+    {% endfor %}
+
+
+  </div>
+
+{% endif %}
+
+
+
+
+
+
+
+
+
 
    <ul class="nav nav-tabs">
 
@@ -103,29 +132,6 @@
 
     </tr>
 
-    <tr>
-      <td> Similar </td>
-
-
-      {% if variant.variants_in_similar_position %}
-
-
-      <td> {{ variant.variants_in_similar_position   }} </td>
-
-      {% else %}
-
-
-      <td> None </td>
-
-
-      {% endif %}
-
-
-
-
-
-    </tr>
-
 
     <tr>
       <td> ClinVar Clin Sig </td>
@@ -136,6 +142,12 @@
     <tr>
       <td> Same codon </td>
       <td> {{ variant.same_codon_missense }} </td>
+
+    </tr>
+
+    <tr>
+      <td> Similar </td>
+      <td> {{ variant.get_similar }} </td>
 
     </tr>
 
@@ -453,20 +465,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   <div id="classification" class="tab-pane fade">
 
   {% if classifications|length > 0 %}
@@ -522,39 +520,8 @@
 
 
 
-        <hr>
 
 
-        <div class="panel panel-success">
-        <div class="panel-heading">Classify This Variant</div>
-        <div class="panel-body"> <form class="form-horizontal" method="post">{% csrf_token %}
-
-            {{ form.as_p }}
-
-        <br>
-
-        <div class="form-actions">
-
-            <button type="submit" class="btn btn-primary">Classify</button>
-
-        </div>
-    
-        </form>
-
-
-
-        </div>
-
-        
-
-    </div>
-
-  </div>
-
-  <br>
-  <br>
-
-  </div>
   
 
 <script>
