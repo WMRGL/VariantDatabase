@@ -295,6 +295,17 @@ class Gene(models.Model):
 		return variants
 
 
+	def get_canonical_transcript(self):
+
+		canonical = Transcript.objects.filter(gene=self, canonical=True)
+
+		return canonical
+
+	def get_transcripts(self):
+
+		return Transcript.objects.filter(gene=self)
+
+
 
 
 class Transcript(models.Model):
@@ -535,7 +546,7 @@ class Variant(models.Model):
 		condition_one = ['missense_variant']
 		condition_two = ['transcript_ablation', 'stop_gained' ,'frameshift_variant','stop_lost','start_lost']
 		condition_three = ['splice_acceptor_variant', 'splice_donor_variant', 'splice_region_variant']
-		conditon_four =['inframe_insertion', 'inframe_deletion']
+		condition_four =['inframe_insertion', 'inframe_deletion']
 		condition_five = ['transcript_amplification']
 
 
@@ -621,29 +632,6 @@ class Variant(models.Model):
 		else:
 
 			return None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
