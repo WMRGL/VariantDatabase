@@ -3,14 +3,43 @@
   {% block content %}
   <br>
 
+  {% if other_alleles|length_is:"0" %}
+
+
+  {% else %}
+
+
+  <div class="alert alert-danger">
+    <strong>Alert!</strong> This is a multiallelic variant. Other variants at this position:
+
+    {% for allele in other_alleles %}
+
+
+        <a href= "{% url 'view_detached_variant' allele.variant_hash  %}"> {{ allele.chromosome }}   {{ allele.position }} {{ allele.ref }} > {{ allele.alt }}</a>
+
+    {% endfor %}
+
+
+  </div>
+
+{% endif %}
+
+
+
+
+
+
+
+
+
 
    <ul class="nav nav-tabs">
 
     <li class="active"><a data-toggle="tab" href="#summary">Summary</a></li>
     <li><a data-toggle="tab" href="#QC">QC</a></li>
-    <li><a data-toggle="tab" href="#samples">Samples</a></li>
     <li><a data-toggle="tab" href="#classification">Classification</a></li>
 
+        <li><a data-toggle="tab" href="#samples">Samples</a></li>
 
   </ul>
 
@@ -106,17 +135,22 @@
     </tr>
 
 
-
-
     <tr>
       <td> ClinVar Clin Sig </td>
       <td> {{ variant.clinical_sig }} </td>
 
     </tr>
 
+
     <tr>
-      <td> Same codon </td>
-      <td> {{ variant.same_codon_missense }} </td>
+      <td> Similar </td>
+      <td> {{ variant.get_similar }} </td>
+
+    </tr>
+
+    <tr>
+      <td> Picked </td>
+      <td> {{ variant.get_picked_transcript }} </td>
 
     </tr>
 
@@ -309,7 +343,7 @@
 
 
 
-{% for transcript in variant_sample_data.0.transcript_data %}
+{% for transcript in transcripts %}
 
 
 
@@ -317,7 +351,7 @@
     <div class="panel-heading">
       <h4 class="panel-title">
         <a data-toggle="collapse" data-parent="#accordion" href="#collapse{{forloop.counter}}">
-        {{ transcript }}      </a>
+        {{ transcript.transcript.name }}      </a>
       </h4>
     </div>
 
@@ -344,66 +378,60 @@
     <tbody>
       <tr>
         <td>Symbol</td>
-        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'SYMBOL' }}</td>
+        <td> {{ transcript.transcript.get_gene }}</td>
 
       </tr>
 
       <tr>
         <td>Feature</td>
-        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'Feature' }}</td>
+        <td> {{ transcript.transcript.name }}  </td>
 
       </tr>
 
       <tr>
         <td>Consequence</td>
-        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'Consequence' }}</td>
+        <td>{{ transcript.consequence }}  </td>
 
       </tr>
 
       <tr>
         <td>Codons</td>
-        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'Codons' }}</td>
+        <td>{{ transcript.codons }} </td>
 
       </tr>
 
       <tr>
         <td>Exon</td>
-        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'EXON' }}</td>
+        <td>{{transcript.exon }}</td>
 
       </tr>
 
       <tr>
         <td>Intron</td>
-        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'INTRON' }}</td>
+        <td> {{transcript.intron }}</td>
 
       </tr>
 
       <tr>
-        <td>CDS Position</td>
-        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'CDS_position' }}</td>
+        <td>AA</td>
+        <td>{{ transcript.amino_acids}} </td>
 
       </tr>
 
       <tr>
         <td>cDNA Position</td>
-        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'cDNA_position' }}</td>
+        <td>{{transcript.cdna_position }} </td>
 
       </tr>
 
       <tr>
         <td>HGVSc</td>
-        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'HGVSc' }}</td>
+        <td>{{transcript.hgvsc }} </td>
 
       </tr>
       <tr>
         <td>HGVSp</td>
-        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'HGVSp' }}</td>
-
-      </tr>
-
-      <tr>
-        <td>Pick</td>
-        <td> {{ variant_sample_data.0.transcript_data|get_item:transcript|get_item:'PICK' }}</td>
+        <td>{{transcript.hgvsp }}  </td>
 
       </tr>
 
@@ -436,10 +464,6 @@
   </div>
 
 </div>
-
-
-
-
 
 
 

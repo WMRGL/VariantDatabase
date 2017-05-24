@@ -296,9 +296,17 @@ class Command(BaseCommand):
 						cds_position = variant['transcript_data'][key]['CDS_position']
 						protein_position = variant['transcript_data'][key]['Protein_position']
 						amino_acids = variant['transcript_data'][key]['Amino_acids']
+						picked = variant['transcript_data'][key]['PICK']
 
+						if picked == '1':
 
-						variant_transcript = VariantTranscript(variant = new_variant, transcript=transcript_model, consequence=consequence, exon=exon, intron = intron, hgvsc =hgvsc_t, hgvsp = hgvsp_t,codons=codons,cdna_position=cdna_position, protein_position=protein_position, amino_acids=amino_acids)
+							picked = True
+
+						else:
+
+							picked =False
+
+						variant_transcript = VariantTranscript(variant = new_variant, transcript=transcript_model, consequence=consequence, exon=exon, intron = intron, hgvsc =hgvsc_t, hgvsp = hgvsp_t,codons=codons,cdna_position=cdna_position, protein_position=protein_position, amino_acids=amino_acids, picked =picked)
 											
 
 						variant_transcript.save()

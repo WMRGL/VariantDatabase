@@ -328,15 +328,6 @@ class Transcript(models.Model):
 			return None
 
 
-
-
-
-
-
-
-
-
-
 class Variant(models.Model):
 
 	"""
@@ -633,6 +624,19 @@ class Variant(models.Model):
 
 			return None
 
+	def get_picked_transcript(self):
+
+		"""
+		Return the transcript that has been picked by VEP
+		This is the variant with '1' in the PICK field of the VEP annotation
+		Data stoed in VariantTranscript model
+
+		"""
+
+		picked = VariantTranscript.objects.filter(variant=self).filter(picked=True)[0].transcript.name
+
+		return picked
+
 
 
 
@@ -730,7 +734,7 @@ class VariantTranscript(models.Model):
 	intron = models.CharField(max_length =25)
 	hgvsc = models.TextField()
 	hgvsp = models.TextField()
-
+	picked =models.BooleanField()
 	codons = models.TextField()
 	cdna_position = models.CharField(max_length=20)
 	protein_position = models.CharField(max_length=20)
@@ -739,3 +743,26 @@ class VariantTranscript(models.Model):
 	def __str__(self):
 
 		return self.variant.chromosome+str(self.variant.position)
+
+class Report(models.Model):
+
+	sample = models.ForeignKey(Sample)
+	
+class ReportStatusUpdate(models.Model):
+
+	choices =(
+			('1', 'New Report'),
+			('2', 'Awaiting 1st Check'),
+			('3', 'Awaiting 2nd Check'),
+			('4', 'Complete')
+
+		)
+
+	status = models.CharField(max_length=1, choices = choices)
+	date = models.DateTimeField(default = timezone.now)
+	user = models.ForeignKey('auth.User')
+
+class ReportVariant(models.Model):
+
+	variant = models.ForeignKey(Variant)
+	status = models.TextField() #e.g pathogenic

@@ -191,7 +191,7 @@ def sample_summary(request, pk_sample ):
 		cache.set(sample.name+"summary", data, 600)
 
 
-	paginator = Paginator(data,50)
+	paginator = Paginator(data,25)
 
 	page = request.GET.get('page')
 
@@ -233,22 +233,12 @@ def variant_detail(request, pk_sample, variant_hash):
 
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
-	data = pysam_extract.create_master_list(sample.vcf_file, sample.name)
-
-	variant_sample_data = []
-
-
-	for variant in data:
-
-		hash_id = variant['hash_id']
-
-		if hash_id == variant_hash:
-
-			variant_sample_data.append(variant)
-			break
-
-
 	variant = get_object_or_404(Variant, variant_hash=variant_hash)
+
+	other_alleles = variant.get_other_alleles()
+
+	transcripts = VariantTranscript.objects.filter(variant = variant)
+
 
 
 	classifications = Interpretation.objects.filter(variant=variant)
@@ -279,7 +269,7 @@ def variant_detail(request, pk_sample, variant_hash):
 
 
 
-	return render(request, 'VariantDatabase/variant_detail.html', {'variant_sample_data': variant_sample_data, 'variant': variant, 'form': form, 'classifications': classifications})
+	return render(request, 'VariantDatabase/variant_detail.html', {'variant': variant, 'form': form, 'classifications': classifications, 'transcripts': transcripts, 'other_alleles': other_alleles})
 
 
 

@@ -39,7 +39,7 @@
 
 				<th> Genes </th>
 
-				<th> Detail </th>
+				<th> Expand </th>
 
 
 			</tr>
@@ -75,13 +75,39 @@
 
       					</td>
 
-      					<td><a href="{% url 'variant_detail' pk_sample=sample.pk variant_hash=variant.variant.variant_hash  %}"> View  </a>   </td>
+
+      					<td>  <a href="#"  data-toggle="modal" data-target="#collapse{{forloop.counter}}"><span class="glyphicon glyphicon-plus"></span></a> </td>
+
+
+						<div id="collapse{{forloop.counter}}" class="modal fade" role="dialog">
+						  <div class="modal-dialog">
+
+						    <!-- Modal content-->
+						    <div class="modal-content">
+						      <div class="modal-header">
+						        <button type="button" class="close" data-dismiss="modal">&times;</button>
+						        <h4 class="modal-title">Variant Detail</h4>
+						      </div>
+						      <div class="modal-body">
+						        <p>{{variant.variant}}</p>
+						        <a href ="{% url 'variant_detail' pk_sample=sample.pk variant_hash=variant.variant.variant_hash  %}"> View </a> 
+						      </div>
+						      <div class="modal-footer">
+						   
+						      </div>
+						    </div>
+
+						  </div>
+						</div>
 
 
 
 
 
 					</tr>
+
+
+
 
 
 					{% endfor %}
@@ -109,6 +135,7 @@
           <li>  <a href="?page={{ variants.next_page_number }}">Next</a> </li>
         {% endif %}
     </ul>
+
 
 
 
