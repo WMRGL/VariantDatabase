@@ -757,7 +757,7 @@ class ReportStatusUpdate(models.Model):
 			('4', 'Complete')
 
 		)
-
+	report = models.ForeignKey(Report)
 	status = models.CharField(max_length=1, choices = choices)
 	date = models.DateTimeField(default = timezone.now)
 	user = models.ForeignKey('auth.User')
@@ -765,4 +765,5 @@ class ReportStatusUpdate(models.Model):
 class ReportVariant(models.Model):
 
 	variant = models.ForeignKey(Variant)
+	report = models.ForeignKey(Report)
 	status = models.TextField() #e.g pathogenic
