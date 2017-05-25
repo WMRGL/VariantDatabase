@@ -1,14 +1,17 @@
 from __future__ import unicode_literals
-
 from django.db import models
 from django.utils import timezone
 from variant_classifier import classify
-import imp
 from django.db.models import Q
-pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/Pysam/pysam_extract.py')
-
+import pysam_extract
 
 class Section(models.Model):
+	"""
+	The Section model represents a section within the WMRGL laboratory e.g. Germline
+	This is stored in the database to allow flexibility.
+	Each Section can contain many Worksheets.
+
+	"""
 
 	owner = models.ForeignKey('auth.User')
 	title = models.CharField(max_length=200)
@@ -20,6 +23,11 @@ class Section(models.Model):
 
 	def get_worksheets(self):
 
+		"""
+		Return all worksheets related 
+
+		"""
+
 		all_worksheets = Worksheet.objects.filter(section=self)
 
 		return all_worksheets
@@ -27,8 +35,16 @@ class Section(models.Model):
 
 
 class Worksheet(models.Model):
+	"""
+	The Worksheet model represents a laboratory worksheet.
+	Each Worksheet belongs to a Section.
+	Each Worksheet can have many Samples assigned to it.
+	Each Worksheet has a status(s) that is stored in the WorksheetStatusUpdate Model.
+	
 
-	name = models.CharField(max_length=100, default = " ")
+	"""
+
+	name = models.CharField(max_length=100)
 	section = models.ForeignKey(Section)
 	comment = models.TextField()
 
@@ -38,6 +54,10 @@ class Worksheet(models.Model):
 
 
 	def get_status(self):
+		"""
+		Returns the current status of the Worksheet
+
+		"""
 
 		try:
 
@@ -53,6 +73,10 @@ class Worksheet(models.Model):
 
 
 	def awaiting_qc_approval(self):
+		"""
+		Returns whether the Worksheet is awaiting QC approval
+
+		"""
 
 
 		status = self.get_status()
@@ -66,6 +90,10 @@ class Worksheet(models.Model):
 			return False
 
 	def get_history(self):
+		"""
+		Returns the history of the worksheet i.e. all previous WorksheetStatusUpdates
+
+		"""
 
 		try:
 
@@ -77,27 +105,20 @@ class Worksheet(models.Model):
 
 	 	return current_status
 
-
-
 class Sample(models.Model):
-
-
 	"""
-	The Sample model holds information on a particlar sample
-
-	There can be many samples in a Worksheet
-
-	Each sample has a vcf file associated with it
-
-
+	The Sample model holds information on a particular sample
+	There can be many samples in a Worksheet.
+	Each sample must have a unique name.
+	Each sample contains a link to a VCF file where the data is (originally) stored.
+	Each Sample has a status(s) that is stored in the SampleStatusUpdate Model. 
 	"""
 
-
-	name = models.CharField(max_length=50)
+	name = models.CharField(max_length=50, unique=True)
 	patient_initials = models.CharField(max_length=50)
 	worksheet = models.ForeignKey(Worksheet)
-	vcf_file = models.TextField()
-	visible = models.BooleanField()
+	vcf_file = models.TextField() 
+	visible = models.BooleanField() #To allow the hiding of a sample
 
 
 	def __str__(self):
@@ -106,9 +127,11 @@ class Sample(models.Model):
 	def already_exists(self, query_name):
 
 		"""
-		Checks if a sample with that name already exists so can be rejected
+		Checks if a sample with that name already exists so can be rejected.
+		Used in the import_vcf.py management command.
 
 		"""
+
 		count = Sample.objects.filter(name=query_name).count()
 
 		if count >0:
@@ -121,21 +144,25 @@ class Sample(models.Model):
 
 
 	def get_status(self):
+		"""
+		Returns the current status of the Sample
 
+		"""
 		try:
 
 			current_status = SampleStatusUpdate.objects.filter(sample=self).order_by('-date')[0].status.name
 
 		except:
 
-
 			current_status = 'No Status Found'
 
 		return current_status
 
-
-
 	def get_history(self):
+		"""
+		Returns the history of the sample i.e. all previous SampleStatusUpdates
+
+		"""
 
 		try:
 
@@ -148,13 +175,8 @@ class Sample(models.Model):
 
 		return current_status
 
-
-
-
 class SampleStatus(models.Model):
-
 	"""
-
 	Model to hold all possible sample statuses e.g. 'undergoing analysis', 'complete'
 
 	"""
@@ -164,9 +186,7 @@ class SampleStatus(models.Model):
 	def __str__(self):
 		return self.name
 
-
 class WorkSheetStatus(models.Model):
-
 	"""
 
 	Model to hold all possible worksheet statuses e.g. 'undergoing analysis', 'complete'
@@ -178,17 +198,20 @@ class WorkSheetStatus(models.Model):
 	def __str__(self):
 		return self.name
 
+
 class SampleStatusUpdate(models.Model):
-
 	"""
-	Model to hold the status changes of a sample
-
-	When a the sample is created or its status updated a new edition will be inserted
-
-	Allows the tracking of the sample status
-
-
+	Model to hold the status changes of a sample.
+	When a the sample is created or its status updated a new SampleStatusUpdate will be created.
+	Allows the tracking of the sample status.
 	"""
+
+	choices =(
+			('1', 'New Sample'),
+			('2', 'Awaiting 1st Check'),
+			('3', 'Awaiting 2nd Check'),
+			('4', 'Complete')
+		)
 
 
 
@@ -197,32 +220,29 @@ class SampleStatusUpdate(models.Model):
 	date = models.DateTimeField(blank=True, null=True)
 	user = models.ForeignKey('auth.User')
 
+	def __str__(self):
+		return self.status.name
 
 class WorksheetStatusUpdate(models.Model):
-
-
 	"""
-	Model to hold the status changes of a sample
-
-	When a the sample is created or its status updated a new edition will be inserted
-
-	Allows the tracking of the sample status
-
-
+	Model to hold the status changes of a worksheet.
+	When a the worksheet is created or its status updated a new WorkSheetStatusUpdate will be created.
+	Allows the tracking of the sample status.
 	"""
-
 	worksheet = models.ForeignKey(Worksheet)
 	status = models.ForeignKey(WorkSheetStatus)
 	date = models.DateTimeField(blank=True, null=True)
 	user = models.ForeignKey('auth.User')
+
+	def __str__(self):
+		return self.status.name
 
 class VariantInformation(models.Model):
 
 	"""
 	Model for holding an annotation type in the vcf.
 	
-	User can then select which of these they want to view.
-
+	If a user has a VariantInformation object connected with them in the UserSetting model then that field will be displayed in the VCF.
 
 	"""
 
@@ -230,46 +250,49 @@ class VariantInformation(models.Model):
 	label = models.CharField(max_length=50, null=True, blank=True)
 	description  = models.TextField()
 
+	def __str__(self):
+		return self.information
 
 class UserSetting(models.Model):
 
 	"""
 
 	A user's current settings. If a VariantInformation model is present in this for a user 
-	then that column will be displayed in the views_sample_variants view
+	then that column will be displayed in the views_sample_variants view e.g view vcf
 
 
 	"""
 	user = models.ForeignKey('auth.User')
 	variant_information = models.ForeignKey(VariantInformation)
 
-
+	def __str__(self):
+		return self.variant_information.information + " " + self.user.user_name
 
 class Consequence(models.Model):
+	"""
+	A model to hold the VEP consequences see : http://www.ensembl.org/info/genome/variation/predicted_data.html
+	The worst_consequence field in the Variant model links to an object in this model.
+
+	"""
 
 	name = models.CharField(max_length = 100, primary_key =True)
-	impact = models.IntegerField()
+	impact = models.IntegerField() #number giving impact rating 1-28
 
 	def __str__(self):
 		return self.name
 
-
-
-
-
-
-
-
 class Gene(models.Model):
 
 	"""
-	Stores genes that have been seen before
+	Stores genes that have been seen before.
+	Each Transcript links to a Gene.
+	Each Variant can fall in many Transcripts - VariantTranscript 
 
 
 	"""
 
 	name = models.CharField(max_length=50, db_index=True, unique=True)
-	strand = models.IntegerField()
+	strand = models.IntegerField() # 1 or -1
 
 
 	def __str__(self):
@@ -278,8 +301,11 @@ class Gene(models.Model):
 
 
 	def get_all_variants(self, consequence_filter):
+		"""
+		Returns all variants within a Gene.
+		The consequence filter allows the function to return only variants below a certain impact e.g. loss of function
 
-
+		"""
 		variants = VariantTranscript.objects.filter(transcript__gene = self).values('variant').distinct()
 
 		variants = Variant.objects.filter(variant_hash__in=variants).filter(worst_consequence__impact__lte=consequence_filter)
@@ -296,12 +322,21 @@ class Gene(models.Model):
 
 
 	def get_canonical_transcript(self):
+		"""
+		A Gene may have multiple Transcripts assosiated with it.
+		This function returns the canonical Transcript for the gene
+
+		"""
 
 		canonical = Transcript.objects.filter(gene=self, canonical=True)
 
 		return canonical
 
 	def get_transcripts(self):
+		"""
+		Return all Transcripts assosiated with a Gene.
+
+		"""
 
 		return Transcript.objects.filter(gene=self)
 
@@ -309,6 +344,11 @@ class Gene(models.Model):
 
 
 class Transcript(models.Model):
+	"""
+	Each Gene can be associated with one or more Transcripts.
+	A Transcript can be associated with a Gene, although this is not required.
+
+	"""
 
 	name = models.CharField(max_length=64, primary_key=True)
 	canonical = models.BooleanField()
@@ -318,6 +358,11 @@ class Transcript(models.Model):
 		return self.name
 
 	def get_gene(self):
+		"""
+		Return the gene that a Transcript falls within.
+		Returns None if the Transcript is not associated with a Gene.
+
+		"""
 
 		if self.gene is not None:
 
@@ -335,10 +380,11 @@ class Variant(models.Model):
 
 	If a variant is seen in another vcf it will not appear twice in this model.
 
-	The variant_hash field is used as a key (sha256) chr+pos+ref++alt N.B note "+" to seperate ref and alt
+	The variant_hash field is used as a key (sha256) chr+pos+ref+alt N.B note the "+" symbol is actually used e.g chr + '+' + pos
 
 
 	"""
+	#Variant Data
 	variant_hash = models.CharField(max_length=64, primary_key = True)
 	chromosome  = models.CharField(max_length=25)
 	position  = models.IntegerField()
@@ -351,6 +397,7 @@ class Variant(models.Model):
 	worst_consequence = models.ForeignKey(Consequence)
 	clinical_sig = models.TextField()
 
+	#Frequency Data
 	max_af = models.FloatField()
 	af = models.FloatField()
 	afr_af = models.FloatField()
@@ -370,14 +417,20 @@ class Variant(models.Model):
 	esp_ea_af = models.FloatField()
 	esp_aa_af = models.FloatField()
 
+	#Counts 
 	allele_count = models.IntegerField()
 	sample_count = models.IntegerField()
 
 	def __str__(self):
-		return self.chromosome + str(self.position) + self.ref + self.alt
+		return self.chromosome + " " + str(self.position) + " " +  self.ref + " " +self.alt
 
 
 	def get_samples_with_variant(self):
+		"""
+		Returns all samples in which the Variant has been found.
+		Note that VariantSample objects are only created for variants that meat certain conditions e.g < 5% freq and not synomynous
+
+		"""
 
 		samples =VariantSample.objects.filter(variant=self)
 
@@ -385,6 +438,10 @@ class Variant(models.Model):
 
 
 	def get_genes(self):
+		"""
+		Return all Genes that a variant is found in.
+
+		"""
 
 		variant_transcripts = VariantTranscript.objects.filter(variant =self)
 
@@ -399,10 +456,10 @@ class Variant(models.Model):
 
 		return list(set(my_list))
 
-
-
-
 	def hgvsc_list(self):
+		"""
+		Return hgvs cDNA as a list
+		"""
 
 		hgvs_list = []
 
@@ -411,6 +468,10 @@ class Variant(models.Model):
 		return split
 
 	def hgvsp_list(self):
+		"""
+		Return hgvs Protein as a list
+
+		"""
 
 		hgvs_list = []
 
@@ -420,6 +481,9 @@ class Variant(models.Model):
 
 
 	def display_ids(self):
+		"""
+		Return IDs as a list e.g ids seperated by & symbols
+		"""
 
 		variant_ids = self.rs_number.split("&")
 
@@ -427,6 +491,13 @@ class Variant(models.Model):
 
 
 	def rated_as_pathogenic(self):
+		"""	
+		Check through ACMG sections and see if the variant has ever been classified as pathogenic.
+
+		Note that this does not inlcude the new Reporting section.
+
+		TODO: update to include reporting section. Need to do more requirements capturing to see if this is necessary.  
+		"""
 
 
 		classifications = Interpretation.objects.filter(variant=self)
@@ -441,7 +512,6 @@ class Variant(models.Model):
 			return False
 
 		else:
-
 
 			for classification in classifications:
 
@@ -458,22 +528,34 @@ class Variant(models.Model):
 		"""
 		Is the variant in the same codon as an existing variant in the DB?
 
+		How does this work?
+
+		1) Only look at missense variants
+		2) Get all variants that could be in the same codon e.g. +2 or -2 in position.
+		3) Get the hgvsp for our variant
+		4) For each of the variants that are nearby i.e. the query in part 2
+			4a) only look at missense variants
+			4b) get the hgvp for that variant
+			4c) for each of the hgvsp for that variant
+				4d) See if the codon is the same as the original
+				4e) if so then add to list to be returned
+
+
 		"""
 
 		if self.worst_consequence.name == 'missense_variant':
 
 			same_codon = []
 
-			range =2
+			position_range =2
 
-			variant_list = variant_list = Variant.objects.filter(chromosome=self.chromosome, position__range=(self.position-range,self.position+range )).exclude(variant_hash =self.variant_hash)
+			variant_list = Variant.objects.filter(chromosome=self.chromosome, position__range=(self.position-position_range,self.position+position_range )).exclude(variant_hash =self.variant_hash)
 
-			
 			transcript_list =[]
 
-			self_var_hgvsp = self.hgvsp_list()
+			self_hgvsp = self.hgvsp_list()
 
-			for hgvsp in self_var_hgvsp:
+			for hgvsp in self_hgvsp:
 
 				transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
 
@@ -488,11 +570,11 @@ class Variant(models.Model):
 
 				if variant.worst_consequence.name == 'missense_variant':
 
-					var_hgvsp_list = variant.hgvsp_list()
+					variant_hgvsp_list = variant.hgvsp_list()
 
 					transcript_list_vars =[]
 
-					for hgvsp in var_hgvsp_list:
+					for hgvsp in variant_hgvsp_list:
 
 						transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
 
@@ -508,13 +590,17 @@ class Variant(models.Model):
 			if len(list(set(same_codon))) == 0:
 
 				return None
-			else:
 
+			else:
 
 				return list(set(same_codon))
 
 
+
 	def get_other_alleles(self):
+		"""	
+		Returns any other variants at the same position
+		"""
 
 		other_alleles = Variant.objects.filter(chromosome=self.chromosome,position=self.position).exclude(variant_hash =self.variant_hash)
 
@@ -655,22 +741,26 @@ class VariantSample(models.Model):
 	variant = models.ForeignKey(Variant)
 	sample = models.ForeignKey(Sample)
 
-
-
-
-
+	def __str__(self):
+		return self.variant + self.sample
 
 
 
 class ClassificationCode(models.Model):
+	"""
+	For the ACMG guidlines e.g PVS1
+
+	"""
 
 	text = models.CharField(max_length = 25)
 
 	def __str__(self):
-
 		return self.text
 
 class Question(models.Model):
+	"""
+	Question in the ACMG guidelines
+	"""
 
 	text = models.CharField(max_length =300)
 	description = models.TextField()
@@ -683,6 +773,9 @@ class Question(models.Model):
 
 
 class Interpretation(models.Model):
+	"""
+	An interpretation from the ACMG guidlines
+	"""
 
 	author = models.ForeignKey('auth.User')
 	variant = models.ForeignKey(Variant)
@@ -697,6 +790,10 @@ class Interpretation(models.Model):
 
 
 	def get_classification(self):
+		"""
+		Returns the final classification of the Interpretation e.g. likely pathogenic
+
+		"""
 
 		all_answers = UserAnswer.objects.filter(interpretation=self.pk)
 
@@ -714,6 +811,9 @@ class Interpretation(models.Model):
 
 
 class UserAnswer(models.Model):
+	"""
+	Stores the answers to the questions of the ACMG guidelines
+	"""
 
 	interpretation = models.ForeignKey(Interpretation)
 	user_question = models.ForeignKey(Question, null=True )
@@ -726,6 +826,11 @@ class UserAnswer(models.Model):
 		return str(self.pk)
 
 class VariantTranscript(models.Model):
+	"""
+	A Variant can be in mutiple Transcripts.
+	This model holds the information on how a particular Variant affects a Transcript.
+
+	"""
 
 	variant = models.ForeignKey(Variant)
 	transcript = models.ForeignKey(Transcript)
@@ -745,10 +850,35 @@ class VariantTranscript(models.Model):
 		return self.variant.chromosome+str(self.variant.position)
 
 class Report(models.Model):
+	"""
+	A user can create a Report for a particular Sample
+
+	"""
 
 	sample = models.ForeignKey(Sample)
-	
+
+	def get_history(self):
+
+		return ReportStatusUpdate.objects.filter(report=self).order_by('-date')
+
+	def get_current_status(self):
+
+		return ReportStatusUpdate.objects.filter(report=self).order_by('-date')[0].get_status_display()
+
+	def get_author(self):
+
+		return ReportStatusUpdate.objects.filter(report=self).order_by('date')[0].user
+
+	def get_created_date(self):
+
+		return ReportStatusUpdate.objects.filter(report=self).order_by('date')[0].date
+
+
 class ReportStatusUpdate(models.Model):
+	"""
+	Stores a change in the Report Status
+
+	"""
 
 	choices =(
 			('1', 'New Report'),
@@ -762,7 +892,12 @@ class ReportStatusUpdate(models.Model):
 	date = models.DateTimeField(default = timezone.now)
 	user = models.ForeignKey('auth.User')
 
+
 class ReportVariant(models.Model):
+	"""
+	Stores what the user has decided for each Variant in a sample.
+
+	"""
 
 	variant = models.ForeignKey(Variant)
 	report = models.ForeignKey(Report)

@@ -1,20 +1,20 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from VariantDatabase.models import *
 from django.contrib.auth.decorators import login_required
-import imp
-from pysam import VariantFile
 from .forms import *
 from django.utils import timezone
 import hashlib
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.cache import cache
-pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/Pysam/pysam_extract.py')
-
+import pysam_extract
 
 
 @login_required
 def home_page(request):
+	"""
+	The homepage
+	"""
 
 	return render(request, 'VariantDatabase/home_page.html', {})
 
@@ -54,7 +54,7 @@ def list_worksheet_samples(request, pk_worksheet):
 
 		if form.is_valid():
 
-			worksheet_status = get_object_or_404(WorkSheetStatus, pk = '2')
+			worksheet_status = get_object_or_404(WorkSheetStatus, pk = '2') #update worksheet status to 2
 
 			worksheet_update = form.save(commit=False)
 
@@ -74,9 +74,6 @@ def list_worksheet_samples(request, pk_worksheet):
 	else:
 
 		form = WorksheetStatusUpdateForm()
-
-
-
 
 
 	samples_in_worksheet = Sample.objects.filter(worksheet = worksheet, visible=True)
@@ -150,75 +147,75 @@ def list_sample_variants(request, pk_sample):
 		variants = paginator.page(paginator.num_pages)
 
 
-
-
 	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'variants': variants, 'field_list': field_list, 'heading_list': heading_list, 'vep': vep_annotated})
 
 
 
-
+@login_required
 def sample_summary(request, pk_sample ):
-
 
 	"""
 	This view displays the variants from a vcf file in a html table.
 
-	The columns that are present can be configured in the user settings page.
-
-
 	"""
 
-	sample = get_object_or_404(Sample, pk=pk_sample) 
+	sample = get_object_or_404(Sample, pk=pk_sample)
 
-	#Get the user's settings.
-	#Create a field list containing the custom INFO fields the user requires.
-	#Then this will be passed to the template for rendering
-	#Get the vcf file and get the data e.g. ref, chrom, INFO
-	#Get the genes from the vcf file
-	#Pass these to the template
+	if request.method == "POST": 
 
-	vcf_file_path = sample.vcf_file
+		form = ReportForm(request.POST)
 
 
-	#avoid recalculating using cache
-	data = cache.get(sample.name+"summary")
+		if form.is_valid():
 
-	if data == None:
+			report = form.save(commit=False)
+			report.sample = sample
+			report.save()
 
-		data = VariantSample.objects.filter(sample=sample).order_by('variant__worst_consequence__impact')
+			report_status = ReportStatusUpdate(report = report, status='1', date=timezone.now(), user =request.user)
+			report_status.save()
 
-		 #create variant list
-		cache.set(sample.name+"summary", data, 600)
+			return redirect(create_report, sample.pk, report.pk)
+
+	else:
+
+		form = ReportForm()
+
+		reports = Report.objects.filter(sample=sample)
+
+		#avoid recalculating using cache
+		data = cache.get(sample.name+"summary")
+
+		if data == None:
+
+			data = VariantSample.objects.filter(sample=sample).order_by('variant__worst_consequence__impact')
+
+			 #create variant list
+			cache.set(sample.name+"summary", data, 600)
+
+		paginator = Paginator(data,25)
+
+		page = request.GET.get('page')
+
+		try:
+
+			variants = paginator.page(page)
+
+		except PageNotAnInteger:
+
+			variants =paginator.page(1)
 
 
-	paginator = Paginator(data,25)
+		except:
 
-	page = request.GET.get('page')
+			variants = paginator.page(paginator.num_pages)
 
-	try:
-
-		variants = paginator.page(page)
-
-	except PageNotAnInteger:
-
-		variants =paginator.page(1)
-
-
-	except:
-
-		variants = paginator.page(paginator.num_pages)
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'form': form, 'reports': reports})
 
 
 
-
-	return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants})
-
-
-
-
+@login_required
 def variant_detail(request, pk_sample, variant_hash):
-
-
 
 	"""
 	This view displays the detial for a particular variant.
@@ -228,9 +225,6 @@ def variant_detail(request, pk_sample, variant_hash):
 				- Allows classification
 	"""
 
-
-
-
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
 	variant = get_object_or_404(Variant, variant_hash=variant_hash)
@@ -239,15 +233,12 @@ def variant_detail(request, pk_sample, variant_hash):
 
 	transcripts = VariantTranscript.objects.filter(variant = variant)
 
-
-
 	classifications = Interpretation.objects.filter(variant=variant)
 
 
 	if request.method == "POST": #if user has asked to do a new classification
 
 		form = InterpretationForm(request.POST)
-
 
 		if form.is_valid():
 
@@ -259,7 +250,6 @@ def variant_detail(request, pk_sample, variant_hash):
 			interpretation.finished = False
 			interpretation.save()
 
-
 			return redirect(all_questions, interpretation.pk)
 
 
@@ -267,11 +257,7 @@ def variant_detail(request, pk_sample, variant_hash):
 
 		form = InterpretationForm()
 
-
-
 	return render(request, 'VariantDatabase/variant_detail.html', {'variant': variant, 'form': form, 'classifications': classifications, 'transcripts': transcripts, 'other_alleles': other_alleles})
-
-
 
 
 @login_required
@@ -351,21 +337,17 @@ def settings(request):
 def view_all_variants(request):
 
 	""""
-	View all variants - pulls from Variant Model
-
-
+	A search page for Variants.
+	Similar to ExaC
+	User can search by Gene
 
 	"""
-	
 	alts =[]
-	variants =[]
-
 	gene_name = request.GET.get('gene_name')
 
 	if gene_name is not None:
 
 		gene_name = gene_name.upper()
-
 
 		try:
 
@@ -385,17 +367,15 @@ def view_all_variants(request):
 
 				alts =[]
 
-	
-
-	return render(request, 'VariantDatabase/view_all_variants.html', {'variants': variants, 'gene_name': gene_name, 'alts': alts})
-
-
-
-
+	return render(request, 'VariantDatabase/view_all_variants.html', {'gene_name': gene_name, 'alts': alts})
 
 
 @login_required
 def all_questions(request, pk_interpretation):
+	"""
+	Show all questions from the ACMG guidelines
+
+	"""
 
 	interpretation = get_object_or_404(Interpretation, pk = pk_interpretation)
 
@@ -457,8 +437,6 @@ def report(request, pk_interpretation):
 	"""
 	A report of the classification (ACMG guidlines)
 
-
-
 	"""
 
 	interpretation = get_object_or_404(Interpretation, pk= pk_interpretation)
@@ -471,6 +449,10 @@ def report(request, pk_interpretation):
 
 @login_required
 def view_gene(request, gene_pk):
+	"""
+	A view to allow the user to view all the Variants in a Gene.
+
+	"""
 
 	consequence_filter = request.GET.get('filter')
 
@@ -490,7 +472,6 @@ def view_gene(request, gene_pk):
 
 		consequence_filter =100
 
-
 	gene_pk = gene_pk.upper()
 
 	gene = Gene.objects.get(name=gene_pk)
@@ -508,11 +489,12 @@ def view_detached_variant(request, variant_hash):
 
 	transcripts = VariantTranscript.objects.filter(variant = variant)
 
-
-
 	classifications = Interpretation.objects.filter(variant=variant)
 
-
-
-
 	return render(request, 'VariantDatabase/variant_view.html', {'variant': variant, 'transcripts': transcripts, 'other_alleles': other_alleles, 'classifications': classifications } )
+
+@login_required
+def create_report(request, pk_sample, pk_report):
+
+
+	return render(request, 'VariantDatabase/create_report.html', {} )

@@ -1,7 +1,7 @@
+<!--Template for displaying the variants in a VCF file for a particular sample  -->
 {% extends 'VariantDatabase/base.html' %}
 
   {% block content %}
-
 
     <br>
 
@@ -9,46 +9,35 @@
   		You are viewing information relating to sample:  <strong> {{ sample.name }} </strong> 
 	</div>
 
-
-
-
 	  	  	<table id="variant_table" class = 'table table-hover'>
-
 	  	  	<thead>
 
-			<tr>
-				<th> CHROM </th>
-				<th> POS </th>
-				<th> REF </th>
-				<th> ALT </th>
+				<tr>
+					<th> CHROM </th>
+					<th> POS </th>
+					<th> REF </th>
+					<th> ALT </th>
 
+					<!--heading_list for optional fields the user has selected in their user settings-->
 
+					{% for heading in heading_list %}
 
+						<th> {{heading}} </th>
 
+					{% endfor %}
 
+					<th> GENOTYPE </th>
+					<th> Detail </th>
+				
 
-				{% for heading in heading_list %}
-
-
-				<th> {{heading}} </th>
-
-				{% endfor %}
-
-
-				<th> GENOTYPE </th>
-				<th> Detail </th>
-			
-
-
-			</tr>
+				</tr>
 
 			</thead>
 
 			<tbody>
 
-
+			<!--Loop through variants in the vcf file-->
 		  	{% for variant in variants %}
-
 
 				<tr>
 
@@ -57,37 +46,19 @@
 					<td > {{ variant.reference }} </td>
 					<td > {{ variant.alt_alleles.0 }} </td>
 
-
-
-
-
-
-
-
+					<!--Loop through fields in user settings and add these to the table-->
 
 					{% for field in field_list %}
 
-
-
-
 						<td >  {{ variant|get_item:field }} </td>
-
-
 
 					{% endfor %}
 
-
-
 					<td> {{ variant.genotype}} </td>
+					<!--Link to variant_detail-->
 					<td><a href="{% url 'variant_detail' pk_sample=sample.pk variant_hash=variant.hash_id  %}"> View  </a> </td>
 
-			
-
-
 				</tr>
-
-
-
 
 		  	{% endfor %}
 
@@ -96,31 +67,23 @@
 
 		</table>
 
-		    <ul class='pager'>
-	  	 <span class="current">
-            Page {{ variants.number }} of {{ variants.paginator.num_pages }}.
-        </span>
+		<!--Pagination is below-->
+		<ul class='pager'>
+	  		<span class="current">
+            	Page {{ variants.number }} of {{ variants.paginator.num_pages }}.
+        	</span>
 
-
-    
         {% if variants.has_previous %}
              <li><a href="?page={{ variants.previous_page_number }}">Previous</a> </li>
         {% endif %}
 
-       
-
         {% if variants.has_next %}
           <li>  <a href="?page={{ variants.next_page_number }}">Next</a> </li>
         {% endif %}
-    </ul>
-
-
+    	</ul>
 
 	</div>
-
-
-
-     
+	
  {% endblock %}  
   
   

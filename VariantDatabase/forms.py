@@ -1,11 +1,11 @@
 from django import forms
-
-from .models import Sample, Interpretation, WorksheetStatusUpdate
-
-
-
+from .models import Sample, Interpretation, WorksheetStatusUpdate, Report
 
 class InterpretationForm(forms.ModelForm):
+	"""
+	Form for creating a new Interpretation (ACMG guidlines)
+
+	"""
 
 	class Meta:
 
@@ -13,16 +13,20 @@ class InterpretationForm(forms.ModelForm):
 		fields = ()
 
 class WorksheetStatusUpdateForm(forms.ModelForm):
+	"""
+	Form for updating the Worksheet status
+
+	"""
 
 	class Meta:
 
 		model = WorksheetStatusUpdate
 		fields = ()
 
-
-
-
 class AllAnswersForm(forms.Form):
+	"""
+	Form for getting the User's answers to the ACMG guidline questions
+	"""
 
 	questions_1 = forms.ChoiceField(((4, "Not Answered"), (3,"Unknown"), (2, "No"), (1, "Yes")))
 	questions_2 = forms.ChoiceField(((4, "Not Answered"), (3,"Unknown"), (2, "No"), (1, "Yes")))
@@ -52,3 +56,14 @@ class AllAnswersForm(forms.Form):
 	questions_26 = forms.ChoiceField(((4, "Not Answered"), (3,"Unknown"), (2, "No"), (1, "Yes")))
 	questions_27 = forms.ChoiceField(((4, "Not Answered"), (3,"Unknown"), (2, "No"), (1, "Yes")))
 	questions_28 = forms.ChoiceField(((4, "Not Answered"), (3,"Unknown"), (2, "No"), (1, "Yes")))
+
+class ReportForm(forms.ModelForm):
+	"""
+	Form for creating Sample Reports
+
+	"""
+
+	class Meta:
+
+		model = Report
+		fields = ()

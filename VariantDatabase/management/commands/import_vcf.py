@@ -10,7 +10,7 @@ from django.db import transaction
 from django.utils import timezone
 
 
-pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/Pysam/pysam_extract.py')
+pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/pysam_extract.py')
 
 
 class Command(BaseCommand):

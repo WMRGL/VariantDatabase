@@ -1,7 +1,8 @@
+<!--Sample Summary Page - displays variants, WC, history , reports etc   -->
+
 {% extends 'VariantDatabase/base.html' %}
 
   {% block content %}
-
 
     <br>
 
@@ -10,40 +11,38 @@
 	</div>
 
 
-    	   <ul class="nav nav-tabs">
+   <ul class="nav nav-tabs">
 
-			    <li class="active"><a data-toggle="tab" href="#summary">Summary</a></li>
-			    <li><a data-toggle="tab" href="#variants">Variants</a></li>
-			    <li><a data-toggle="tab" href="#QC">QC</a></li>
-			    <li><a data-toggle="tab" href="#history">History</a></li>
+	    <li class="active"><a data-toggle="tab" href="#summary">Summary</a></li>
+	    <li><a data-toggle="tab" href="#variants">Variants</a></li>
+	    <li><a data-toggle="tab" href="#QC">QC</a></li>
+	    <li><a data-toggle="tab" href="#history">History</a></li>
+	    <li><a data-toggle="tab" href="#report">Report</a></li>
 
-  			</ul>
+  	</ul>
 
   	<br>
 
   	<div class="tab-content">
 
+
+  	<!--Summary Tab displays filtered variants -->
   	<div id="summary" class="tab-pane fade in active">
 
   		<table id="variant_table" class = 'table table-hover'>
 
 	  	  	<thead>
 
-			<tr>
-				<th> Variant </th>
-				<th> REF </th>
-				<th> ALT </th>
-				<th> Consequence </th>
+				<tr>
+					<th> Variant </th>
+					<th> REF </th>
+					<th> ALT </th>
+					<th> Consequence </th>
+					<th> Max_AF </th>
+					<th> Genes </th>
+					<th> Expand </th>
 
-				<th> Max_AF </th>
-
-				<th> Genes </th>
-
-				<th> Expand </th>
-
-
-			</tr>
-
+				</tr>
 
 			</thead>
 
@@ -51,137 +50,158 @@
 				
 					{% for variant in variants %}
 
-					<tr>
+						<tr>
 
-						<td> {{ variant.variant.chromosome }} {{ variant.variant.position }} </td>
+							<td> {{ variant.variant.chromosome }} {{ variant.variant.position }} </td>
+							<td>  {{ variant.variant.ref|truncatechars:9 }} </td>
+							<td>  {{ variant.variant.alt|truncatechars:9 }} </td>
+							<td>  {{ variant.variant.worst_consequence }} </td>
+							<td>  {{ variant.variant.max_af }} </td>
+							<td>  {% for gene in variant.variant.get_genes %}
 
+	       							{{ gene }} 
 
+	      						  {% endfor %} 
 
-						<td>  {{ variant.variant.ref|truncatechars:9 }} </td>
+	      					</td>
 
-						<td>  {{ variant.variant.alt|truncatechars:9 }} </td>
-
-						<td>  {{ variant.variant.worst_consequence }} </td>
-
-						<td>  {{ variant.variant.max_af }} </td>
-
-						<td>       {% for gene in variant.variant.get_genes %}
-
-
-       									{{ gene }} 
+	      					<td>  <a href="#"  data-toggle="modal" data-target="#collapse{{forloop.counter}}"><span class="glyphicon glyphicon-plus"></span></a> </td>
 
 
-      								{% endfor %} 
+	      					<!--Pop Up modal if clicked -->
+							<div id="collapse{{forloop.counter}}" class="modal fade" role="dialog">
+							  <div class="modal-dialog">
+							    <!-- Modal content-->
+							    <div class="modal-content">
+							      <div class="modal-header">
+							        <button type="button" class="close" data-dismiss="modal">&times;</button>
+							        <h4 class="modal-title">Variant Detail</h4>
+							      </div>
+							      <div class="modal-body">
+							        <p>{{variant.variant}}</p>
+							        <a href ="{% url 'variant_detail' pk_sample=sample.pk variant_hash=variant.variant.variant_hash  %}"> View </a> 
+							      </div>
+							      <div class="modal-footer"> </div>
+							   
+							    </div>
 
-      					</td>
+							  </div>
+							</div>
 
-
-      					<td>  <a href="#"  data-toggle="modal" data-target="#collapse{{forloop.counter}}"><span class="glyphicon glyphicon-plus"></span></a> </td>
-
-
-						<div id="collapse{{forloop.counter}}" class="modal fade" role="dialog">
-						  <div class="modal-dialog">
-
-						    <!-- Modal content-->
-						    <div class="modal-content">
-						      <div class="modal-header">
-						        <button type="button" class="close" data-dismiss="modal">&times;</button>
-						        <h4 class="modal-title">Variant Detail</h4>
-						      </div>
-						      <div class="modal-body">
-						        <p>{{variant.variant}}</p>
-						        <a href ="{% url 'variant_detail' pk_sample=sample.pk variant_hash=variant.variant.variant_hash  %}"> View </a> 
-						      </div>
-						      <div class="modal-footer">
-						   
-						      </div>
-						    </div>
-
-						  </div>
-						</div>
-
-
-
-
-
-					</tr>
-
-
-
-
+						</tr>
 
 					{% endfor %}
 
+			</tbody>
 
-				</tbody>
+		</table>
 
+		<ul class='pager'>
+		  	 <span class="current">
+	            Page {{ variants.number }} of {{ variants.paginator.num_pages }}.
+	        </span>
 
-				</table>
+	        {% if variants.has_previous %}
+	             <li><a href="?page={{ variants.previous_page_number }}">Previous</a> </li>
+	        {% endif %}
 
-<ul class='pager'>
-	  	 <span class="current">
-            Page {{ variants.number }} of {{ variants.paginator.num_pages }}.
-        </span>
-
-
-    
-        {% if variants.has_previous %}
-             <li><a href="?page={{ variants.previous_page_number }}">Previous</a> </li>
-        {% endif %}
-
-       
-
-        {% if variants.has_next %}
-          <li>  <a href="?page={{ variants.next_page_number }}">Next</a> </li>
-        {% endif %}
-    </ul>
+	        {% if variants.has_next %}
+	          <li>  <a href="?page={{ variants.next_page_number }}">Next</a> </li>
+	        {% endif %}
+    	</ul>
 
 
 
 
-  		</div>
+  	</div>
 
-  	
-
-
-
+  	<!--Variants Tab with link to VCF file -->
 	<div id="variants" class="tab-pane fade">
-
-
 
     	<div class="alert alert-info">
   			<a href= "{% url 'list_sample_variants' sample.pk  %}" class="btn btn-info" role="button">View VCF</a>
 		</div>
 
-
-
-
-
 	</div>
 
-
+	<!--QC Tab with link to QC -->
 	<div id="QC" class="tab-pane fade">
 
 		<p> Sample QC goes here </p>
 
 	</div>
 
+	<!--History Tab with link to History -->
 	<div id="history" class="tab-pane fade">
 
-	<p> history </p>
-	</div>
+		<p> history </p>
 
 	</div>
 
 
+	<div id="report" class="tab-pane fade">
+
+		<table class = 'table table-hover'>
+
+	  	  	<thead>
+
+				<tr>
+					<th> Report ID </th>
+					<th> Creation Date </th>
+					<th> Status </th>
+					<th> Author </th>
+
+				</tr>
+
+			</thead>
+
+			<tbody>
+
+				{% for report in reports %}
+
+				<tr>
+
+					<td> {{report.pk}} </td>
+					<td> {{report.get_created_date}} </td>
+					<td> {{report.get_current_status}} </td>
+					<td> {{report.get_author}} </td>
+
+				</tr>
+
+				{% endfor %}
 
 
-	
+			</tbody>
+
+		</table>
+
+		<hr>
 
 
 
-     
- {% endblock %}  
+        <div class="panel panel-success">
+        <div class="panel-heading">Reports</div>
+        <div class="panel-body"> <form class="form-horizontal" method="post">{% csrf_token %}
+
+            {{ form.as_p }}
+
+        <br>
+
+        <div class="form-actions">
+
+            <button type="submit" class="btn btn-primary">Create New</button>
+
+        </div>
+    
+        </form>
+
+
+
+	</div>
+
+</div>
+ 
+{% endblock %}  
   
   
  

@@ -3,24 +3,15 @@
   {% block content %}
 
 
-<style>
-.center {
-    height:35px; 
-    width:130px; 
-    margin: 0px ; 
-    margin-left:0;
-    float:none; display:inline-block;
-
-
-}
-</style>
-
-
-
-
-
-
-
+	<style>
+	.center {
+	    height:35px; 
+	    width:130px; 
+	    margin: 0px ; 
+	    margin-left:0;
+	    float:none; display:inline-block;
+	}
+	</style>
 
 
   	<br>
@@ -33,77 +24,67 @@
   	 <hr>
 
 
-<a href="?filter=all" class="btn btn-primary center" role="button" >All</a>
-<a href="?filter=lof" class="btn btn-primary center" role="button" data-toggle="tooltip" data-placement="top" title="Loss of Function Variants">LOF</a>
-<a href="?filter=lofplus" class="btn btn-primary center" role="button" data-toggle="tooltip" data-placement="top" title="Loss of Function, Missense and inframe indels">LOF + Extra</a>
+	<a href="?filter=all" class="btn btn-primary center" role="button" >All</a>
+	<a href="?filter=lof" class="btn btn-primary center" role="button" data-toggle="tooltip" data-placement="top" title="Loss of Function Variants">LOF</a>
+	<a href="?filter=lofplus" class="btn btn-primary center" role="button" data-toggle="tooltip" data-placement="top" title="Loss of Function, Missense and inframe indels">LOF + Extra</a>
 
 
 
-  	 <hr>
+  	<hr>
 
-{% if variants|length_is:"0" %}
+	{% if variants|length_is:"0" %}
 
-	<div class="alert alert-danger">
-  		<strong> Alert! </strong> No variants found.
+		<div class="alert alert-danger">
+	  		<strong> Alert! </strong> No variants found.
 
+	  	</div>
+	{% else %}
 
- {% else %}
+		<table id="variant_table" class = 'table table-hover'>
 
-<table id="variant_table" class = 'table table-hover'>
+			<thead>
 
-	  	  	<thead>
+				<tr>
+					<th> CHROM </th>
+					<th> POS </th>
+					<th> REF </th>
+					<th> ALT </th>
+					<th> Consequence </th>
+					<th> Max_AF </th>
+					<th> Genes </th>
+					<th> Detail </th>
 
-			<tr>
-				<th> CHROM </th>
-				<th> POS </th>
-				<th> REF </th>
-				<th> ALT </th>
-				<th> Consequence </th>
-
-				<th> Max_AF </th>
-
-				<th> Genes </th>
-
-				<th> Detail </th>
-
-				
-
-
-			</tr>
+				</tr>
 
 
 			</thead>
 
 			<tbody>
-				
-					{% for variant in variants %}
+						
+				{% for variant in variants %}
 
 					<tr>
 
 						<td> {{ variant.chromosome }} </td>
 
-						<td>  {{ variant.position }} </td>
+						<td> {{ variant.position }} </td>
 
-						<td>  {{ variant.ref }} </td>
+						<td> {{ variant.ref }} </td>
 
-						<td>  {{ variant.alt }} </td>
+						<td> {{ variant.alt }} </td>
 
-						<td>  {{ variant.worst_consequence }} </td>
+						<td> {{ variant.worst_consequence }} </td>
 
-						<td>  {{ variant.max_af }} </td>
+						<td> {{ variant.max_af }} </td>
 
-						<td>       {% for gene in variant.get_genes %}
+						<td> {% for gene in variant.get_genes %}
 
+	   								{{ gene }} 
 
-       									{{ gene }} 
+	  						  {% endfor %} 
+	  					</td>
 
-
-      								{% endfor %} 
-
-      					</td>
-
-      					
-      					<td>  <a href= "{% url 'view_detached_variant' variant.variant_hash  %}"> View  </a> </td>
+	  					<td>  <a href= "{% url 'view_detached_variant' variant.variant_hash  %}"> View  </a> </td>
 
 
 
@@ -111,17 +92,15 @@
 					</tr>
 
 
-					{% endfor %}
+				{% endfor %}
 
 
-				</tbody>
+			</tbody>
 
 
-				</table>
+		</table>
 
-{% endif %}
-
-
+	{% endif %}
 
 <script>
 $(document).ready(function(){
