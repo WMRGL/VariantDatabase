@@ -123,13 +123,13 @@
 
 		</tr>
 
-
+		{{ worksheet.get_history }}
 
 		</thead>
 
 		<tbody>
 
-		{% for change in history %}
+		{% for change in worksheet.get_history %}
 
 			<tr>
 

@@ -44,7 +44,7 @@
 
 							<td> <a href= "{% url 'list_worksheet_samples' worksheet.pk  %}"> {{ worksheet.name }}   </a> </td>
 							<td> {{ worksheet.comment }}  </td>
-							<td>  NA </td>
+							<td>   {{ worksheet.get_creation_date }} </td>
 							<td> NA </td>
 							<td> {{worksheet.get_status}} </td>
 

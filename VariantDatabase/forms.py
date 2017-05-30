@@ -1,5 +1,5 @@
 from django import forms
-from .models import Sample, Interpretation, WorksheetStatusUpdate, Report
+from .models import Sample, Interpretation, Report, Worksheet
 
 class InterpretationForm(forms.ModelForm):
 	"""
@@ -20,7 +20,7 @@ class WorksheetStatusUpdateForm(forms.ModelForm):
 
 	class Meta:
 
-		model = WorksheetStatusUpdate
+		model = Worksheet
 		fields = ()
 
 class AllAnswersForm(forms.Form):

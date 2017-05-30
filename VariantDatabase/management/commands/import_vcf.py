@@ -130,19 +130,11 @@ class Command(BaseCommand):
 			new_sample.worksheet = worksheet
 			new_sample.vcf_file = vcf_file_path
 			new_sample.visible = False
+			new_sample.status = '1'
 			new_sample.save()
 
 			self.stdout.write(self.style.SUCCESS('Sample '+ new_sample.name + ' created'))
 			self.stdout.write(self.style.SUCCESS('Processing Variants'))
-
-			# Create a new sample Status
-
-			inital_status = SampleStatus.objects.get(pk=1)
-
-			new_update = SampleStatusUpdate(sample=new_sample, status=inital_status, user=user, date=timezone.now())
-
-			new_update.save()
-
 
 
 			# Now loop through each variant in the vcf file and insert relevent data into the database

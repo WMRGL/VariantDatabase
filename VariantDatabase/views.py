@@ -46,29 +46,15 @@ def list_worksheet_samples(request, pk_worksheet):
 
 	worksheet = get_object_or_404(Worksheet, pk=pk_worksheet)
 
-	history = worksheet.get_history()
 
 	if request.method == 'POST':
 
-		form = WorksheetStatusUpdateForm(request.POST)
+		#if user is authorised
+		worksheet = worksheet = get_object_or_404(Worksheet, pk=pk_worksheet)
+		worksheet.status = '2'
+		worksheet.save()
 
-		if form.is_valid():
-
-			worksheet_status = get_object_or_404(WorkSheetStatus, pk = '2') #update worksheet status to 2
-
-			worksheet_update = form.save(commit=False)
-
-			worksheet_update.worksheet = worksheet
-
-			worksheet_update.status = worksheet_status
-
-			worksheet_update.date = timezone.now()
-
-			worksheet_update.user = request.user
-
-			worksheet_update.save()
-
-			return redirect(list_worksheet_samples, pk_worksheet)
+		return redirect(list_worksheet_samples, pk_worksheet)
 
 
 	else:
@@ -78,7 +64,7 @@ def list_worksheet_samples(request, pk_worksheet):
 
 	samples_in_worksheet = Sample.objects.filter(worksheet = worksheet, visible=True)
 
-	return render(request, 'VariantDatabase/list_worksheet_samples.html', {'samples_in_worksheet': samples_in_worksheet, 'form': form, 'worksheet': worksheet, 'history': history})
+	return render(request, 'VariantDatabase/list_worksheet_samples.html', {'samples_in_worksheet': samples_in_worksheet, 'form': form, 'worksheet': worksheet})
 
 
 
@@ -170,10 +156,8 @@ def sample_summary(request, pk_sample ):
 
 			report = form.save(commit=False)
 			report.sample = sample
+			report.status ='1'
 			report.save()
-
-			report_status = ReportStatusUpdate(report = report, status='1', date=timezone.now(), user =request.user)
-			report_status.save()
 
 			return redirect(create_report, sample.pk, report.pk)
 

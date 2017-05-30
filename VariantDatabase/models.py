@@ -4,6 +4,10 @@ from django.utils import timezone
 from variant_classifier import classify
 from django.db.models import Q
 import pysam_extract
+from django.contrib.contenttypes.models import ContentType
+from auditlog.models import LogEntry
+from auditlog.registry import auditlog
+
 
 class Section(models.Model):
 	"""
@@ -39,49 +43,31 @@ class Worksheet(models.Model):
 	The Worksheet model represents a laboratory worksheet.
 	Each Worksheet belongs to a Section.
 	Each Worksheet can have many Samples assigned to it.
-	Each Worksheet has a status(s) that is stored in the WorksheetStatusUpdate Model.
-	
 
 	"""
+
+	choices =(
+			('1', 'New Worksheet'),
+			('2', 'Awaiting 1st Check'),
+			('3', 'Awaiting 2nd Check'),
+			('4', 'Complete'))
 
 	name = models.CharField(max_length=100)
 	section = models.ForeignKey(Section)
 	comment = models.TextField()
+	status = models.CharField(max_length=1, choices = choices)
 
 
 	def __str__(self):
 		return self.name
 
-
 	def get_status(self):
-		"""
-		Returns the current status of the Worksheet
 
-		"""
-
-		try:
-
-	 		current_status = WorksheetStatusUpdate.objects.filter(worksheet=self).order_by('-date')[0].status.name
-
-	 	except:
-
-	 		current_status = 'No Status Found'
-
-	 	return current_status
-
-
-
+		return self.status
 
 	def awaiting_qc_approval(self):
-		"""
-		Returns whether the Worksheet is awaiting QC approval
 
-		"""
-
-
-		status = self.get_status()
-
-		if status == 'New Worksheet -  Awaiting QC Check' or status == 'No Status Found':
+		if self.status == '1':
 
 			return True
 
@@ -90,20 +76,12 @@ class Worksheet(models.Model):
 			return False
 
 	def get_history(self):
-		"""
-		Returns the history of the worksheet i.e. all previous WorksheetStatusUpdates
 
-		"""
+		content_type = ContentType.objects.get(app_label ='VariantDatabase', model='worksheet')
 
-		try:
+		return LogEntry.objects.filter(object_pk = self.pk, content_type=content_type)
 
-	 		current_status = WorksheetStatusUpdate.objects.filter(worksheet=self).order_by('date')
 
-	 	except:
-
-	 		current_status = []
-
-	 	return current_status
 
 class Sample(models.Model):
 	"""
@@ -111,14 +89,21 @@ class Sample(models.Model):
 	There can be many samples in a Worksheet.
 	Each sample must have a unique name.
 	Each sample contains a link to a VCF file where the data is (originally) stored.
-	Each Sample has a status(s) that is stored in the SampleStatusUpdate Model. 
+
 	"""
+	choices =(
+			('1', 'New Sample'),
+			('2', 'Awaiting 1st Check'),
+			('3', 'Awaiting 2nd Check'),
+			('4', 'Complete'))
+
 
 	name = models.CharField(max_length=50, unique=True)
 	patient_initials = models.CharField(max_length=50)
 	worksheet = models.ForeignKey(Worksheet)
 	vcf_file = models.TextField() 
 	visible = models.BooleanField() #To allow the hiding of a sample
+	status = models.CharField(max_length=1, choices = choices)
 
 
 	def __str__(self):
@@ -143,99 +128,9 @@ class Sample(models.Model):
 			return False
 
 
-	def get_status(self):
-		"""
-		Returns the current status of the Sample
-
-		"""
-		try:
-
-			current_status = SampleStatusUpdate.objects.filter(sample=self).order_by('-date')[0].status.name
-
-		except:
-
-			current_status = 'No Status Found'
-
-		return current_status
-
-	def get_history(self):
-		"""
-		Returns the history of the sample i.e. all previous SampleStatusUpdates
-
-		"""
-
-		try:
-
-			current_status = SampleStatusUpdate.objects.filter(sample=self).order_by('-date')
-
-		except:
+	
 
 
-			current_status = []
-
-		return current_status
-
-class SampleStatus(models.Model):
-	"""
-	Model to hold all possible sample statuses e.g. 'undergoing analysis', 'complete'
-
-	"""
-
-	name = models.CharField(max_length=100)
-
-	def __str__(self):
-		return self.name
-
-class WorkSheetStatus(models.Model):
-	"""
-
-	Model to hold all possible worksheet statuses e.g. 'undergoing analysis', 'complete'
-
-	"""
-
-	name = models.CharField(max_length=100)	
-
-	def __str__(self):
-		return self.name
-
-
-class SampleStatusUpdate(models.Model):
-	"""
-	Model to hold the status changes of a sample.
-	When a the sample is created or its status updated a new SampleStatusUpdate will be created.
-	Allows the tracking of the sample status.
-	"""
-
-	choices =(
-			('1', 'New Sample'),
-			('2', 'Awaiting 1st Check'),
-			('3', 'Awaiting 2nd Check'),
-			('4', 'Complete')
-		)
-
-
-
-	sample = models.ForeignKey(Sample)
-	status = models.ForeignKey(SampleStatus)
-	date = models.DateTimeField(blank=True, null=True)
-	user = models.ForeignKey('auth.User')
-
-	def __str__(self):
-		return self.status.name
-
-class WorksheetStatusUpdate(models.Model):
-	"""
-	Model to hold the status changes of a worksheet.
-	When a the worksheet is created or its status updated a new WorkSheetStatusUpdate will be created.
-	Allows the tracking of the sample status.
-	"""
-	worksheet = models.ForeignKey(Worksheet)
-	status = models.ForeignKey(WorkSheetStatus)
-	date = models.DateTimeField(blank=True, null=True)
-	user = models.ForeignKey('auth.User')
-
-	def __str__(self):
-		return self.status.name
 
 class VariantInformation(models.Model):
 
@@ -854,43 +749,38 @@ class Report(models.Model):
 	A user can create a Report for a particular Sample
 
 	"""
-
-	sample = models.ForeignKey(Sample)
-
-	def get_history(self):
-
-		return ReportStatusUpdate.objects.filter(report=self).order_by('-date')
-
-	def get_current_status(self):
-
-		return ReportStatusUpdate.objects.filter(report=self).order_by('-date')[0].get_status_display()
-
-	def get_author(self):
-
-		return ReportStatusUpdate.objects.filter(report=self).order_by('date')[0].user
-
-	def get_created_date(self):
-
-		return ReportStatusUpdate.objects.filter(report=self).order_by('date')[0].date
-
-
-class ReportStatusUpdate(models.Model):
-	"""
-	Stores a change in the Report Status
-
-	"""
-
 	choices =(
 			('1', 'New Report'),
 			('2', 'Awaiting 1st Check'),
 			('3', 'Awaiting 2nd Check'),
-			('4', 'Complete')
+			('4', 'Complete'))
 
-		)
-	report = models.ForeignKey(Report)
+	sample = models.ForeignKey(Sample)
 	status = models.CharField(max_length=1, choices = choices)
-	date = models.DateTimeField(default = timezone.now)
-	user = models.ForeignKey('auth.User')
+
+
+	def get_history(self):
+
+		content_type = ContentType.objects.get(app_label ='VariantDatabase', model='report')
+
+		return LogEntry.objects.filter(object_pk = self.pk, content_type=content_type)
+
+	def get_creation_date(self):
+
+		content_type = ContentType.objects.get(app_label ='VariantDatabase', model='report')
+
+		return LogEntry.objects.filter(object_pk = self.pk, content_type=content_type, action=0).order_by('timestamp')[0].timestamp
+
+	def get_author(self):
+
+		content_type = ContentType.objects.get(app_label ='VariantDatabase', model='report')
+
+		return LogEntry.objects.filter(object_pk = self.pk, content_type=content_type, action=0).order_by('timestamp')[0].actor
+
+	def get_status(self):
+
+		return self.status
+
 
 
 class ReportVariant(models.Model):
@@ -902,3 +792,7 @@ class ReportVariant(models.Model):
 	variant = models.ForeignKey(Variant)
 	report = models.ForeignKey(Report)
 	status = models.TextField() #e.g pathogenic
+
+
+auditlog.register(Report)
+auditlog.register(Worksheet)
