@@ -19,6 +19,7 @@ class Command(BaseCommand):
 		worksheet.name = "Worksheet 2"
 		worksheet.section = section
 		worksheet.comment = "None"
+		worksheet.status = '1'
 
 		worksheet.save()
 

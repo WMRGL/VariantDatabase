@@ -62,10 +62,21 @@ class Worksheet(models.Model):
 		return self.name
 
 	def get_status(self):
+		"""
+		Returns current status.
+		"""
+		choices =(
+			('1', 'New Worksheet'),
+			('2', 'Awaiting 1st Check'),
+			('3', 'Awaiting 2nd Check'),
+			('4', 'Complete'))
 
-		return self.status
+		return choices[int(self.status)-1][1]
 
 	def awaiting_qc_approval(self):
+		"""
+		Returns True if we are at the first stage i.e 'New Worksheet'.
+		"""
 
 		if self.status == '1':
 
@@ -76,10 +87,28 @@ class Worksheet(models.Model):
 			return False
 
 	def get_history(self):
+		"""
+		Returns entire history from the audit log.
+		"""
 
 		content_type = ContentType.objects.get(app_label ='VariantDatabase', model='worksheet')
 
 		return LogEntry.objects.filter(object_pk = self.pk, content_type=content_type)
+
+	def get_creation_date(self):
+		"""
+		Returns creation date.
+		"""
+
+		try:
+
+			content_type = ContentType.objects.get(app_label ='VariantDatabase', model='worksheet')
+
+			return LogEntry.objects.filter(object_pk = self.pk, content_type=content_type, action=0).order_by('timestamp')[0].timestamp
+
+		except:
+
+			return None
 
 
 
@@ -779,7 +808,13 @@ class Report(models.Model):
 
 	def get_status(self):
 
-		return self.status
+		choices =(
+			('1', 'New Report'),
+			('2', 'Awaiting 1st Check'),
+			('3', 'Awaiting 2nd Check'),
+			('4', 'Complete'))
+
+		return choices[int(self.status)-1][1]
 
 
 

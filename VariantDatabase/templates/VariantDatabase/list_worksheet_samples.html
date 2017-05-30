@@ -5,7 +5,7 @@
   	<br>
 
   	<div class="alert alert-info">
-  		You are viewing information relating to: <strong> {{ samples_in_worksheet.0.worksheet }} </strong>
+  		You are viewing information relating to: <strong> {{ worksheet }} </strong>
 	</div>
 
    <ul class="nav nav-tabs">
@@ -117,13 +117,13 @@
 		<thead>
 
 		<tr>
-			<th> Change </th>
+			<th> Change Category </th>
+			<th> Change Description </th>
 			<th> Date </th>
-			<th>User </th> 
+			<th> User </th> 
 
 		</tr>
 
-		{{ worksheet.get_history }}
 
 		</thead>
 
@@ -133,9 +133,10 @@
 
 			<tr>
 
-				<td> {{ change.status.name }} </td>
-				<td> {{ change.date }} </td>
-				<td> {{ change.user }} </td>
+				<td> {{ change }} </td>
+				<td> {{ change.changes }} </td>
+				<td> {{ change.timestamp}} </td>
+				<td> {{ change.actor }} </td>
 
 			</tr>
 
