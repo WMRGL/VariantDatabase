@@ -2,6 +2,46 @@
 
 	{% block content %}
 
+	{{dict}}
+
+<form method="post" action="">
+
+          <table id="variant_table" class = 'table table-hover'>
+          <thead>
+
+            <tr>
+              <th> Variant </th>
+              <th> Result </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+    {% for form in formset %}
+
+
+          
+
+          <tr>
+              <td> {{ form.variant.value}} </td>
+              <td> {{ form.status}} </td>
+
+          </tr>
+
+
+
+    {% endfor %}
+
+          </tbody>
+
+          </table>
+
+
+
+</form>
 
 
 

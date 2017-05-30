@@ -8,7 +8,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.cache import cache
 import pysam_extract
-
+from django.forms import modelformset_factory
+import collections
 
 @login_required
 def home_page(request):
@@ -141,13 +142,14 @@ def list_sample_variants(request, pk_sample):
 def sample_summary(request, pk_sample ):
 
 	"""
-	This view displays the variants from a vcf file in a html table.
+	This view displays the various information about a sample
 
 	"""
 
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
-	if request.method == "POST": 
+
+	if request.method == "POST": #if the user clicked create a new report 
 
 		form = ReportForm(request.POST)
 
@@ -157,7 +159,10 @@ def sample_summary(request, pk_sample ):
 			report = form.save(commit=False)
 			report.sample = sample
 			report.status ='1'
+
 			report.save()
+
+			report.initialise_report()
 
 			return redirect(create_report, sample.pk, report.pk)
 
@@ -172,13 +177,15 @@ def sample_summary(request, pk_sample ):
 
 		if data == None:
 
-			data = VariantSample.objects.filter(sample=sample).order_by('variant__worst_consequence__impact')
+			data = sample.get_variants()
 
-			 #create variant list
+			#create cache
 			cache.set(sample.name+"summary", data, 600)
 
 		paginator = Paginator(data,25)
 
+
+		#Pagination stuff
 		page = request.GET.get('page')
 
 		try:
@@ -480,5 +487,24 @@ def view_detached_variant(request, variant_hash):
 @login_required
 def create_report(request, pk_sample, pk_report):
 
+	report = get_object_or_404(Report, pk=pk_report)
 
-	return render(request, 'VariantDatabase/create_report.html', {} )
+	ReportVariantFormset = modelformset_factory(ReportVariant, fields=('status','variant'), extra=0)
+
+	report_variant_formset = ReportVariantFormset(queryset=ReportVariant.objects.filter(report=report))
+
+	variants = ReportVariant.objects.filter(report=report)
+
+	my_dict =collections.OrderedDict()
+
+	for variant in variants:
+
+		my_dict[variant.variant.variant_hash] = [variant]
+
+	for form in report_variant_formset:
+
+		key = form.__dict__['initial']['variant']
+
+		my_dict[key].append(form)
+
+	return render(request, 'VariantDatabase/create_report.html', {'formset': report_variant_formset, 'dict': my_dict} )

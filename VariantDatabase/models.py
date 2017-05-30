@@ -157,7 +157,17 @@ class Sample(models.Model):
 			return False
 
 
-	
+	def get_variants(self):
+		"""
+		Look in all VariantSample objects.
+		Return all variants linked with this sample.
+		"""
+
+		variant_samples =VariantSample.objects.filter(sample=self).order_by('variant__worst_consequence__impact')
+
+		variant_samples =[variant.variant for variant in variant_samples]
+
+		return variant_samples
 
 
 
@@ -816,6 +826,22 @@ class Report(models.Model):
 
 		return choices[int(self.status)-1][1]
 
+	def initialise_report(self):
+		"""
+		Create ReportVariant Objects for the report
+
+		"""
+		variants = self.sample.get_variants()
+
+		for variant in variants:
+
+			new_report_variant = ReportVariant(variant=variant, report=self, status='1')
+
+			new_report_variant.save()
+
+		return None
+
+
 
 
 class ReportVariant(models.Model):
@@ -823,10 +849,15 @@ class ReportVariant(models.Model):
 	Stores what the user has decided for each Variant in a sample.
 
 	"""
+	choices =(
+			('1', 'None'),
+			('2', 'Pathogenic'),
+			('3', 'Benign'),
+			('4', 'VUS'))
 
 	variant = models.ForeignKey(Variant)
 	report = models.ForeignKey(Report)
-	status = models.TextField() #e.g pathogenic
+	status = models.CharField(max_length=1, choices = choices) #e.g pathogenic
 
 
 auditlog.register(Report)

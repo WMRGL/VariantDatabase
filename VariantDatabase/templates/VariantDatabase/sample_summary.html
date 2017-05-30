@@ -29,6 +29,8 @@
   	<!--Summary Tab displays filtered variants -->
   	<div id="summary" class="tab-pane fade in active">
 
+
+
   		<table id="variant_table" class = 'table table-hover'>
 
 	  	  	<thead>
@@ -52,12 +54,12 @@
 
 						<tr>
 
-							<td> {{ variant.variant.chromosome }} {{ variant.variant.position }} </td>
-							<td>  {{ variant.variant.ref|truncatechars:9 }} </td>
-							<td>  {{ variant.variant.alt|truncatechars:9 }} </td>
-							<td>  {{ variant.variant.worst_consequence }} </td>
-							<td>  {{ variant.variant.max_af }} </td>
-							<td>  {% for gene in variant.variant.get_genes %}
+							<td> {{ variant.chromosome }} {{ variant.position }} </td>
+							<td>  {{ variant.ref|truncatechars:9 }} </td>
+							<td>  {{ variant.alt|truncatechars:9 }} </td>
+							<td>  {{ variant.worst_consequence }} </td>
+							<td>  {{ variant..max_af }} </td>
+							<td>  {% for gene in variant.get_genes %}
 
 	       							{{ gene }} 
 
@@ -78,8 +80,8 @@
 							        <h4 class="modal-title">Variant Detail</h4>
 							      </div>
 							      <div class="modal-body">
-							        <p>{{variant.variant}}</p>
-							        <a href ="{% url 'variant_detail' pk_sample=sample.pk variant_hash=variant.variant.variant_hash  %}"> View </a> 
+							        <p>{{variant}}</p>
+							        <a href ="{% url 'variant_detail' pk_sample=sample.pk variant_hash=variant.variant_hash  %}"> View </a> 
 							      </div>
 							      <div class="modal-footer"> </div>
 							   
