@@ -164,7 +164,7 @@ def sample_summary(request, pk_sample ):
 
 			report.initialise_report()
 
-			return redirect(create_report, sample.pk, report.pk)
+			return redirect(create_sample_report, sample.pk, report.pk)
 
 	else:
 
@@ -485,11 +485,30 @@ def view_detached_variant(request, variant_hash):
 	return render(request, 'VariantDatabase/variant_view.html', {'variant': variant, 'transcripts': transcripts, 'other_alleles': other_alleles, 'classifications': classifications } )
 
 @login_required
-def create_report(request, pk_sample, pk_report):
+def create_sample_report(request, pk_sample, pk_report):
 
 	report = get_object_or_404(Report, pk=pk_report)
 
-	ReportVariantFormset = modelformset_factory(ReportVariant, fields=('status','variant'), extra=0)
+
+	if request.method == 'POST':
+
+		ReportVariantFormset = modelformset_factory(ReportVariant, fields=('status','variant'), extra=0, widgets={"variant": forms.HiddenInput()})
+
+		formset = ReportVariantFormset(request.POST)
+
+		if formset.is_valid():
+
+			instances = formset.save()
+
+			report.status = '2'
+
+			report.save()
+
+			return redirect(view_sample_report, pk_sample, pk_report)
+
+
+
+	ReportVariantFormset = modelformset_factory(ReportVariant, fields=('status','variant'), extra=0, widgets={"variant": forms.HiddenInput()})
 
 	report_variant_formset = ReportVariantFormset(queryset=ReportVariant.objects.filter(report=report))
 
@@ -507,4 +526,13 @@ def create_report(request, pk_sample, pk_report):
 
 		my_dict[key].append(form)
 
-	return render(request, 'VariantDatabase/create_report.html', {'formset': report_variant_formset, 'dict': my_dict} )
+	return render(request, 'VariantDatabase/create_sample_report.html', {'formset': report_variant_formset, 'dict': my_dict} )
+
+
+def view_sample_report(request, pk_sample, pk_report):
+
+	report = get_object_or_404(Report, pk=pk_report)
+
+	report_variants = ReportVariant.objects.filter(report=report)
+
+	return render(request, 'VariantDatabase/view_sample_report.html' , {'report': report, 'report_variants': report_variants})

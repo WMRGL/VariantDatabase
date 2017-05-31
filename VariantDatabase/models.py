@@ -860,5 +860,17 @@ class ReportVariant(models.Model):
 	status = models.CharField(max_length=1, choices = choices) #e.g pathogenic
 
 
+	def get_status(self):
+
+		choices =(
+			('1', 'None'),
+			('2', 'Pathogenic'),
+			('3', 'Benign'),
+			('4', 'VUS'))
+
+		return choices[int(self.status)-1][1]
+
+
+
 auditlog.register(Report)
 auditlog.register(Worksheet)

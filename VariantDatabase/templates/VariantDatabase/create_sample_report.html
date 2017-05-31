@@ -1,0 +1,58 @@
+{% extends 'VariantDatabase/base.html' %}
+
+	{% block content %}
+
+
+<form method="post" action=""> {% csrf_token %}
+
+{{ formset.management_form }}
+
+
+          <table id="variant_table" class = 'table table-hover'>
+          <thead>
+
+            <tr>
+              <th> Variant </th>
+              <th> Result </th>
+
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+    {% for key, value in dict.items %}
+
+        {{ value.1.id }}
+
+          <tr>
+              <td> {{ value.0.variant}} </td>
+              <td> {{ value.1.status  }} </td>
+               {{ value.1.variant  }} 
+
+          </tr>
+
+         
+
+    {% endfor %}
+
+          </tbody>
+
+          </table>
+
+          <hr>
+          <br>
+
+        <div class="form-actions">
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+
+        </div>
+
+</form>
+
+
+
+	{% endblock %}

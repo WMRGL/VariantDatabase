@@ -153,6 +153,7 @@
 					<th> Creation Date </th>
 					<th> Status </th>
 					<th> Author </th>
+					<th> View </th>
 
 
 
@@ -170,6 +171,7 @@
 					<td> {{report.get_creation_date }}</td>
 					<td> {{report.get_status }}</td>
 					<td> {{ report.get_author}}</td>
+					<td> <a href="{% url 'view_sample_report' pk_sample=sample.pk pk_report=report.pk  %}"> View  </a></td>
 
 
 				</tr>

@@ -1,0 +1,58 @@
+{% extends 'VariantDatabase/base.html' %}
+
+	{% block content %}
+
+
+  <br>
+  <div class="alert alert-info">
+    <strong>Alert!</strong> Report Information: {{report}}
+  </div>
+
+
+  <table id="variant_table" class = 'table table-hover'>
+    <thead>
+
+      <tr>
+        <th> Variant </th>
+        <th> Result </th>
+
+      </tr>
+
+    </thead>
+
+
+    <tbody>
+
+    {% for variant in report_variants %}
+
+
+      <tr>
+          <td>{{variant.variant}} </td>
+          <td>{{ variant.get_status}} </td>
+      </tr>
+
+   
+    {% endfor %}
+
+    </tbody>
+
+  </table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	{% endblock %}
