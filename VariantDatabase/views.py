@@ -486,13 +486,20 @@ def view_detached_variant(request, variant_hash):
 
 @login_required
 def create_sample_report(request, pk_sample, pk_report):
+	"""
+	Allow the user to create a new report and select their responses.
+
+	Uses the Model Formset functionaility of Django to accommplish this.
+
+	"""
 
 	report = get_object_or_404(Report, pk=pk_report)
 
+	ReportVariantFormset = modelformset_factory(ReportVariant, fields=('status','variant'), extra=0, widgets={"variant": forms.HiddenInput()})
 
-	if request.method == 'POST':
+	if request.method == 'POST': # if the user clicks submit
 
-		ReportVariantFormset = modelformset_factory(ReportVariant, fields=('status','variant'), extra=0, widgets={"variant": forms.HiddenInput()})
+		#create a formset factory - using the ReportVariant model. Hide the variant field.
 
 		formset = ReportVariantFormset(request.POST)
 
@@ -507,14 +514,16 @@ def create_sample_report(request, pk_sample, pk_report):
 			return redirect(view_sample_report, pk_sample, pk_report)
 
 
+	report_variant_formset = ReportVariantFormset(queryset=ReportVariant.objects.filter(report=report)) # populate formset
 
-	ReportVariantFormset = modelformset_factory(ReportVariant, fields=('status','variant'), extra=0, widgets={"variant": forms.HiddenInput()})
+	variants = ReportVariant.objects.filter(report=report) #get the variants from the ReportVariant model.
 
-	report_variant_formset = ReportVariantFormset(queryset=ReportVariant.objects.filter(report=report))
 
-	variants = ReportVariant.objects.filter(report=report)
+	#Create an ordered dict. Use this to store Variants and forms together using Variant hash as key
+	#For example: dict = {variant_hash:[Variant, Form]}
+	#This allows us to put variants and selector drop downs from form next to each other in a HTML table.
 
-	my_dict =collections.OrderedDict()
+	my_dict =collections.OrderedDict() 
 
 	for variant in variants:
 
@@ -528,8 +537,11 @@ def create_sample_report(request, pk_sample, pk_report):
 
 	return render(request, 'VariantDatabase/create_sample_report.html', {'formset': report_variant_formset, 'dict': my_dict} )
 
-
+@login_required
 def view_sample_report(request, pk_sample, pk_report):
+	"""
+	View a sample report i.e. the output of the create_sample_report view.
+	"""
 
 	report = get_object_or_404(Report, pk=pk_report)
 

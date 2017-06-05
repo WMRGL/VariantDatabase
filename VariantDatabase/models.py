@@ -8,7 +8,6 @@ from django.contrib.contenttypes.models import ContentType
 from auditlog.models import LogEntry
 from auditlog.registry import auditlog
 
-
 class Section(models.Model):
 	"""
 	The Section model represents a section within the WMRGL laboratory e.g. Germline
@@ -35,8 +34,6 @@ class Section(models.Model):
 		all_worksheets = Worksheet.objects.filter(section=self)
 
 		return all_worksheets
-
-
 
 class Worksheet(models.Model):
 	"""
@@ -109,7 +106,6 @@ class Worksheet(models.Model):
 		except:
 
 			return None
-
 
 
 class Sample(models.Model):
@@ -840,9 +836,6 @@ class Report(models.Model):
 			new_report_variant.save()
 
 		return None
-
-
-
 
 class ReportVariant(models.Model):
 	"""

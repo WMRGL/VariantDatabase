@@ -4,11 +4,68 @@
 
 
   <br>
-  <div class="alert alert-info">
-    <strong>Alert!</strong> Report Information: {{report}}
-  </div>
+    <hr>
+
+      <h3> Report Information </h3>
+        <hr>
+
+  <table id="variant_table" class = 'table table-hover'>
+
+       <div class="tab-content">
+
+    <div id="summary" class="tab-pane fade in active">
+      <div class = "row">
+        <div class = 'col-sm-4'>
+
+          <table class = 'table table-bordered' >
+
+            <thead>
+
+              <tr>
+                <th colspan="2">Summary</th>
+              </tr>
+
+            </thead>
 
 
+
+
+
+            <tbody>
+
+              <tr>
+                <td> Report ID </td>
+                <td>{{ report.pk}} </td>
+
+              </tr>
+
+
+              <tr>
+                <td> Sample </td>
+                <td>{{ report.sample}} </td>
+
+              </tr>
+
+              <tr>
+                <td> Current Status </td>
+                <td>{{ report.get_status}} </td>
+
+              </tr>
+
+
+
+
+              </tbody>
+
+              </table>
+
+  <hr>
+
+
+
+<h3> Report</h3>
+
+  <hr>
   <table id="variant_table" class = 'table table-hover'>
     <thead>
 
@@ -39,6 +96,28 @@
   </table>
 
 
+  <hr>
+
+<h3> History</h3>
+  <hr>
+
+
+    <table class = 'table table-hover'>
+
+    <thead>
+
+    <tr>
+      <th> Change Category </th>
+      <th> Change Description </th>
+      <th> Date </th>
+      <th> User </th> 
+
+    </tr>
+
+
+    </thead>
+
+    <tbody>
 
 
 
@@ -46,10 +125,24 @@
 
 
 
+  {% for change in report.get_history  %}
 
 
+      <tr>
+
+        <td> {{ change }} </td>
+        <td> {{ change.changes }} </td>
+        <td> {{ change.timestamp}} </td>
+        <td> {{ change.actor }} </td>
+
+      </tr>
 
 
+      {% endfor %}
+
+
+</tbody>
+</table>
 
 
 

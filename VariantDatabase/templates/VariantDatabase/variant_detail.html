@@ -199,7 +199,19 @@
         <tbody>
           <tr>
             <td> Max AF </td> 
-            <td> {{variant.max_af}} </td>
+
+              {% if variant.max_af < 0.01 %}
+
+
+            <td class="bg-danger"> {{variant.max_af}} </td>
+
+            {% else %}
+
+              <td> {{variant.max_af}} </td>
+            {% endif %}
+
+
+
           </tr>
 
           <tr>
