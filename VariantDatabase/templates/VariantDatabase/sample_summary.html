@@ -58,7 +58,7 @@
 							<td>  {{ variant.ref|truncatechars:9 }} </td>
 							<td>  {{ variant.alt|truncatechars:9 }} </td>
 							<td>  {{ variant.worst_consequence }} </td>
-							<td>  {{ variant..max_af }} </td>
+							<td>  {{ variant.max_af }} </td>
 							<td>  {% for gene in variant.get_genes %}
 
 	       							{{ gene }} 
