@@ -304,14 +304,14 @@ class Command(BaseCommand):
 						variant_transcript.save()
 
 
-				if new_variant.worst_consequence.impact <=13 and new_variant.max_af <0.05: # only create this model with interesting variants - needs work
+				#if new_variant.worst_consequence.impact <=13 and new_variant.max_af <0.05: # only create this model with interesting variants - needs work
 
 
-					new_variant_sample = VariantSample(variant=new_variant, sample=new_sample)
+				new_variant_sample = VariantSample(variant=new_variant, sample=new_sample)
 
-					new_variant_sample.save()
+				new_variant_sample.save()
 
-					var_sample_count = var_sample_count +1
+				var_sample_count = var_sample_count +1
 
 
 

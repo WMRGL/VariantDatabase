@@ -68,7 +68,13 @@ class Worksheet(models.Model):
 			('3', 'Awaiting 2nd Check'),
 			('4', 'Complete'))
 
-		return choices[int(self.status)-1][1]
+		try:
+
+			return choices[int(self.status)-1][1]
+
+		except:
+
+			return None
 
 	def awaiting_qc_approval(self):
 		"""

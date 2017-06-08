@@ -349,7 +349,7 @@ def view_all_variants(request):
 		except:
 
 			alts  =Gene.objects.filter(name__icontains=gene_name)
-
+			
 			if len(alts) <5:
 
 				alts = alts
@@ -357,6 +357,8 @@ def view_all_variants(request):
 			else:
 
 				alts =[]
+
+			
 
 	return render(request, 'VariantDatabase/view_all_variants.html', {'gene_name': gene_name, 'alts': alts})
 
