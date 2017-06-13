@@ -159,13 +159,16 @@ class Sample(models.Model):
 			return False
 
 
-	def get_variants(self):
+	def get_variants(self, frequency, consequence):
 		"""
 		Look in all VariantSample objects.
 		Return all variants linked with this sample.
 		"""
 
-		variant_samples =VariantSample.objects.filter(sample=self).order_by('variant__worst_consequence__impact')
+
+		#variant_samples =VariantSample.objects.filter(sample=self, variant__max_af__lte=frequency).order_by('variant__worst_consequence__impact')
+
+		variant_samples =VariantSample.objects.filter(sample=self, variant__max_af__lte=frequency, variant__worst_consequence__impact__lte=consequence).order_by('variant__worst_consequence__impact')
 
 		variant_samples =[variant.variant for variant in variant_samples]
 

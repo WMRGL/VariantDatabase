@@ -168,22 +168,51 @@ def sample_summary(request, pk_sample ):
 
 	else:
 
+		consequence = request.GET.get('consequence')
+		frequency = request.GET.get('freq')
+		
+		if consequence == 'All':
+
+			consequence_filter = 100
+
+		elif consequence == 'LOF':
+
+			consequence_filter = 8
+
+		elif consequence == 'LOFplus': 
+
+			consequence_filter = 13
+
+		else:
+
+			consequence_filter = 100
+
+		try:
+
+			frequency = float(frequency)
+
+			if frequency >1.0:
+
+				frequency_filter = 1.0
+
+			else:
+
+				frequency_filter = frequency
+
+		except:
+
+			frequency_filter = 1.0
+
+
+		data = sample.get_variants(frequency_filter, consequence_filter)
+
 		form = ReportForm()
 
 		reports = Report.objects.filter(sample=sample)
 
-		#avoid recalculating using cache
-		data = cache.get(sample.name+"summary")
-
-		if data == None:
-
-			data = sample.get_variants()
-
-			#create cache
-			cache.set(sample.name+"summary", data, 600)
+		
 
 		paginator = Paginator(data,25)
-
 
 		#Pagination stuff
 		page = request.GET.get('page')
@@ -201,7 +230,7 @@ def sample_summary(request, pk_sample ):
 
 			variants = paginator.page(paginator.num_pages)
 
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'form': form, 'reports': reports})
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'form': form, 'reports': reports, 'filter': (consequence_filter, frequency_filter)})
 
 
 
