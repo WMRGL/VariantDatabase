@@ -29,9 +29,11 @@ To import data use the python manage.py import_vcf command e.g. python manage.py
 
 ## Requirements
 
-django 1.10.5
-pysam
-django-auditlog
+``django 1.10.5``
+
+``pysam``
+
+``django-auditlog``
 
 ## Tests
 
