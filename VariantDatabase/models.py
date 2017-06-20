@@ -44,10 +44,12 @@ class Worksheet(models.Model):
 	"""
 
 	choices =(
-			('1', 'New Worksheet'),
-			('2', 'Awaiting 1st Check'),
-			('3', 'Awaiting 2nd Check'),
-			('4', 'Complete'))
+			('1', 'New Worksheet - Awaiting Sequencing'),
+			('2', 'Awaiting QC'),
+			('3', 'Analysis Underway'),
+			('4', 'Complete'),
+			('5', 'Failed'))
+			
 
 	name = models.CharField(max_length=100)
 	section = models.ForeignKey(Section)
@@ -63,10 +65,11 @@ class Worksheet(models.Model):
 		Returns current status.
 		"""
 		choices =(
-			('1', 'New Worksheet'),
-			('2', 'Awaiting 1st Check'),
-			('3', 'Awaiting 2nd Check'),
-			('4', 'Complete'))
+				('1', 'New Worksheet - Awaiting Sequencing'),
+				('2', 'Awaiting QC'),
+				('3', 'Analysis Underway'),
+				('4', 'Complete'),
+				('5', 'Failed'))
 
 		try:
 
@@ -174,7 +177,23 @@ class Sample(models.Model):
 
 		return variant_samples
 
+	def get_status(self):
+		"""
+		Returns current status.
+		"""
+		choices =(
+				('1', 'New Sample'),
+				('2', 'Awaiting 1st Check'),
+				('3', 'Awaiting 2nd Check'),
+				('4', 'Complete'))
 
+		try:
+
+			return choices[int(self.status)-1][1]
+
+		except:
+
+			return None
 
 class VariantInformation(models.Model):
 
