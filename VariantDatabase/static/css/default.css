@@ -11,9 +11,8 @@
     height: auto;
     padding: 15px;
   }
-  .row.content {height:auto;} 
-}
 
+/*
 button{
     height:35px; 
     width:100px; 
@@ -22,12 +21,12 @@ button{
     margin-left:110px;
     float:none; display:inline-block;
 }
-
+*/
 
 table {
     table-layout: fixed; 
     word-wrap: break-word;
 }
 
-.post-form textarea, .post-form input {
+
   

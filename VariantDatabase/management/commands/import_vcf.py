@@ -19,26 +19,25 @@ class Command(BaseCommand):
 
 	def add_arguments(self, parser):
 
-		parser.add_argument('worksheet_id', nargs=1, type = int)
+		parser.add_argument('worksheet_id', nargs=1, type = str)
 		parser.add_argument('vcf_file', nargs =1, type = str)
 		parser.add_argument('sample_name', nargs=1, type = str)
-		parser.add_argument('patient_initials', nargs =1, type = str)
 
 	def handle(self, *args, **options):
 
 		# Get the worksheet from the database
 		# Display an error if we could not retrieve it and end program
 		complete = False
-		worksheet_pk = options['worksheet_id'][0]
+		worksheet_name = options['worksheet_id'][0]
 
 		try:
 
-			worksheet = Worksheet.objects.get(pk=worksheet_pk)
-			self.stdout.write(self.style.SUCCESS("Successfully found worksheet with pk: " + str(worksheet_pk)))
+			worksheet = Worksheet.objects.get(name=worksheet_name)
+			self.stdout.write(self.style.SUCCESS("Successfully found worksheet with pk: " + worksheet_name))
 
 		except Worksheet.DoesNotExist:
 
-			raise CommandError('There is no worksheet with the pk: ' + str(worksheet_pk))
+			raise CommandError('There is no worksheet with the pk: ' + worksheet_name)
 
 
 		# Now open the vcf file that has been provided and validate it
@@ -57,22 +56,6 @@ class Command(BaseCommand):
 		else:
 
 			self.stdout.write(self.style.SUCCESS('The vcf file ' + vcf_file_path + ' was successfully opened and validated'))
-
-
-		# Now we can check if there is already a sample with that name
-		# Unique sample name is not enforced on the database level - but is good to check
-
-
-		sample = Sample.objects.filter(name =sample_name)
-
-		if sample.exists() == True:
-
-			raise CommandError('Sample with name: '+sample_name + ' already exists in the DB')
-
-		else:
-
-			#sample = Sample.objects.get(name=sample_name)
-			self.stdout.write(self.style.SUCCESS('Sample with name: '+sample_name + ' is new - proceeding'))
 
 
 
@@ -123,17 +106,42 @@ class Command(BaseCommand):
 		with transaction.atomic():
 
 			# Create a new sample using the information we have
-		
+			"""
 			new_sample = Sample()
 			new_sample.name = sample_name
-			new_sample.patient_initials = options['patient_initials'][0]
 			new_sample.worksheet = worksheet
 			new_sample.vcf_file = vcf_file_path
 			new_sample.visible = False
 			new_sample.status = '1'
 			new_sample.save()
+			"""
 
-			self.stdout.write(self.style.SUCCESS('Sample '+ new_sample.name + ' created'))
+			sample = Sample.objects.filter(worksheet = worksheet, name=sample_name)
+
+			if len(sample) ==1:
+
+				self.stdout.write(self.style.SUCCESS('Found sample ' +sample[0].name +  ' in worksheet ' + worksheet.name))
+
+			else:
+
+
+				raise CommandError('Error either no sample or >1 sample')
+
+
+
+
+
+
+			sample = sample[0]
+
+			if sample.vcf_file != 'None':
+
+				raise CommandError('Sample ' + sample.name + ' has been processed before. Ending.')
+
+			sample.vcf_file = vcf_file_path
+
+			sample.save()
+
 			self.stdout.write(self.style.SUCCESS('Processing Variants'))
 
 
@@ -307,7 +315,7 @@ class Command(BaseCommand):
 				#if new_variant.worst_consequence.impact <=13 and new_variant.max_af <0.05: # only create this model with interesting variants - needs work
 
 
-				new_variant_sample = VariantSample(variant=new_variant, sample=new_sample)
+				new_variant_sample = VariantSample(variant=new_variant, sample=sample)
 
 				new_variant_sample.save()
 
@@ -317,9 +325,9 @@ class Command(BaseCommand):
 
 				var_count = var_count +1
 
-			new_sample.visible = True
+			#new_sample.visible = True
 
-			new_sample.save()
+			#new_sample.save()
 
 			self.stdout.write(self.style.SUCCESS('Complete'))
 			self.stdout.write(self.style.SUCCESS(str(var_count)+ ' variants in file'))

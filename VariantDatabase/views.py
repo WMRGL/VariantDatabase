@@ -10,6 +10,8 @@ from django.core.cache import cache
 import pysam_extract
 from django.forms import modelformset_factory
 import collections
+from django.db import transaction
+import csv
 
 @login_required
 def home_page(request):
@@ -579,3 +581,116 @@ def view_sample_report(request, pk_sample, pk_report):
 	report_variants = ReportVariant.objects.filter(report=report)
 
 	return render(request, 'VariantDatabase/view_sample_report.html' , {'report': report, 'report_variants': report_variants})
+
+
+def upload_sample_sheet(request):
+	"""
+	Upload a SampleSheet
+	First stage of the data flow
+
+	"""
+
+	error = [0,'None']
+	def parse_sample_sheet(file):
+
+		expected = ['Sample_ID', 'Sample_Name', 'Sample_Plate','Sample_Well', 'I7_Index_ID',  'index', 'Sample_Project']
+
+		flag =0
+
+		sample_list = []
+
+		
+
+		reader = csv.reader(file, delimiter=',')
+
+		for row in reader:
+
+			if row[0] == 'Sample_ID':
+
+				flag =1
+
+				for index, title in enumerate(expected):
+
+					if title != row[index]:
+
+						return False
+
+			if flag ==1:
+
+				sample_list.append([row[0], row[1],row[2],row[3],row[4],row[5],row[6]])
+
+
+		return sample_list[1:]
+
+
+	if request.method == 'POST':
+
+		
+
+		form = SampleSheetForm(request.POST, request.FILES)
+
+		if form.is_valid():
+
+			list =[]
+
+			section = form.cleaned_data['sections'][0]
+			comment = form.cleaned_data['comment']
+			worksheet_name = form.cleaned_data['worksheet_name']
+			sample_sheet = request.FILES['sample_sheet']
+
+			list.append(form.cleaned_data)
+
+			#does a worksheet with that name exist?
+
+			worksheet = Worksheet.objects.filter(name = worksheet_name)
+
+			if worksheet.exists():
+
+				error = [1,'Worksheet with this name already exists!']
+
+				return render(request, 'VariantDatabase/upload_sample_sheet.html', {'form': form, 'error': error})
+
+			else:
+
+				with transaction.atomic():
+
+
+					sample_data = parse_sample_sheet(sample_sheet)
+
+					if sample_sheet == False: #does it have correct titles
+
+						error = [2,'Could not process SampleSheet']
+
+						return render(request, 'VariantDatabase/upload_sample_sheet.html', {'form': form, 'error': error})
+
+					else:
+
+						new_worksheet = Worksheet(name=worksheet_name, section=section,comment=comment, status ='1')
+
+						new_worksheet.save()
+
+						for sample in sample_data:
+
+							sample_id = sample[0]
+							sample_name = sample[1]
+							sample_plate = sample[2]
+							sample_well = sample[3]
+							sample_i7_index = sample[4]
+							sample_index = sample[5]
+							sample_project = sample[6]
+
+							new_sample = Sample(name= sample_name, worksheet=new_worksheet, vcf_file='None', visible=True,status='1',
+							 sample_id=sample_id, sample_plate =sample_plate, sample_well=sample_well, i7_index_id=sample_i7_index, index=sample_index, sample_project=sample_project )
+
+							new_sample.save()
+
+						error = [3,'SampleSheet uploaded']
+
+						return render(request, 'VariantDatabase/upload_sample_sheet.html', {'form': form, 'error': error})
+
+	else:
+
+		form = SampleSheetForm()
+		
+
+	return render(request, 'VariantDatabase/upload_sample_sheet.html', {'form': form, 'error': error})

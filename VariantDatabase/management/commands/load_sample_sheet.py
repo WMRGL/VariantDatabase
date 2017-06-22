@@ -2,11 +2,14 @@ from django.core.management.base import BaseCommand, CommandError
 from VariantDatabase.models import *
 import csv
 from django.db import transaction
-def get_sample_ids(file):
+
+def parse_sample_sheet(file):
+
+	expected = ['Sample_ID', 'Sample_Name', 'Sample_Plate','Sample_Well', 'I7_Index_ID',  'index', 'Sample_Project']
 
 	flag =0
 
-	sample_ids =[]
+	sample_list = []
 
 	with open(file) as csvfile:
 
@@ -18,13 +21,19 @@ def get_sample_ids(file):
 
 				flag =1
 
+				for index, title in enumerate(expected):
+
+					if title != row[index]:
+
+						return False
+
 			if flag ==1:
 
-				sample_ids.append(row[0])
+				sample_list.append([row[0], row[1],row[2],row[3],row[4],row[5],row[6]])
 
 
+	return sample_list[1:]
 
-	return sample_ids[1:]
 
 class Command(BaseCommand):
 
@@ -64,25 +73,31 @@ class Command(BaseCommand):
 
 			new_worksheet.save()
 
-			sample_names = get_sample_ids(sample_sheet)
+			sample_data = parse_sample_sheet(sample_sheet)
 
-			for sample in sample_names:
+			for sample in sample_data:
 
-				
+				sample_id = sample[0]
+				sample_name = sample[1]
+				sample_plate = sample[2]
+				sample_well = sample[3]
+				sample_i7_index = sample[4]
+				sample_index = sample[5]
+				sample_project = sample[6]
 
 				sample_model = Sample.objects.filter(name =sample)
 
 				if sample_model.exists() == True:
 
-					raise CommandError('Sample with name: '+sample + ' already exists in the DB')
+					raise CommandError('Sample with name: '+sample[1] + ' already exists in the DB')
 
 				else:
 
-					#sample = Sample.objects.get(name=sample_name)
-					self.stdout.write(self.style.SUCCESS('Sample with name: '+sample + ' is new - proceeding'))
+					self.stdout.write(self.style.SUCCESS('Sample with name: '+sample[1] + ' is new - proceeding'))
 
 
-				new_sample = Sample(name= sample, patient_initials='NA', worksheet=new_worksheet, vcf_file='None', visible=True,status='1')
+				new_sample = Sample(name= sample_name, worksheet=new_worksheet, vcf_file='None', visible=True,status='1',
+				 sample_id=sample_id, sample_plate =sample_plate, sample_well=sample_well, i7_index_id=sample_i7_index, index=sample_index, sample_project=sample_project )
 
 				new_sample.save()
 

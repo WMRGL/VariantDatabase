@@ -51,7 +51,7 @@ class Worksheet(models.Model):
 			('5', 'Failed'))
 			
 
-	name = models.CharField(max_length=100)
+	name = models.CharField(max_length=100, unique=True)
 	section = models.ForeignKey(Section)
 	comment = models.TextField()
 	status = models.CharField(max_length=1, choices = choices)
@@ -132,12 +132,19 @@ class Sample(models.Model):
 			('4', 'Complete'))
 
 
-	name = models.CharField(max_length=50, unique=True)
-	patient_initials = models.CharField(max_length=50)
+	name = models.CharField(max_length=50)
 	worksheet = models.ForeignKey(Worksheet)
 	vcf_file = models.TextField() 
 	visible = models.BooleanField() #To allow the hiding of a sample
 	status = models.CharField(max_length=1, choices = choices)
+
+	sample_id = models.CharField(max_length=50) #from sample sheet
+	sample_plate = models.CharField(max_length =50)
+	sample_well = models.CharField(max_length =10)
+	i7_index_id = models.IntegerField()
+	index = models.CharField(max_length =50)
+	sample_project = models.CharField(max_length =50, null=True, blank=True)
+
 
 
 	def __str__(self):

@@ -18,6 +18,8 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^logout/$', auth_views.logout, {'template_name': 'VariantDatabase/logout.html'}, name='logout'),
 				url(r'^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)$', views.create_sample_report, name='create_sample_report'),
 				url(r'^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/view$', views.view_sample_report, name='view_sample_report'),
+				url(r'^uploadsamplesheet/$', views.upload_sample_sheet, name='upload_sample_sheet'),
+
 ]
 
 
