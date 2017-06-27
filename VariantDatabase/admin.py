@@ -18,4 +18,4 @@ admin.site.register(Transcript)
 admin.site.register(VariantTranscript)
 admin.site.register(Report)
 admin.site.register(ReportVariant)
-
+admin.site.register(ReadLaneQuality)

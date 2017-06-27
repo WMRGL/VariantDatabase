@@ -28,7 +28,7 @@
 
 		<tr>
 			<th> Sample Name </th>
-			<th> Patient Initials </th>
+
 			<th> Sample Status </th>
 
 
@@ -41,7 +41,7 @@
 		<tr>
 
 			<td> <a href= "{% url 'sample_summary' sample.pk  %}"> {{ sample.name }}   </a> </td>
-			<td> {{ sample.patient_initials }} </td>
+
 			<td>{{ sample.get_status      }} </td>
 		
 

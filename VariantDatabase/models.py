@@ -899,6 +899,41 @@ class ReportVariant(models.Model):
 		return choices[int(self.status)-1][1]
 
 
+class ReadLaneQuality(models.Model):
+
+	worksheet = models.ForeignKey(Worksheet)
+	read = models.IntegerField()
+	lane = models.IntegerField()
+
+	yield_g = models.FloatField()
+	density = models.FloatField()
+	cluster_count_pf = models.FloatField()
+	cluster_count = models.FloatField()
+	phasing = models.FloatField()
+	prephasing = models.FloatField()
+	read_count = models.FloatField()
+	reads_pf = models.FloatField()
+	percent_gt_q30 = models.FloatField(null=True)
+	percent_aligned = models.FloatField(null=True)
+	error_rate = models.FloatField(null=True)
+	error_rate_35 = models.FloatField(null=True)
+	error_rate_50 = models.FloatField(null=True)
+	error_rate_75 = models.FloatField(null=True)
+	error_rate_100 = models.FloatField(null=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 auditlog.register(Report)
 auditlog.register(Worksheet)
