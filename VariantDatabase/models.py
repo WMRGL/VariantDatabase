@@ -45,7 +45,7 @@ class Worksheet(models.Model):
 
 	choices =(
 			('1', 'New Worksheet - Awaiting Sequencing'),
-			('2', 'Awaiting QC'),
+			('2', 'Awaiting QC Check'),
 			('3', 'Analysis Underway'),
 			('4', 'Complete'),
 			('5', 'Failed'))
@@ -66,7 +66,7 @@ class Worksheet(models.Model):
 		"""
 		choices =(
 				('1', 'New Worksheet - Awaiting Sequencing'),
-				('2', 'Awaiting QC'),
+				('2', 'Awaiting QC Check'),
 				('3', 'Analysis Underway'),
 				('4', 'Complete'),
 				('5', 'Failed'))
@@ -115,6 +115,48 @@ class Worksheet(models.Model):
 		except:
 
 			return None
+
+
+	def get_quality_data(self):
+
+		data = ReadLaneQuality.objects.filter(worksheet=self).order_by('read', 'lane')
+
+		data_list = []
+
+		read_num = None
+
+		for read_lane in data:
+
+			if read_lane.read != read_num:
+
+				read_num = read_lane.read
+
+				data_list.append([read_lane])
+
+			else:
+
+				data_list[len(data_list)-1].append(read_lane)
+
+
+		return data_list
+
+	def qc_present(self):
+		"""
+		Returns True if QC has been uploaded.
+		"""
+
+		data = ReadLaneQuality.objects.filter(worksheet=self)
+
+		if data.exists():
+
+			return True
+
+		else:
+
+			return False
+
+
+
 
 
 class Sample(models.Model):
@@ -920,6 +962,24 @@ class ReadLaneQuality(models.Model):
 	error_rate_50 = models.FloatField(null=True)
 	error_rate_75 = models.FloatField(null=True)
 	error_rate_100 = models.FloatField(null=True)
+
+
+	def format_density(self):
+
+		return self.density/1000
+
+	def cluster_pf_percent(self):
+
+		return (self.cluster_count_pf/self.cluster_count)*100
+
+	def format_reads(self):
+
+		return self.read_count/1000000
+
+	def format_reads_pf(self):
+
+		return self.reads_pf/1000000
+
 
 
 

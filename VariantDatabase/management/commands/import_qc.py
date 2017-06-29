@@ -94,6 +94,8 @@ class Command(BaseCommand):
 
 		with transaction.atomic():
 
+			#ADD CHECK IF WORKBOOK ALREADY HAS QUALITY DATA
+
 
 			ngs_folder_path = options['ngs_folder_path'][0]
 			worksheet_pk =  options['worksheet_pk'][0]
@@ -136,6 +138,9 @@ class Command(BaseCommand):
 												percent_aligned=percent_aligned,error_rate=error_rate,error_rate_35=error_rate_35,error_rate_75=error_rate_75,error_rate_100=error_rate_100)
 
 				new_qc_model.save()
+
+
+		worksheet.status = '2'
 
 
 		self.stdout.write(self.style.SUCCESS('Complete'))

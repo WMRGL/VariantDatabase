@@ -54,7 +54,7 @@ def list_worksheet_samples(request, pk_worksheet):
 
 		#if user is authorised
 		worksheet = worksheet = get_object_or_404(Worksheet, pk=pk_worksheet)
-		worksheet.status = '2'
+		worksheet.status = '3'
 		worksheet.save()
 
 		return redirect(list_worksheet_samples, pk_worksheet)
@@ -64,10 +64,14 @@ def list_worksheet_samples(request, pk_worksheet):
 
 		form = WorksheetStatusUpdateForm()
 
+		quality_data = worksheet.get_quality_data()
+
+
+
 
 	samples_in_worksheet = Sample.objects.filter(worksheet = worksheet, visible=True)
 
-	return render(request, 'VariantDatabase/list_worksheet_samples.html', {'samples_in_worksheet': samples_in_worksheet, 'form': form, 'worksheet': worksheet})
+	return render(request, 'VariantDatabase/list_worksheet_samples.html', {'samples_in_worksheet': samples_in_worksheet, 'form': form, 'worksheet': worksheet, 'quality_data': quality_data})
 
 
 

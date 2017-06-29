@@ -24,6 +24,15 @@
   	<div id="samples" class="tab-pane fade in active">
 
 
+  	{% if worksheet.awaiting_qc_approval   %}
+
+  	<div class="alert alert-danger">
+  		<strong>Please Approve QA before viewing samples</strong> 
+	</div>
+
+	{% else %}
+
+
   	<table class = 'table table-hover'>
 
 		<tr>
@@ -52,48 +61,122 @@
 
 	</table>
 
+	{% endif %}
+
 	</div>
 
 	<div id="QC" class="tab-pane fade">
 
-	
+		
 
 
-		{% if worksheet.awaiting_qc_approval   %}
+		{% for read in quality_data %}
+
+		<h3> Read  {{read.0.read|add:"1"}} </h3>
+
+		
+
+		<table id="variant_table" class = 'table table-bordered table-sm'>
+
+
+	  	  	<thead>
+
+				<tr>
+					<th> Lane </th>
+					<th> Density (K/mm2) </th>
+					<th> Cluster PF (%) </th>
+					<th> Phas/Prephas (%) </th>
+					<th> Reads (M) </th>
+					<th> Reads PF (M) </th>
+					<th> % >= Q30 </th>
+					<th> Yield (G) </th>
+					<th> Aligned (%) </th>
+
+
+				</tr>
+
+			</thead>
+
+			
+
+			<tbody>
+
+			{% for lane in read %}
+
+			<tr>
+
+				<td> {{ lane.lane|add:"1" }} </td>
+				<td> {{ lane.format_density|floatformat:"0" }} </td>
+				<td> {{ lane.cluster_pf_percent|floatformat:"2" }} </td>
+				<td> {{ lane.phasing|floatformat:"3" }} / {{ lane.prephasing|floatformat:"3" }} </td>
+				<td> {{ lane.format_reads|floatformat:"2" }} </td>
+				<td> {{ lane.format_reads_pf|floatformat:"2" }} </td>
+				<td> {{ lane.percent_gt_q30|floatformat:"1" }} </td>
+				<td> {{ lane.yield_g|floatformat:"1" }} </td>
+				<td> {{ lane.percent_aligned|floatformat:"1" }} </td>
+
+			</tr>
+
+
+			{% endfor %}
+
+
+			</tbody>
+
+			
+		</table>
+
+		{% endfor %}
+
+
+		{% if worksheet.qc_present and worksheet.awaiting_qc_approval %}
+		
+
+
+		
+
+
+		    <div class="panel panel-danger">
+	        <div class="panel-heading">Approve QC</div>
+	        <div class="panel-body"> <form class="form-horizontal" method="post">{% csrf_token %}
+
+	        <p> Please check and then approve the QA </p>
+
+	            {{ form.as_p }}
+
+	        <br>
+
+	        <div class="form-actions">
+
+	            <button type="submit" class="btn btn-primary">Approve</button>
+
+	        </div>
+	    
+	        </form>
+
+	        </div>
+	        </div>
+
+		{% elif not worksheet.qc_present %}
+
+
+			<div class="alert alert-danger">
+		  		<strong>No QC Present</strong>
+
+
+			</div>
+
+		{% else %}
+
+			<div class="alert alert-success">
+		  		<strong>Success!</strong> QA Approved
+
+
+			</div>
 
 
 
-
-	    <div class="panel panel-danger">
-        <div class="panel-heading">Approve QC</div>
-        <div class="panel-body"> <form class="form-horizontal" method="post">{% csrf_token %}
-
-        <p> Please check and then approve the QA </p>
-
-            {{ form.as_p }}
-
-        <br>
-
-        <div class="form-actions">
-
-            <button type="submit" class="btn btn-primary">Approve</button>
-
-        </div>
-    
-        </form>
-
-        </div>
-        </div>
-
-	{% else %}
-
-
-	<div class="alert alert-success">
-  		<strong>Success!</strong> QA Approved
-	</div>
-
-
-	{% endif  %}
+		{% endif  %}
 
 
 
