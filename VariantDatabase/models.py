@@ -216,15 +216,26 @@ class Sample(models.Model):
 		Look in all VariantSample objects.
 		Return all variants linked with this sample.
 		"""
+		variant_samples =VariantSample.objects.filter(sample=self, variant__max_af__lte=frequency, variant__worst_consequence__impact__lte=consequence).values_list('variant_id', flat=True)
 
 
-		#variant_samples =VariantSample.objects.filter(sample=self, variant__max_af__lte=frequency).order_by('variant__worst_consequence__impact')
 
+		variants = Variant.objects.filter(variant_hash__in= variant_samples).order_by('worst_consequence__impact', 'max_af')
+
+		return variants
+
+	"""
+	def get_variants2(self, frequency, consequence):
+		""""""
+		Look in all VariantSample objects.
+		Return all variants linked with this sample.
+		""""""
 		variant_samples =VariantSample.objects.filter(sample=self, variant__max_af__lte=frequency, variant__worst_consequence__impact__lte=consequence).order_by('variant__worst_consequence__impact')
 
 		variant_samples =[variant.variant for variant in variant_samples]
 
 		return variant_samples
+	"""
 
 	def get_status(self):
 		"""
@@ -243,6 +254,33 @@ class Sample(models.Model):
 		except:
 
 			return None
+
+
+	def variant_query_set_summary(self, variant_query_set):
+		"""
+		Summerises the data in a variant queryset e.g. how many variants.
+
+		"""
+
+		summary_dict = {}
+
+		summary_dict['total'] = variant_query_set.count()
+
+		summary_dict['missense_count'] = variant_query_set.filter(worst_consequence__name='missense_variant').count()
+
+		summary_dict['indel_count'] = variant_query_set.filter(Q(worst_consequence__name='inframe_deletion') | Q(worst_consequence__name='inframe_insertion') | Q(worst_consequence__name='frameshift_variant') ).count()
+
+		summary_dict['lof_count'] = variant_query_set.filter(worst_consequence__impact__lte=8).count()
+		summary_dict['synonymous'] = variant_query_set.filter(worst_consequence__name='synonymous_variant').count()
+
+		return summary_dict
+
+	def total_variant_summary(self):
+
+		variants = self.get_variants(1,100)
+
+		return self.variant_query_set_summary(variants)
+
 
 class VariantInformation(models.Model):
 
@@ -646,8 +684,6 @@ class Variant(models.Model):
 
 			for gene in genes:
 
-
-
 				variants = VariantTranscript.objects.filter(transcript__gene = gene).values('variant').distinct() #get variants in same gene
 
 				variants = Variant.objects.filter(variant_hash__in=variants).filter(Q(worst_consequence__name = 'transcript_ablation') |  Q(worst_consequence__name = 'stop_gained') | Q(worst_consequence__name = 'frameshift_variant')| Q(worst_consequence__name = 'stop_lost')| Q(worst_consequence__name = 'start_lost'))
@@ -750,6 +786,7 @@ class VariantSample(models.Model):
 
 	def __str__(self):
 		return self.variant + self.sample
+		
 
 
 

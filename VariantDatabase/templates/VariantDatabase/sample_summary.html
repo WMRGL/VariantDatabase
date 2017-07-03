@@ -13,8 +13,9 @@
 
    <ul class="nav nav-tabs">
 
-	    <li class="active"><a data-toggle="tab" href="#summary">Summary</a></li>
-	    <li><a data-toggle="tab" href="#variants">Variants</a></li>
+
+	    <li class="active"><a data-toggle="tab" href="#variants">Variants</a></li>
+	    <li><a data-toggle="tab" href="#vcf">VCF</a></li>
 	    <li><a data-toggle="tab" href="#QC">QC</a></li>
 	    <li><a data-toggle="tab" href="#history">History</a></li>
 	    <li><a data-toggle="tab" href="#report">Report</a></li>
@@ -26,8 +27,9 @@
   	<div class="tab-content">
 
 
-  	<!--Summary Tab displays filtered variants -->
-  	<div id="summary" class="tab-pane fade in active">
+
+  	<!--Variants Tab displays filtered variants -->
+  	<div id="variants" class="tab-pane active">
 
 
 
@@ -85,8 +87,12 @@
 			</tbody>
 		</table>
 
+		<hr>
 
-	
+		<strong> Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} | 
+	    <strong> Indels </strong> {{summary.indel_count}} / {{total_summary.indel_count}} | <strong> LOF : </strong> {{summary.lof_count}} / {{total_summary.lof_count}} |
+	    <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}}
+
 
 		</div>
 
@@ -178,7 +184,7 @@
   	</div>
 
   	<!--Variants Tab with link to VCF file -->
-	<div id="variants" class="tab-pane fade">
+	<div id="vcf" class="tab-pane fade">
 
     	<div class="alert alert-info">
   			<a href= "{% url 'list_sample_variants' sample.pk  %}" class="btn btn-info" role="button">View VCF</a>

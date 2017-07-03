@@ -212,6 +212,10 @@ def sample_summary(request, pk_sample ):
 
 		data = sample.get_variants(frequency_filter, consequence_filter)
 
+		summary = sample.variant_query_set_summary(data)
+
+		total_summary = sample.total_variant_summary()
+
 		form = ReportForm()
 
 		reports = Report.objects.filter(sample=sample)
@@ -236,7 +240,7 @@ def sample_summary(request, pk_sample ):
 
 			variants = paginator.page(paginator.num_pages)
 
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'form': form, 'reports': reports, 'filter': (consequence_filter, frequency_filter)})
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'form': form, 'reports': reports, 'filter': (consequence_filter, frequency_filter), 'summary': summary, 'total_summary': total_summary})
 
 
 
@@ -603,8 +607,6 @@ def upload_sample_sheet(request):
 
 		sample_list = []
 
-		
-
 		reader = csv.reader(file, delimiter=',')
 
 		for row in reader:
@@ -620,6 +622,10 @@ def upload_sample_sheet(request):
 						return False
 
 			if flag ==1:
+
+				if row[0] == "":
+
+					return sample_list[1:]
 
 				sample_list.append([row[0], row[1],row[2],row[3],row[4],row[5],row[6]])
 
@@ -661,7 +667,7 @@ def upload_sample_sheet(request):
 
 					sample_data = parse_sample_sheet(sample_sheet)
 
-					if sample_sheet == False: #does it have correct titles
+					if sample_data == False: #does it have correct titles
 
 						error = [2,'Could not process SampleSheet']
 
