@@ -187,6 +187,53 @@ class Sample(models.Model):
 	index = models.CharField(max_length =50)
 	sample_project = models.CharField(max_length =50, null=True, blank=True)
 
+	#QC data from SamStats
+
+	raw_total_sequences = models.IntegerField(null=True)
+	filtered_sequences = models.IntegerField(null=True)
+	sequences = models.IntegerField(null=True)
+	first_fragments = models.IntegerField(null=True)
+	last_fragments = models.IntegerField(null=True)
+	reads_mapped = models.IntegerField(null=True)
+	reads_mapped_and_paired = models.IntegerField(null=True)
+	reads_unmapped = models.IntegerField(null=True)
+	reads_properly_paired = models.IntegerField(null=True)
+	reads_paired = models.IntegerField(null=True)
+	reads_duplicated = models.IntegerField(null=True)
+	reads_MQ0 = models.IntegerField(null=True)
+	reads_QC_failed = models.IntegerField(null=True)
+	non_primary_alignments = models.IntegerField(null=True)
+	total_length = models.IntegerField(null=True)
+	bases_mapped = models.IntegerField(null=True)
+	bases_mapped_cigar = models.IntegerField(null=True)
+	bases_trimmed = models.IntegerField(null=True)
+	bases_duplicated = models.IntegerField(null=True)
+	mismatches = models.IntegerField(null=True)
+	average_length = models.IntegerField(null=True)
+	maximum_length = models.IntegerField(null=True)
+	average_quality = models.FloatField(null=True)
+	insert_size_average = models.FloatField(null=True)
+	insert_size_standard_deviation = models.FloatField(null=True)
+	inward_oriented_pairs = models.IntegerField(null=True)
+	outward_oriented_pairs = models.IntegerField(null=True)
+	pairs_with_other_orientation = models.IntegerField(null=True)
+	pairs_on_different_chromosomes = models.IntegerField(null=True)
+
+	#QC images from SamStats
+
+	acgt_cycles_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
+	coverage_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
+	gc_content_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
+	gc_depth_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
+	indel_cycles_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
+	indel_dist_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
+	insert_size_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
+	quality_cycle_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
+	quality_cycle_read_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
+	quality_cycle_read_freq_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
+	quality_heatmap_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
+
+
 
 
 	def __str__(self):
