@@ -220,7 +220,6 @@ def sample_summary(request, pk_sample ):
 
 		reports = Report.objects.filter(sample=sample)
 
-		
 
 		paginator = Paginator(data,25)
 

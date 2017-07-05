@@ -4,6 +4,56 @@
 
   {% block content %}
 
+ <style>
+                .thumbnail
+                {
+                    text-decoration:none;
+                    color:black;
+                    font-weight:bold;
+                }
+                .thumbnail span  /*CSS for enlarged image*/
+                {
+                    visibility: hidden;
+                    position: absolute;
+                    padding: 5px;
+                    border: 1px solid #000;
+                    background-color: #e5e5e5;
+                }
+                .thumbnail:hover span  /*CSS for enlarged image on hover*/
+                {
+                    visibility: visible;
+                    left: 600px;
+                    top: 700px;
+                }
+                .imgs td
+                {
+                    vertical-align:middle;
+                    padding: 0.5em;
+                    border: 1px solid black;
+                }
+                table.imgs
+                {
+                    border-collapse:collapse;
+                }
+                .nums th
+                {
+                    text-align: left;
+                }
+                table.nums
+                {
+                    margin-top: 1em;
+                    margin-left:20px;
+                    border: 1px dotted #83A4C3;
+                    background-color: #F5F5F5;
+                    padding: 0.5em;
+                }
+                .pad { padding-left:1em; vertical-align:top; }
+                .right { text-align:right; padding-left:1em; }
+            </style>
+
+
+
+
     <br>
 
     <div class="alert alert-info">
@@ -195,7 +245,194 @@
 	<!--QC Tab with link to QC -->
 	<div id="QC" class="tab-pane fade">
 
-		<p> Sample QC goes here </p>
+
+		<table> 
+
+
+        <table class = 'table table-bordered' >
+	        <thead>
+	          <tr>
+	            <th colspan="2">Summary</th>
+	          </tr>
+	        </thead>
+
+			<tbody>
+
+			<tr>
+
+				<td> Raw Total Sequences </td>
+				<td> {{sample.raw_total_sequences}} </td>
+
+			</tr>
+
+			<tr>
+
+				<td> Filtered </td>
+				<td> {{sample.filtered_sequences}} </td>
+
+			</tr>
+
+			<tr>
+
+				<td> Non-Primary </td>
+				<td> {{sample.non_primary_alignments}} </td>
+
+			</tr>
+
+			<tr>
+
+				<td> Duplicated </td>
+				<td> {{sample.reads_duplicated}} </td>
+
+			</tr>
+
+			<tr>
+
+				<td> Mapped </td>
+				<td> {{sample.reads_mapped}} </td>
+
+			</tr>
+
+			<tr>
+
+				<td> Zero MQ </td>
+				<td> {{sample.reads_MQ0}} </td>
+
+			</tr>
+
+
+			<tr>
+
+				<td> Average Read Length </td>
+				<td> {{sample.average_length}} </td>
+
+			</tr>
+
+
+			<tr>
+
+				<td> Total Bases </td>
+				<td> {{sample.total_length}} </td>
+
+			</tr>
+
+			<tr>
+
+				<td> Total Bases Mapped </td>
+				<td> {{sample.bases_mapped_cigar}} </td>
+
+			</tr>
+
+			<tr>
+
+				<td> Base Error Rate </td>
+				<td> {{sample.get_error_rate|floatformat:"5"}} </td>
+
+			</tr>
+
+
+
+
+
+
+			</tbody>
+
+
+		</table>
+
+		<hr>
+
+		<h3> Sam Stats Figures </h3>
+
+		<hr>
+        <table class="imgs">
+
+
+
+        <tbody>
+
+			<tr>
+
+			<td>
+			<a class="thumbnail" href={{sample.acgt_cycles_image.url}}><img src={{sample.acgt_cycles_image.url}} width="150px"><span>Per Base Sequence Content<br><img src={{sample.acgt_cycles_image.url}}></span></a>
+			</td>
+
+			<td>
+
+			<a class="thumbnail" href={{sample.coverage_image.url}}><img src={{sample.coverage_image.url}} width="150px"><span>Coverage<br><img src={{sample.coverage_image.url}}></span></a>
+
+			</td>
+
+			<td>
+
+			<a class="thumbnail" href={{sample.gc_content_image.url}}><img src={{sample.gc_content_image.url}} width="150px"><span>GC Content<br><img src={{sample.gc_content_image.url}}></span></a>
+
+			</td>
+
+
+			</tr>
+
+			<tr>
+
+
+			<td>
+
+			<a class="thumbnail" href={{sample.gc_depth_image.url}}><img src={{sample.gc_depth_image.url}} width="150px"><span>GC Depth<br><img src={{sample.gc_depth_image.url}}></span></a>
+
+			 </td>
+
+			<td>
+			<a class="thumbnail" href={{sample.indel_cycles_image.url}}><img src={{sample.indel_cycles_image.url}} width="150px"><span>Indel Cycles<br><img src={{sample.indel_cycles_image.url}}></span></a>
+
+
+			</td>
+
+			<td>
+
+			<a class="thumbnail" href={{sample.indel_dist_image.url}}><img src={{sample.indel_dist_image.url}} width="150px"><span>Indel Dist<br><img src={{sample.indel_dist_image.url}}></span></a>
+
+			</td>
+
+			<tr>
+
+			<td>
+			<a class="thumbnail" href={{sample.insert_size_image.url}}><img src={{sample.insert_size_image.url}} width="150px"><span>Insert Size<br><img src={{sample.insert_size_image.url}}></span></a>
+
+			</td>
+
+			<td>
+			<a class="thumbnail" href={{sample.quality_cycle_image.url}}><img src={{sample.quality_cycle_image.url}} width="150px"><span>Quality Cycle<br><img src={{sample.quality_cycle_image.url}}></span></a>
+
+			</td>
+
+			<td>
+
+			<a class="thumbnail" href={{sample.quality_cycle_read_image.url}}><img src={{sample.quality_cycle_read_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_cycle_read_image.url}}></span></a> </td>
+
+			</tr>
+
+			<tr>
+
+			<td><a class="thumbnail" href={{sample.quality_cycle_read_freq_image.url}}><img src={{sample.quality_cycle_read_freq_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_cycle_read_freq_image.url}}></span></a>
+
+			</td>
+
+
+			<td><a class="thumbnail" href={{sample.quality_heatmap_image.url}}><img src={{sample.quality_heatmap_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_heatmap_image.url}}></span></a>
+
+			</td>
+
+
+			</tr>
+
+
+		</tr>
+
+
+    </table>
+
+
+		
 
 	</div>
 

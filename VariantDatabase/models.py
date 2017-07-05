@@ -329,6 +329,17 @@ class Sample(models.Model):
 		return self.variant_query_set_summary(variants)
 
 
+	def get_error_rate(self):
+
+		try:
+
+			return self.mismatches /float(self.bases_mapped_cigar)
+
+		except:
+
+			return 'Error'
+
+
 class VariantInformation(models.Model):
 
 	"""

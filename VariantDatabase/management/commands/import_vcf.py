@@ -128,10 +128,6 @@ class Command(BaseCommand):
 				raise CommandError('Error either no sample or >1 sample')
 
 
-
-
-
-
 			sample = sample[0]
 
 			if sample.vcf_file != 'None':
