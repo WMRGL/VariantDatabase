@@ -33,7 +33,7 @@
 						<th> Name </th>
 						<th> Comment </th>
 						<th> Creation Date  </th>	
-						<th> Chemistry </th>
+						<th> Project </th>
 						<th> Status  </th>
 
 					</tr>
@@ -45,7 +45,7 @@
 							<td> <a href= "{% url 'list_worksheet_samples' worksheet.pk  %}"> {{ worksheet.name }}   </a> </td>
 							<td> {{ worksheet.comment }}  </td>
 							<td>   {{ worksheet.get_creation_date }} </td>
-							<td> NA </td>
+							<td>  {{ worksheet.sub_section }} </td>
 							<td> {{worksheet.get_status}} </td>
 
 						</tr>

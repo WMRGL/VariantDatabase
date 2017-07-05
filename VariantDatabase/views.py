@@ -598,6 +598,7 @@ def upload_sample_sheet(request):
 	"""
 
 	error = [0,'None']
+
 	def parse_sample_sheet(file):
 
 		expected = ['Sample_ID', 'Sample_Name', 'Sample_Plate','Sample_Well', 'I7_Index_ID',  'index', 'Sample_Project']
@@ -608,9 +609,17 @@ def upload_sample_sheet(request):
 
 		reader = csv.reader(file, delimiter=',')
 
+		subsection = ""
+
 		for row in reader:
 
+			if row[0] == 'Project Name' or row[0] == 'Project':
+
+				subsection = row[1]
+
 			if row[0] == 'Sample_ID':
+
+
 
 				flag =1
 
@@ -622,14 +631,18 @@ def upload_sample_sheet(request):
 
 			if flag ==1:
 
-				if row[0] == "":
+				
+				if row[0] == "" and flag ==1:
 
-					return sample_list[1:]
+					return sample_list[1:], subsection
 
-				sample_list.append([row[0], row[1],row[2],row[3],row[4],row[5],row[6]])
+				else:
+
+					sample_list.append([row[0], row[1],row[2],row[3],row[4],row[5],row[6]])
+
+		return sample_list[1:], subsection 
 
 
-		return sample_list[1:]
 
 
 	if request.method == 'POST':
@@ -642,7 +655,6 @@ def upload_sample_sheet(request):
 
 			list =[]
 
-			section = form.cleaned_data['sections'][0]
 			comment = form.cleaned_data['comment']
 			worksheet_name = form.cleaned_data['worksheet_name']
 			sample_sheet = request.FILES['sample_sheet']
@@ -663,18 +675,29 @@ def upload_sample_sheet(request):
 
 				with transaction.atomic():
 
+					sample_data, subsection_name = parse_sample_sheet(sample_sheet)
 
-					sample_data = parse_sample_sheet(sample_sheet)
+					subsection = SubSection.objects.filter(name=subsection_name)
 
-					if sample_data == False: #does it have correct titles
+					if not subsection.exists(): # Does a subsection/project with that name exist
+
+						error = [1, 'No Subsection found - please create one']
+
+						return render(request, 'VariantDatabase/upload_sample_sheet.html', {'form': form, 'error': error})
+
+
+					elif sample_data == False: #does it have correct titles
 
 						error = [2,'Could not process SampleSheet']
 
 						return render(request, 'VariantDatabase/upload_sample_sheet.html', {'form': form, 'error': error})
 
+
 					else:
 
-						new_worksheet = Worksheet(name=worksheet_name, section=section,comment=comment, status ='1')
+						subsection = subsection[0]
+
+						new_worksheet = Worksheet(name=worksheet_name, sub_section=subsection,comment=comment, status ='1')
 
 						new_worksheet.save()
 

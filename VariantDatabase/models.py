@@ -31,9 +31,34 @@ class Section(models.Model):
 
 		"""
 
-		all_worksheets = Worksheet.objects.filter(section=self)
+		all_worksheets = Worksheet.objects.filter(sub_section__section=self)
 
 		return all_worksheets
+
+
+
+class SubSection(models.Model):
+	"""
+	A Model to represent a subsection.
+	This is similar to the concept of a project e.g. MPN
+	Can also represent a panel or chemisry for example.
+
+	"""
+	name = models.CharField(max_length=25, primary_key=True)
+	section = models.ForeignKey(Section)
+	
+
+	#QC sample pass info - the levels needed for a sample to pass
+
+	min_read_count = models.IntegerField()
+	min_average_read_length = models.IntegerField()
+	max_average_read_length = models.IntegerField()
+	min_mapped_rate = models.FloatField()
+	max_error_rate = models.FloatField()
+
+
+	def __str__(self):
+		return self.name
 
 class Worksheet(models.Model):
 	"""
@@ -52,7 +77,7 @@ class Worksheet(models.Model):
 			
 
 	name = models.CharField(max_length=100, unique=True)
-	section = models.ForeignKey(Section)
+	sub_section = models.ForeignKey(SubSection)
 	comment = models.TextField()
 	status = models.CharField(max_length=1, choices = choices)
 
@@ -1074,18 +1099,6 @@ class ReadLaneQuality(models.Model):
 	def format_reads_pf(self):
 
 		return self.reads_pf/1000000
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

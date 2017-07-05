@@ -75,5 +75,4 @@ class SampleSheetForm(forms.Form):
 
 	worksheet_name = forms.CharField(max_length=150)
 	sample_sheet = forms.FileField()
-	sections = forms.ModelMultipleChoiceField(queryset=Section.objects.all())
 	comment = forms.CharField(max_length=500)
