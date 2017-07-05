@@ -49,6 +49,7 @@ class Command(BaseCommand):
 
 		validation_report = pysam_extract.validate_input(vcf_file_path, sample_name)
 
+
 		if validation_report[0] == False:
 
 			raise CommandError('Error opening vcf file: '+ validation_report[1])
