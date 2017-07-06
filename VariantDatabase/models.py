@@ -290,24 +290,10 @@ class Sample(models.Model):
 		"""
 		variant_samples =VariantSample.objects.filter(sample=self, variant__max_af__lte=frequency, variant__worst_consequence__impact__lte=consequence).values_list('variant_id', flat=True)
 
-
-
 		variants = Variant.objects.filter(variant_hash__in= variant_samples).order_by('worst_consequence__impact', 'max_af')
 
 		return variants
 
-	"""
-	def get_variants2(self, frequency, consequence):
-		""""""
-		Look in all VariantSample objects.
-		Return all variants linked with this sample.
-		""""""
-		variant_samples =VariantSample.objects.filter(sample=self, variant__max_af__lte=frequency, variant__worst_consequence__impact__lte=consequence).order_by('variant__worst_consequence__impact')
-
-		variant_samples =[variant.variant for variant in variant_samples]
-
-		return variant_samples
-	"""
 
 	def get_status(self):
 		"""
@@ -356,13 +342,57 @@ class Sample(models.Model):
 
 	def get_error_rate(self):
 
-		try:
+		if self.mismatches == None or self.bases_mapped_cigar == None:
+
+			return None
+
+		else:
 
 			return self.mismatches /float(self.bases_mapped_cigar)
 
-		except:
 
-			return 'Error'
+
+
+	def get_mapped_percentage(self):
+		"""
+		Get percentage of reads mapped
+		"""
+		if self.reads_mapped == None or self.raw_total_sequences ==None:
+
+			return None
+
+		else:
+
+			return float(self.reads_mapped)/float(self.raw_total_sequences)
+
+
+	def sample_qc_passed(self):
+
+		if (self.raw_total_sequences == None or 
+			self.average_length == None or
+			self.get_mapped_percentage() == None or
+			self.get_error_rate() == None):
+
+			return 'NO QC'
+
+		else:
+
+			subsection = self.worksheet.sub_section
+
+			if (self.raw_total_sequences < subsection.min_read_count or 
+				self.average_length < subsection.min_average_read_length or 
+				self.average_length > subsection.max_average_read_length or
+				self.get_mapped_percentage() < subsection.min_mapped_rate or
+				self.get_error_rate() > subsection.max_error_rate):
+
+
+				return 'FAIL'
+
+			else:
+
+				return 'PASS'
+
+
 
 
 class VariantInformation(models.Model):

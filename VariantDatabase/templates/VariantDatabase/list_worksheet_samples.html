@@ -40,6 +40,9 @@
 
 			<th> Sample Status </th>
 
+			<th> Sample QC </th>
+
+
 
 
 		</tr>
@@ -52,6 +55,8 @@
 			<td> <a href= "{% url 'sample_summary' sample.pk  %}"> {{ sample.name }}   </a> </td>
 
 			<td>{{ sample.get_status      }} </td>
+
+			<td>{{ sample.sample_qc_passed      }} </td>
 		
 
 		</tr>

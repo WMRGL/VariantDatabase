@@ -81,6 +81,18 @@
   	<!--Variants Tab displays filtered variants -->
   	<div id="variants" class="tab-pane active">
 
+  	<div class="alert alert-info">
+
+<form action="/action_page.php" method="get">
+  <input type="checkbox" name="transcript_ablation"> transcript_ablation<br>
+  <input type="checkbox" name="splice_acceptor_variant"> splice_acceptor_variant<br>
+  <input type="checkbox" name="splice_acceptor_variant"> 	missense_variant<br>
+  <input type="submit" value="Submit">
+</form>
+
+
+  	</div>
+
 
 
 	    <div class="alert alert-info">
@@ -245,6 +257,13 @@
 	<!--QC Tab with link to QC -->
 	<div id="QC" class="tab-pane fade">
 
+	<div class="alert alert-info">
+  		<strong>QC Status: {{sample.sample_qc_passed}}</strong>
+	</div>
+
+
+	
+
 
 		<table> 
 
@@ -253,6 +272,7 @@
 	        <thead>
 	          <tr>
 	            <th colspan="2">Summary</th>
+
 	          </tr>
 	        </thead>
 
@@ -262,6 +282,7 @@
 
 				<td> Raw Total Sequences </td>
 				<td> {{sample.raw_total_sequences}} </td>
+
 
 			</tr>
 
@@ -354,18 +375,34 @@
 			<tr>
 
 			<td>
+			{% if sample.acgt_cycles_image %}
+
+
+
 			<a class="thumbnail" href={{sample.acgt_cycles_image.url}}><img src={{sample.acgt_cycles_image.url}} width="150px"><span>Per Base Sequence Content<br><img src={{sample.acgt_cycles_image.url}}></span></a>
+
+
+			{%endif%}
+
 			</td>
 
 			<td>
+
+			{% if sample.coverage_image %}
 
 			<a class="thumbnail" href={{sample.coverage_image.url}}><img src={{sample.coverage_image.url}} width="150px"><span>Coverage<br><img src={{sample.coverage_image.url}}></span></a>
 
+			{%endif%}
+
 			</td>
 
 			<td>
 
+			{% if sample.gc_content_image %}
+
 			<a class="thumbnail" href={{sample.gc_content_image.url}}><img src={{sample.gc_content_image.url}} width="150px"><span>GC Content<br><img src={{sample.gc_content_image.url}}></span></a>
+
+			{%endif%}
 
 			</td>
 
@@ -377,48 +414,90 @@
 
 			<td>
 
+			{% if sample.gc_depth_image %}
+
 			<a class="thumbnail" href={{sample.gc_depth_image.url}}><img src={{sample.gc_depth_image.url}} width="150px"><span>GC Depth<br><img src={{sample.gc_depth_image.url}}></span></a>
+
+			{%endif%}
 
 			 </td>
 
 			<td>
+
+			{% if sample.indel_cycles_image %}
+
 			<a class="thumbnail" href={{sample.indel_cycles_image.url}}><img src={{sample.indel_cycles_image.url}} width="150px"><span>Indel Cycles<br><img src={{sample.indel_cycles_image.url}}></span></a>
+
+			{%endif%}
 
 
 			</td>
 
 			<td>
 
+			{% if sample.indel_dist_image %}
+
 			<a class="thumbnail" href={{sample.indel_dist_image.url}}><img src={{sample.indel_dist_image.url}} width="150px"><span>Indel Dist<br><img src={{sample.indel_dist_image.url}}></span></a>
+
+			{%endif%}
 
 			</td>
 
 			<tr>
 
 			<td>
+
+			{% if sample.insert_size_image %}
+
 			<a class="thumbnail" href={{sample.insert_size_image.url}}><img src={{sample.insert_size_image.url}} width="150px"><span>Insert Size<br><img src={{sample.insert_size_image.url}}></span></a>
 
+			{%endif%}
+
 			</td>
 
 			<td>
+
+			{% if sample.quality_cycle_image %}
+
 			<a class="thumbnail" href={{sample.quality_cycle_image.url}}><img src={{sample.quality_cycle_image.url}} width="150px"><span>Quality Cycle<br><img src={{sample.quality_cycle_image.url}}></span></a>
 
+			{%endif%}
+
 			</td>
 
 			<td>
 
-			<a class="thumbnail" href={{sample.quality_cycle_read_image.url}}><img src={{sample.quality_cycle_read_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_cycle_read_image.url}}></span></a> </td>
+			{% if sample.quality_cycle_read_image %}
+
+			<a class="thumbnail" href={{sample.quality_cycle_read_image.url}}><img src={{sample.quality_cycle_read_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_cycle_read_image.url}}></span></a> 
+
+			{%endif%}
+
+			</td>
 
 			</tr>
 
 			<tr>
 
-			<td><a class="thumbnail" href={{sample.quality_cycle_read_freq_image.url}}><img src={{sample.quality_cycle_read_freq_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_cycle_read_freq_image.url}}></span></a>
+			<td>
+
+			{% if sample.quality_cycle_read_freq_image %}
+
+			<a class="thumbnail" href={{sample.quality_cycle_read_freq_image.url}}><img src={{sample.quality_cycle_read_freq_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_cycle_read_freq_image.url}}></span></a>
+
+			{%endif%}
 
 			</td>
 
 
-			<td><a class="thumbnail" href={{sample.quality_heatmap_image.url}}><img src={{sample.quality_heatmap_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_heatmap_image.url}}></span></a>
+			<td>
+
+			{% if sample.quality_cycle_read_freq_image %}
+
+
+			<a class="thumbnail" href={{sample.quality_heatmap_image.url}}><img src={{sample.quality_heatmap_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_heatmap_image.url}}></span></a>
+
+			{%endif%}
 
 			</td>
 
