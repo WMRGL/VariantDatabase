@@ -13,6 +13,9 @@ import collections
 from django.db import transaction
 import csv
 import parsers
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+
 
 @login_required
 def home_page(request):
@@ -155,74 +158,93 @@ def sample_summary(request, pk_sample ):
 
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
+	total_summary = sample.total_variant_summary()
+
+	reports = Report.objects.filter(sample=sample)
+
 
 	if request.method == "POST": #if the user clicked create a new report 
 
-		form = ReportForm(request.POST)
+		if 'reportform' in request.POST:
+
+			report_form = ReportForm(request.POST)
+
+			if report_form.is_valid():
+
+				report = report_form.save(commit=False)
+				report.sample = sample
+				report.status ='1'
+
+				report.save()
+
+				report.initialise_report()
+
+				return redirect(create_sample_report, sample.pk, report.pk)
 
 
-		if form.is_valid():
+	elif 'filterform' in request.GET:
 
-			report = form.save(commit=False)
-			report.sample = sample
-			report.status ='1'
+		filter_form = FilterForm(request.GET)
 
-			report.save()
+		report_form = ReportForm()
 
-			report.initialise_report()
+		consequences_to_include =[]
 
-			return redirect(create_sample_report, sample.pk, report.pk)
+		for key in request.GET:
 
-	else:
+			if key != 'csrfmiddlewaretoken' and key != 'filterform':
 
-		consequence = request.GET.get('consequence')
-		frequency = request.GET.get('freq')
+				consequences_to_include.append(key)
+
+
+		consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
+
+		variant_samples =VariantSample.objects.filter(sample=sample, variant__worst_consequence__in=consequences_query_set).values_list('variant_id', flat=True)
+
+		variants = Variant.objects.filter(variant_hash__in= variant_samples).order_by('worst_consequence__impact', 'max_af')
+
+
+		summary = sample.variant_query_set_summary(variants)
+
+		"""
+		#Pagination stuff
+		paginator = Paginator(variants,25)
+
 		
-		if consequence == 'All':
-
-			consequence_filter = 100
-
-		elif consequence == 'LOF':
-
-			consequence_filter = 8
-
-		elif consequence == 'LOFplus': 
-
-			consequence_filter = 13
-
-		else:
-
-			consequence_filter = 100
+		page = request.GET.get('page')
 
 		try:
 
-			frequency = float(frequency)
+			variants = paginator.page(page)
 
-			if frequency >1.0:
+		except PageNotAnInteger:
 
-				frequency_filter = 1.0
+			variants =paginator.page(1)
 
-			else:
-
-				frequency_filter = frequency
 
 		except:
 
-			frequency_filter = 1.0
+			variants = paginator.page(paginator.num_pages)
+
+		"""
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary, 'filter_form': filter_form, 'other': consequences_query_set})
 
 
-		data = sample.get_variants(frequency_filter, consequence_filter)
-
-		summary = sample.variant_query_set_summary(data)
-
-		total_summary = sample.total_variant_summary()
-
-		form = ReportForm()
-
-		reports = Report.objects.filter(sample=sample)
+		
 
 
-		paginator = Paginator(data,25)
+	else:
+
+		report_form = ReportForm()
+
+		filter_form = FilterForm()
+
+		variants = sample.get_variants()
+
+		summary = sample.variant_query_set_summary(variants)
+
+		"""
+		paginator = Paginator(variants,25)
 
 		#Pagination stuff
 		page = request.GET.get('page')
@@ -240,7 +262,9 @@ def sample_summary(request, pk_sample ):
 
 			variants = paginator.page(paginator.num_pages)
 
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'form': form, 'reports': reports, 'filter': (consequence_filter, frequency_filter), 'summary': summary, 'total_summary': total_summary})
+		"""
+
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary, 'filter_form': filter_form})
 
 
 
@@ -602,8 +626,6 @@ def upload_sample_sheet(request):
 
 	if request.method == 'POST':
 
-		
-
 		form = SampleSheetForm(request.POST, request.FILES)
 
 		if form.is_valid():
@@ -681,3 +703,17 @@ def upload_sample_sheet(request):
 		
 
 	return render(request, 'VariantDatabase/upload_sample_sheet.html', {'form': form, 'error': error})
+
+def ajax_detail(request):
+
+	if request.is_ajax():
+
+		variant_hash = request.GET.get('variant_hash')
+
+		variant_hash = variant_hash.strip()
+
+		variant= Variant.objects.get(variant_hash=str(variant_hash))
+
+		html = render_to_string('VariantDatabase/ajax_detail.html', {'variant': variant})
+
+		return HttpResponse(html)

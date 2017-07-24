@@ -1,6 +1,16 @@
 from django import forms
 from .models import Sample, Interpretation, Report, Worksheet, Section
 
+
+class FilterForm(forms.Form):
+
+	transcript_ablation = forms.BooleanField(required=False)
+	missense_variant = forms.BooleanField(required=False)
+
+
+
+
+
 class InterpretationForm(forms.ModelForm):
 	"""
 	Form for creating a new Interpretation (ACMG guidlines)

@@ -23,7 +23,7 @@
                 {
                     visibility: visible;
                     left: 600px;
-                    top: 700px;
+                    top: 750px;
                 }
                 .imgs td
                 {
@@ -49,6 +49,45 @@
                 }
                 .pad { padding-left:1em; vertical-align:top; }
                 .right { text-align:right; padding-left:1em; }
+
+
+.header-fixed {
+    width: 100% 
+}
+
+.header-fixed > thead,
+.header-fixed > tbody,
+.header-fixed > thead > tr,
+.header-fixed > tbody > tr,
+.header-fixed > thead > tr > th,
+.header-fixed > tbody > tr > td {
+    display: block;
+}
+
+.header-fixed > tbody > tr:after,
+.header-fixed > thead > tr:after {
+    content: ' ';
+    display: block;
+    visibility: hidden;
+    clear: both;
+}
+
+.header-fixed > tbody {
+    overflow-y: auto;
+    height: 500px;
+}
+
+.header-fixed > tbody > tr > td,
+.header-fixed > thead > tr > th {
+    width: 16.6%;
+    float: left;
+}
+
+
+
+
+
+
             </style>
 
 
@@ -65,7 +104,7 @@
 
 
 	    <li class="active"><a data-toggle="tab" href="#variants">Variants</a></li>
-	    <li><a data-toggle="tab" href="#vcf">VCF</a></li>
+	    <li><a data-toggle="tab" href="#filter">Filter</a></li>
 	    <li><a data-toggle="tab" href="#QC">QC</a></li>
 	    <li><a data-toggle="tab" href="#history">History</a></li>
 	    <li><a data-toggle="tab" href="#report">Report</a></li>
@@ -74,185 +113,236 @@
 
   	<br>
 
-  	<div class="tab-content">
+  	<div class="tab-content" >
 
 
 
   	<!--Variants Tab displays filtered variants -->
   	<div id="variants" class="tab-pane active">
 
-  	<div class="alert alert-info">
+  
+  	    <div class ="container-fluid" id='detail'>
+    <ul class="nav nav-pills nav-stacked col-lg-2">
+      <li class="active"><a href="#tab_a" data-toggle="pill">Detail</a></li>
+      <li><a href="#tab_b" data-toggle="pill">IGV</a></li>
+      <li><a href="#tab_c" data-toggle="pill">Evidence</a></li>
+      <li><a href="#tab_d" data-toggle="pill">Coverage</a></li>
+    </ul>
+    <div class="tab-content col-lg-10">
+            <div class="tab-pane active" id="tab_a">
+                 <h4>Detail</h4>
 
-<form action="/action_page.php" method="get">
-  <input type="checkbox" name="transcript_ablation"> transcript_ablation<br>
-  <input type="checkbox" name="splice_acceptor_variant"> splice_acceptor_variant<br>
-  <input type="checkbox" name="splice_acceptor_variant"> 	missense_variant<br>
-  <input type="submit" value="Submit">
-</form>
+                 <table class = 'table table-bordered' >
 
+            <thead>
 
-  	</div>
+              <tr>
+                <th colspan="2">Summary</th>
+              </tr>
 
+            </thead>
 
+            <tbody>
 
-	    <div class="alert alert-info">
+              <tr>
+                <td> Chromsome </td>
+                <td> {{ variant.chromosome }} </td>
 
+              </tr>
 
-	    <table class="table-condensed">
+              <tr>
+                <td> Position </td>
+                <td> {{ variant.position }} </td>
 
-	    	<thead>
+              </tr>
 
-				<tr>
-					<th> Frequency </th>
-					<th> Consequence </th>
-					<th>  </th>
+              <tr>
+                <td> Ref </td>
+                <td> {{ variant.ref }} </td>
 
-				</tr>
+              </tr>
 
-			</thead>
+              <tr>
+                <td> Alt </td>
+                <td> {{ variant.alt }} </td>
 
-			<tbody>
+              </tr>
 
-				<tr>
+              <tr>
+                <td> ID </td>
+                <td> {{ variant.display_ids|join:", " }} </td>
 
-					<td>	  		
-						<select id="frequency-select" name="simple">
-							<option>All</option>
-		  					<option>0.001</option>
-		  					<option>0.01</option>
-		  					<option>0.05</option>
-						</select> 
-					</td>
-
-					<td>	  		
-						<select id="conseq-select" name="simple">
-		  					<option>All</option>
-		  					<option>LOF</option>
-		  					<option>LOFplus</option>
-						</select> 
-					</td>
-
-					<td>	
-						 <input type="button" class="btn btn-info" id='filter-button' value="Filter">
-
-
+              </tr>
 
 
-					</td>
+              <tr>
+                <td> Genes </td>
+                <td>
 
-				</tr>
+                {% for gene in variant.get_genes %}
+
+
+                  {{ gene }} 
+
+
+                {% endfor %}
+
+
+                </td>
+
+              </tr>
+
+
+              <tr>
+                <td> Worst Consequence </td>
+                <td> {{ variant.worst_consequence }} </td>
+
+              </tr>
+
+              <tr>
+                <td> Rated as Pathogenic </td>
+                <td> {{ variant.rated_as_pathogenic}} </td>
+
+              </tr>
+
+              <tr>
+                <td> ClinVar Clin Sig </td>
+                <td> {{ variant.clinical_sig }} </td>
+
+              </tr>
+
+              <tr>
+                <td> Similar </td>
+                <td> {{ variant.get_similar }} </td>
+
+              </tr>
+
+              <tr>
+                <td> Picked </td>
+                <td> {{ variant.get_picked_transcript }} </td>
+
+              </tr>
+
+            </tbody>
+          </table>
+
+                 
+                
 
 
 
 
 
-			</tbody>
-		</table>
 
-		<hr>
+            </div>
+            <div class="tab-pane" id="tab_b">
+                 <h4>IGV</h4>
+                
+            </div>
+            <div class="tab-pane" id="tab_c">
+                 <h4>Evidence</h4>
+                
+            </div>
+            <div class="tab-pane" id="tab_d">
+                 <h4>Comments</h4>
+                
+            </div>
+    </div><!-- tab content -->
+    </div><!-- end of container -->
+
+
+
+<hr>
+        
 
 		<strong> Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} | 
 	    <strong> Indels </strong> {{summary.indel_count}} / {{total_summary.indel_count}} | <strong> LOF : </strong> {{summary.lof_count}} / {{total_summary.lof_count}} |
 	    <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}}
 
+<hr>
 
-		</div>
+  <table id="variant_table" class = "table table-striped header-fixed">
 
+          <thead>
 
-  		<table id="variant_table" class = 'table table-hover'>
-
-	  	  	<thead>
-
-				<tr>
-					<th> Variant </th>
-					<th> REF </th>
-					<th> ALT </th>
-					<th> Consequence </th>
-					<th> Max_AF </th>
-					<th> Genes </th>
-					<th> Expand </th>
-
-				</tr>
-
-			</thead>
-
-			<tbody>
-				
-					{% for variant in variants %}
-
-						<tr>
-
-							<td> {{ variant.chromosome }} {{ variant.position }} </td>
-							<td>  {{ variant.ref|truncatechars:9 }} </td>
-							<td>  {{ variant.alt|truncatechars:9 }} </td>
-							<td>  {{ variant.worst_consequence }} </td>
-							<td>  {{ variant.max_af }} </td>
-							<td>  {% for gene in variant.get_genes %}
-
-	       							{{ gene }} 
-
-	      						  {% endfor %} 
-
-	      					</td>
-
-	      					<td>  <a href="#"  data-toggle="modal" data-target="#collapse{{forloop.counter}}"><span class="glyphicon glyphicon-plus"></span></a> </td>
-
-
-	      					<!--Pop Up modal if clicked -->
-							<div id="collapse{{forloop.counter}}" class="modal fade" role="dialog">
-							  <div class="modal-dialog">
-							    <!-- Modal content-->
-							    <div class="modal-content">
-							      <div class="modal-header">
-							        <button type="button" class="close" data-dismiss="modal">&times;</button>
-							        <h4 class="modal-title">Variant Detail</h4>
-							      </div>
-							      <div class="modal-body">
-							        <p>{{variant}}</p>
-							        <a href ="{% url 'variant_detail' pk_sample=sample.pk variant_hash=variant.variant_hash  %}"> View </a> 
-							      </div>
-							      <div class="modal-footer"> </div>
-							   
-							    </div>
-
-							  </div>
-							</div>
-
-						</tr>
-
-					{% endfor %}
-
-			</tbody>
-
-		</table>
-
-		<ul class='pager'>
-		  	 <span class="current">
-	            Page {{ variants.number }} of {{ variants.paginator.num_pages }}.
-	        </span>
-
-	        {% if variants.has_previous %}
-	             <li><a href="?page={{ variants.previous_page_number }}">Previous</a> </li>
-	        {% endif %}
-
-	        {% if variants.has_next %}
-	          <li>  <a href="?page={{ variants.next_page_number }}">Next</a> </li>
-	        {% endif %}
-    	</ul>
+        <tr>
+          <th style="display:none;"> Variant Hash </th>
+          <th> Variant </th>
+          <th> Ref </th>
+          <th> Alt </th>
+          <th> Worst Conseqeunce </th>
+          <th> Genes </th>
+          <th> Max AF </th>
 
 
 
 
-  	</div>
 
-  	<!--Variants Tab with link to VCF file -->
-	<div id="vcf" class="tab-pane fade">
+        </tr>
 
-    	<div class="alert alert-info">
-  			<a href= "{% url 'list_sample_variants' sample.pk  %}" class="btn btn-info" role="button">View VCF</a>
-		</div>
+      </thead>
+
+      <tbody>
+
+
+      {% for variant in variants %}
+
+      <tr class='variant'>
+
+        <td style="display:none;"> {{variant.variant_hash}}</td>
+        <td> {{variant.chromosome}} {{variant.position}} </td>
+        <td> {{variant.ref}} </td>
+        <td> {{variant.alt}} </td>
+        <td> {{variant.worst_consequence}} </td>
+        <td> {{variant.get_genes|join:" "}} </td>
+         <td> {{variant.max_af}} </td>
+
+
+      </tr>
+
+      {% endfor %}
+
+
+
+
+
+      </tbody>
+      </table>
+
+      </div>
+
+      <!--Filter Tab  -->
+	<div id="filter" class="tab-pane fade">
+
+			<div class="alert alert-info">
+
+  	{{other}}
+
+  	<form class="form-horizontal" method="get" >
+
+            {{ filter_form.as_table }}
+
+        <br>
+
+        <div class="form-actions">
+
+            <button type="submit" class="btn btn-primary" name="filterform">Filter</button>
+
+        </div>
+    
+        </form>
+
 
 	</div>
+
+	</div>
+
+
+
+
+
+
+
 
 	<!--QC Tab with link to QC -->
 	<div id="QC" class="tab-pane fade">
@@ -571,15 +661,15 @@
 
         <div class="panel panel-success">
         <div class="panel-heading">Reports</div>
-        <div class="panel-body"> <form class="form-horizontal" method="post">{% csrf_token %}
+        <div class="panel-body"> <form class="form-horizontal" method="post" >{% csrf_token %}
 
-            {{ form.as_p }}
+            {{ report_form.as_p }}
 
         <br>
 
         <div class="form-actions">
 
-            <button type="submit" class="btn btn-primary">Create New</button>
+            <button type="submit" class="btn btn-primary" name="reportform">Create New</button>
 
         </div>
     
@@ -594,12 +684,29 @@
 
 <script>
 $(document).ready(function(){
-    $("#filter-button").click(function(){
+    $(".variant").click(function(){
 
-    	var freq = document.getElementById("frequency-select").value;
-    	var conseq = document.getElementById("conseq-select").value;
-        location.href='?freq='+ freq + '&' +'consequence='+conseq;
-        
+      var variant_hash  = $(this).children().eq(0).text();
+
+
+
+
+      $.ajax({
+    url: '/ajax_detail',
+    type: 'get', // This is the default though, you don't actually need to always mention it
+    data: {"variant_hash" : variant_hash},
+    success: function(data) {
+
+        $("#detail").html(data);
+    },
+    failure: function(data) { 
+        alert('Got an error dude');
+    }
+}); 
+
+
+
+
     });
 });
 </script>

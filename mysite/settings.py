@@ -25,7 +25,7 @@ SECRET_KEY = '9(0s7xmgom!$0r3e&nao&p2uex+&u%m_6mg_aiuf=x-#epq7#+'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.118.98','127.0.0.1']
+ALLOWED_HOSTS = ['192.168.118.152','127.0.0.1']
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'VariantDatabase',
     'auditlog',
 
+
 ]
 
 MIDDLEWARE = [
@@ -51,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'auditlog.middleware.AuditlogMiddleware',
+
 
 ]
 
@@ -136,3 +138,36 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 LOGIN_REDIRECT_URL ='home_page'
 LOGIN_URL = '/login/'
+
+
+"""
+if DEBUG:
+   INTERNAL_IPS = ('127.0.0.1', 'localhost',)
+   MIDDLEWARE+= [
+       'debug_toolbar.middleware.DebugToolbarMiddleware',
+   ]
+
+   INSTALLED_APPS += [
+       'debug_toolbar',
+   ]
+
+   DEBUG_TOOLBAR_PANELS = [
+       'debug_toolbar.panels.versions.VersionsPanel',
+       'debug_toolbar.panels.timer.TimerPanel',
+       'debug_toolbar.panels.settings.SettingsPanel',
+       'debug_toolbar.panels.headers.HeadersPanel',
+       'debug_toolbar.panels.request.RequestPanel',
+       'debug_toolbar.panels.sql.SQLPanel',
+       'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+       'debug_toolbar.panels.templates.TemplatesPanel',
+       'debug_toolbar.panels.cache.CachePanel',
+       'debug_toolbar.panels.signals.SignalsPanel',
+       'debug_toolbar.panels.logging.LoggingPanel',
+       'debug_toolbar.panels.redirects.RedirectsPanel',
+   ]
+
+   DEBUG_TOOLBAR_CONFIG = {
+       'INTERCEPT_REDIRECTS': False,
+   }
+
+   """

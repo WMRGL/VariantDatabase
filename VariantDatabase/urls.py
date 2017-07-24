@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 from . import views
 from django.contrib.auth import views as auth_views
 from django.conf import settings
@@ -21,9 +21,12 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)$', views.create_sample_report, name='create_sample_report'),
 				url(r'^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/view$', views.view_sample_report, name='view_sample_report'),
 				url(r'^uploadsamplesheet/$', views.upload_sample_sheet, name='upload_sample_sheet'),
+				url(r'^ajax_detail/$', views.ajax_detail, name='ajax_detail'),
+
 
 ]
 
 
 if settings.DEBUG is True:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

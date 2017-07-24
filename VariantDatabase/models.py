@@ -258,9 +258,6 @@ class Sample(models.Model):
 	quality_cycle_read_freq_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
 	quality_heatmap_image = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
 
-
-
-
 	def __str__(self):
 		return self.name
 
@@ -283,12 +280,12 @@ class Sample(models.Model):
 			return False
 
 
-	def get_variants(self, frequency, consequence):
+	def get_variants(self):
 		"""
 		Look in all VariantSample objects.
 		Return all variants linked with this sample.
 		"""
-		variant_samples =VariantSample.objects.filter(sample=self, variant__max_af__lte=frequency, variant__worst_consequence__impact__lte=consequence).values_list('variant_id', flat=True)
+		variant_samples =VariantSample.objects.filter(sample=self).values_list('variant_id', flat=True)
 
 		variants = Variant.objects.filter(variant_hash__in= variant_samples).order_by('worst_consequence__impact', 'max_af')
 
@@ -335,7 +332,7 @@ class Sample(models.Model):
 
 	def total_variant_summary(self):
 
-		variants = self.get_variants(1,100)
+		variants = self.get_variants()
 
 		return self.variant_query_set_summary(variants)
 
