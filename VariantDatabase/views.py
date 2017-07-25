@@ -192,45 +192,32 @@ def sample_summary(request, pk_sample ):
 
 		for key in request.GET:
 
-			if key != 'csrfmiddlewaretoken' and key != 'filterform':
+			if key != 'csrfmiddlewaretoken' and key != 'filterform' and 'freq' not in key:
 
-				consequences_to_include.append(key)
 
+				if key == 'five_prime_UTR_variant':
+
+					consequences_to_include.append('5_prime_UTR_variant')
+
+				elif key == 'three_prime_UTR_variant':
+
+					consequences_to_include.append('3_prime_UTR_variant')
+
+				else:
+
+					consequences_to_include.append(key)
+
+		max_af = request.GET.get('freq_max_af')
 
 		consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
 
 		variant_samples =VariantSample.objects.filter(sample=sample, variant__worst_consequence__in=consequences_query_set).values_list('variant_id', flat=True)
 
-		variants = Variant.objects.filter(variant_hash__in= variant_samples).order_by('worst_consequence__impact', 'max_af')
-
+		variants = Variant.objects.filter(variant_hash__in= variant_samples).filter(max_af__lte=max_af).order_by('worst_consequence__impact', 'max_af')
 
 		summary = sample.variant_query_set_summary(variants)
 
-		"""
-		#Pagination stuff
-		paginator = Paginator(variants,25)
-
-		
-		page = request.GET.get('page')
-
-		try:
-
-			variants = paginator.page(page)
-
-		except PageNotAnInteger:
-
-			variants =paginator.page(1)
-
-
-		except:
-
-			variants = paginator.page(paginator.num_pages)
-
-		"""
 		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary, 'filter_form': filter_form, 'other': consequences_query_set})
-
-
-		
 
 
 	else:
@@ -239,30 +226,11 @@ def sample_summary(request, pk_sample ):
 
 		filter_form = FilterForm()
 
+
 		variants = sample.get_variants()
 
 		summary = sample.variant_query_set_summary(variants)
 
-		"""
-		paginator = Paginator(variants,25)
-
-		#Pagination stuff
-		page = request.GET.get('page')
-
-		try:
-
-			variants = paginator.page(page)
-
-		except PageNotAnInteger:
-
-			variants =paginator.page(1)
-
-
-		except:
-
-			variants = paginator.page(paginator.num_pages)
-
-		"""
 
 		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary, 'filter_form': filter_form})
 

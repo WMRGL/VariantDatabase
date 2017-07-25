@@ -56,9 +56,52 @@ class SubSection(models.Model):
 	min_mapped_rate = models.FloatField()
 	max_error_rate = models.FloatField()
 
+	#filter settings
+
+	stop_lost = models.BooleanField()
+	stop_gained = models.BooleanField()
+	start_lost = models.BooleanField()
+	splice_region_variant = models.BooleanField()
+	splice_donor_variant = models.BooleanField()
+	splice_acceptor_variant = models.BooleanField()
+	regulatory_region_variant = models.BooleanField()
+	regulatory_region_amplification = models.BooleanField()
+	regulatory_region_ablation = models.BooleanField()
+	protein_altering_variant = models.BooleanField()
+	non_coding_transcript_variant = models.BooleanField()
+	non_coding_transcript_exon_variant = models.BooleanField()
+	missense_variant = models.BooleanField()
+	mature_miRNA_variant = models.BooleanField()
+	intron_variant = models.BooleanField()
+	intergenic_variant = models.BooleanField()
+	inframe_insertion = models.BooleanField()
+	inframe_deletion = models.BooleanField()
+	incomplete_terminal_codon_variant = models.BooleanField()
+	frameshift_variant = models.BooleanField()
+	feature_truncation = models.BooleanField()
+	feature_elongation = models.BooleanField()
+	downstream_gene_variant = models.BooleanField()
+	coding_sequence_variant = models.BooleanField()
+	TF_binding_site_variant = models.BooleanField()
+	TFBS_amplification = models.BooleanField()
+	TFBS_ablation = models.BooleanField()
+	NMD_transcript_variant = models.BooleanField()
+	five_prime_UTR_variant = models.BooleanField()
+	three_prime_UTR_variant = models.BooleanField()
+	freq_max_af = models.FloatField()
+
 
 	def __str__(self):
 		return self.name
+
+	def create_filter_dict(self):
+		"""
+		Return a dictionary with all the filter settings in e.g. stop_lost=False
+
+		"""
+
+
+		
 
 class Worksheet(models.Model):
 	"""
