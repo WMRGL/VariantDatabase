@@ -101,7 +101,45 @@ class SubSection(models.Model):
 		"""
 
 
+		filter_dict ={}
+
+		filter_dict['stop_lost']=self.stop_lost
+		filter_dict['stop_gained']=self.stop_gained
+		filter_dict['start_lost']=self.start_lost
+		filter_dict['splice_region_variant']=self.splice_region_variant
+		filter_dict['splice_donor_variant']=self.splice_donor_variant
+		filter_dict['splice_acceptor_variant']=self.splice_acceptor_variant
+		filter_dict['regulatory_region_variant']=self.regulatory_region_variant
+		filter_dict['regulatory_region_amplification']=self.regulatory_region_amplification
+		filter_dict['regulatory_region_ablation']=self.regulatory_region_ablation
+		filter_dict['protein_altering_variant']=self.protein_altering_variant
+		filter_dict['non_coding_transcript_variant']=self.non_coding_transcript_variant
+		filter_dict['non_coding_transcript_exon_variant']=self.non_coding_transcript_exon_variant
+		filter_dict['missense_variant']=self.missense_variant
+		filter_dict['mature_miRNA_variant']=self.mature_miRNA_variant
+		filter_dict['intron_variant']=self.intron_variant
+		filter_dict['intergenic_variant']=self.intergenic_variant
+		filter_dict['inframe_insertion']=self.inframe_insertion
+		filter_dict['inframe_deletion']=self.inframe_deletion
+		filter_dict['incomplete_terminal_codon_variant']=self.incomplete_terminal_codon_variant
+		filter_dict['frameshift_variant']=self.frameshift_variant
+		filter_dict['feature_truncation']=self.feature_truncation
+		filter_dict['feature_elongation']=self.feature_elongation
+		filter_dict['downstream_gene_variant']=self.downstream_gene_variant
+		filter_dict['coding_sequence_variant']=self.coding_sequence_variant
+		filter_dict['TF_binding_site_variant']=self.TF_binding_site_variant
+		filter_dict['TFBS_amplification']=self.TFBS_amplification
+		filter_dict['TFBS_ablation']=self.TFBS_ablation
+		filter_dict['NMD_transcript_variant']=self.NMD_transcript_variant
+		filter_dict['five_prime_UTR_variant']=self.five_prime_UTR_variant
+		filter_dict['three_prime_UTR_variant']=self.three_prime_UTR_variant
+		filter_dict['freq_max_af']=self.freq_max_af
 		
+		return filter_dict
+	
+
+
+
 
 class Worksheet(models.Model):
 	"""

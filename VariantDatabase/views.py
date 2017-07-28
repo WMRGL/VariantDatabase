@@ -217,22 +217,47 @@ def sample_summary(request, pk_sample ):
 
 		summary = sample.variant_query_set_summary(variants)
 
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary, 'filter_form': filter_form, 'other': consequences_query_set})
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary, 'filter_form': filter_form})
 
 
 	else:
 
+		filter_dict = sample.worksheet.sub_section.create_filter_dict()
+
 		report_form = ReportForm()
 
-		filter_form = FilterForm()
+		filter_form = FilterForm(initial=filter_dict)
+
+		consequences_to_include =[]
 
 
-		variants = sample.get_variants()
+		for key in filter_dict:
+
+			if 'freq' not in key and filter_dict[key] ==True:
+
+				if key == 'five_prime_UTR_variant':
+
+					consequences_to_include.append('5_prime_UTR_variant')
+
+				elif key == 'three_prime_UTR_variant':
+
+					consequences_to_include.append('3_prime_UTR_variant')
+
+				else:
+
+					consequences_to_include.append(key)
+
+
+		consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
+
+		variant_samples =VariantSample.objects.filter(sample=sample, variant__worst_consequence__in=consequences_query_set).values_list('variant_id', flat=True)
+
+		variants = Variant.objects.filter(variant_hash__in= variant_samples).filter(max_af__lte=filter_dict['freq_max_af']).order_by('worst_consequence__impact', 'max_af')
 
 		summary = sample.variant_query_set_summary(variants)
 
 
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary, 'filter_form': filter_form})
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary, 'filter_form': filter_form, 'filter_dict': filter_dict, 'cons': consequences_to_include})
 
 
 
@@ -685,3 +710,7 @@ def ajax_detail(request):
 		html = render_to_string('VariantDatabase/ajax_detail.html', {'variant': variant})
 
 		return HttpResponse(html)
+
+def igv(request):
+
+	return render(request, 'VariantDatabase/igv.html', {})
