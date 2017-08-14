@@ -151,12 +151,16 @@ class Command(BaseCommand):
 
 			for variant in data:
 
+
+
 				genotype = variant['genotype']
 				chromosome = variant['chrom']
 				pos = str(variant['pos'])
 				ref = variant['reference']
 				alt = variant['alt_alleles'][0]
-				hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()				
+				hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
+
+				print chromosome, pos				
 
 				allele_count = pysam_extract.count_alleles(genotype)
 
@@ -232,7 +236,7 @@ class Command(BaseCommand):
 
 						except Gene.DoesNotExist:
 
-							gene_model = Gene(name=gene[0], strand = gene[1])
+							gene_model = Gene(name=gene[0])
 							gene_model.save()
 							new_gene_count = new_gene_count+1
 

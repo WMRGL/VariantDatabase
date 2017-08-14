@@ -280,9 +280,11 @@ class Sample(models.Model):
 			('4', 'Complete'))
 
 
-	name = models.CharField(max_length=50)
+	name = models.CharField(max_length=50, unique=True)
 	worksheet = models.ForeignKey(Worksheet)
-	vcf_file = models.TextField() 
+	vcf_file = models.TextField()
+	bam_file_pindel = models.TextField(null=True)
+	bam_file_bwa = models.TextField(null=True)
 	visible = models.BooleanField() #To allow the hiding of a sample
 	status = models.CharField(max_length=1, choices = choices)
 
@@ -295,35 +297,35 @@ class Sample(models.Model):
 
 	#QC data from SamStats
 
-	raw_total_sequences = models.IntegerField(null=True)
-	filtered_sequences = models.IntegerField(null=True)
-	sequences = models.IntegerField(null=True)
-	first_fragments = models.IntegerField(null=True)
-	last_fragments = models.IntegerField(null=True)
-	reads_mapped = models.IntegerField(null=True)
-	reads_mapped_and_paired = models.IntegerField(null=True)
-	reads_unmapped = models.IntegerField(null=True)
-	reads_properly_paired = models.IntegerField(null=True)
-	reads_paired = models.IntegerField(null=True)
-	reads_duplicated = models.IntegerField(null=True)
-	reads_MQ0 = models.IntegerField(null=True)
-	reads_QC_failed = models.IntegerField(null=True)
-	non_primary_alignments = models.IntegerField(null=True)
-	total_length = models.IntegerField(null=True)
-	bases_mapped = models.IntegerField(null=True)
-	bases_mapped_cigar = models.IntegerField(null=True)
-	bases_trimmed = models.IntegerField(null=True)
-	bases_duplicated = models.IntegerField(null=True)
-	mismatches = models.IntegerField(null=True)
-	average_length = models.IntegerField(null=True)
-	maximum_length = models.IntegerField(null=True)
-	average_quality = models.FloatField(null=True)
-	insert_size_average = models.FloatField(null=True)
-	insert_size_standard_deviation = models.FloatField(null=True)
-	inward_oriented_pairs = models.IntegerField(null=True)
-	outward_oriented_pairs = models.IntegerField(null=True)
-	pairs_with_other_orientation = models.IntegerField(null=True)
-	pairs_on_different_chromosomes = models.IntegerField(null=True)
+	raw_total_sequences = models.IntegerField(null=True,blank=True)
+	filtered_sequences = models.IntegerField(null=True,blank=True)
+	sequences = models.IntegerField(null=True,blank=True)
+	first_fragments = models.IntegerField(null=True,blank=True)
+	last_fragments = models.IntegerField(null=True,blank=True)
+	reads_mapped = models.IntegerField(null=True,blank=True)
+	reads_mapped_and_paired = models.IntegerField(null=True,blank=True)
+	reads_unmapped = models.IntegerField(null=True,blank=True)
+	reads_properly_paired = models.IntegerField(null=True,blank=True)
+	reads_paired = models.IntegerField(null=True,blank=True)
+	reads_duplicated = models.IntegerField(null=True,blank=True)
+	reads_MQ0 = models.IntegerField(null=True,blank=True)
+	reads_QC_failed = models.IntegerField(null=True,blank=True)
+	non_primary_alignments = models.IntegerField(null=True,blank=True)
+	total_length = models.IntegerField(null=True,blank=True)
+	bases_mapped = models.IntegerField(null=True,blank=True)
+	bases_mapped_cigar = models.IntegerField(null=True,blank=True)
+	bases_trimmed = models.IntegerField(null=True,blank=True)
+	bases_duplicated = models.IntegerField(null=True,blank=True)
+	mismatches = models.IntegerField(null=True,blank=True)
+	average_length = models.IntegerField(null=True,blank=True)
+	maximum_length = models.IntegerField(null=True,blank=True)
+	average_quality = models.FloatField(null=True,blank=True)
+	insert_size_average = models.FloatField(null=True,blank=True)
+	insert_size_standard_deviation = models.FloatField(null=True,blank=True)
+	inward_oriented_pairs = models.IntegerField(null=True,blank=True)
+	outward_oriented_pairs = models.IntegerField(null=True,blank=True)
+	pairs_with_other_orientation = models.IntegerField(null=True,blank=True)
+	pairs_on_different_chromosomes = models.IntegerField(null=True,blank=True)
 
 	#QC images from SamStats
 
@@ -528,7 +530,7 @@ class Gene(models.Model):
 	"""
 
 	name = models.CharField(max_length=50, db_index=True, unique=True)
-	strand = models.IntegerField() # 1 or -1
+
 
 
 	def __str__(self):
@@ -546,13 +548,7 @@ class Gene(models.Model):
 
 		variants = Variant.objects.filter(variant_hash__in=variants).filter(worst_consequence__impact__lte=consequence_filter)
 
-		if self.strand == -1:
-
-			variants = variants.order_by('-position')
-
-		else:
-
-			variants = variants.order_by('position')
+		variants = variants.order_by('-position')
 
 		return variants
 
@@ -949,11 +945,73 @@ class Variant(models.Model):
 		"""
 		Return the transcript that has been picked by VEP
 		This is the variant with '1' in the PICK field of the VEP annotation
-		Data stoed in VariantTranscript model
+		Data stored in VariantTranscript model
 
 		"""
 
 		picked = VariantTranscript.objects.filter(variant=self).filter(picked=True)[0].transcript.name
+
+		return picked
+
+	def get_picked_hgvsc(self):
+
+		picked = self.get_picked_transcript()
+
+		hgvsc_list = self.hgvsc_list()
+
+		if len(hgvsc_list) ==1:
+
+			return hgvsc_list[0]
+
+
+
+		for hgvsc in hgvsc_list:
+
+			if picked in hgvsc:
+
+				return hgvsc
+
+
+		return None
+
+
+
+	def get_picked_hgvsp(self):
+
+		picked = self.get_picked_transcript()
+
+		hgvsc_list = self.hgvsp_list()
+
+		if len(hgvsc_list) ==1:
+
+			return hgvsc_list[0]
+
+		elif len(hgvsc_list) ==0:
+
+			return 'NA'
+
+		for hgvsc in hgvsc_list:
+
+			if picked in hgvsc:
+
+				return hgvsc
+
+
+		return 'NA'
+
+
+	def get_transcripts(self):
+
+		"""
+		Return the transcript that has been picked by VEP
+		This is the variant with '1' in the PICK field of the VEP annotation
+		Data stored in VariantTranscript model
+
+		"""
+
+		picked = VariantTranscript.objects.filter(variant=self)
+
+		picked =[x.transcript.name for x in picked]
 
 		return picked
 
@@ -1208,6 +1266,38 @@ class ReadLaneQuality(models.Model):
 
 		return self.reads_pf/1000000
 
+class GeneCoverage(models.Model):
+
+	sample = models.ForeignKey(Sample)
+	gene = models.ForeignKey(Gene)
+
+	x100 = models.IntegerField()
+	x200 = models.IntegerField()
+	x300 = models.IntegerField()
+	x400 = models.IntegerField()
+	x500 = models.IntegerField()
+	x600 = models.IntegerField()
+	min_coverage = models.IntegerField()
+	max_coverage = models.IntegerField()
+	mean_coverage = models.FloatField()
+	number_of_regions = models.IntegerField()
+
+class ExonCoverage(models.Model):
+
+	sample = models.ForeignKey(Sample)
+	gene = models.ForeignKey(Gene)
+	exon = models.CharField(max_length=20)
+
+	x100 = models.IntegerField()
+	x200 = models.IntegerField()
+	x300 = models.IntegerField()
+	x400 = models.IntegerField()
+	x500 = models.IntegerField()
+	x600 = models.IntegerField()
+	min_coverage = models.IntegerField()
+	max_coverage = models.IntegerField()
+	mean_coverage = models.FloatField()
+	number_of_regions = models.IntegerField()
 
 
 

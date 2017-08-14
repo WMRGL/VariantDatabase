@@ -1,4 +1,5 @@
 import csv
+import gzip
 
 
 def parse_sample_sheet(file):
@@ -43,3 +44,46 @@ def parse_sample_sheet(file):
 				sample_list.append([row[0], row[1],row[2],row[3],row[4],row[5],row[6]])
 
 	return sample_list[1:], subsection 
+
+
+def parse_gene_coverage(file_path):
+
+	master_list =[]
+
+	with gzip.open(file_path, 'rb') as f:
+
+		reader = csv.DictReader(f, delimiter='\t')
+
+		if  reader.fieldnames == ['Worksheet', 'Sample', 'Gene', '100x', '200x', '300x', '400x', '500x', '600x', 'Min', 'Max', 'Mean', 'region', 'pct>100x', 'pct>200x', 'pct>300x', 'pct>400x', 'pct>500x', 'pct>600x']:
+
+			for row in reader:
+
+				master_list.append(row)
+
+			return master_list
+
+		else:
+
+			return False
+
+
+
+def parse_exon_coverage(file_path):
+
+	master_list =[]
+
+	with gzip.open(file_path, 'rb') as f:
+
+		reader = csv.DictReader(f, delimiter='\t')
+
+		if reader.fieldnames == ['Worksheet', 'Sample', 'Gene', 'Exon', 'Gene_Exon', '100x', '200x', '300x', '400x', '500x', '600x', 'Min', 'Max', 'Mean', 'region', 'pct>100x', 'pct>200x', 'pct>300x', 'pct>400x', 'pct>500x', 'pct>600x']:
+
+			for row in reader:
+
+				master_list.append(row)
+
+			return master_list
+
+		else:
+
+			return False
