@@ -217,7 +217,13 @@ def sample_summary(request, pk_sample ):
 
 		summary = sample.variant_query_set_summary(variants)
 
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary, 'filter_form': filter_form})
+		gene_coverage = GeneCoverage.objects.filter(sample=sample)
+
+		exon_coverage = ExonCoverage.objects.filter(sample=sample)
+
+
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary,
+					 'filter_form': filter_form, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage })
 
 
 	else:
@@ -256,8 +262,13 @@ def sample_summary(request, pk_sample ):
 
 		summary = sample.variant_query_set_summary(variants)
 
+		gene_coverage = GeneCoverage.objects.filter(sample=sample)
 
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary, 'filter_form': filter_form, 'filter_dict': filter_dict, 'cons': consequences_to_include})
+		exon_coverage = ExonCoverage.objects.filter(sample=sample)
+
+
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary,
+					 'filter_form': filter_form, 'filter_dict': filter_dict, 'cons': consequences_to_include, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage})
 
 
 
@@ -702,12 +713,19 @@ def ajax_detail(request):
 	if request.is_ajax():
 
 		variant_hash = request.GET.get('variant_hash')
+		sample_pk = request.GET.get('sample_pk')
 
 		variant_hash = variant_hash.strip()
+		sample_pk = sample_pk.strip()
 
 		variant= Variant.objects.get(variant_hash=str(variant_hash))
+		sample = Sample.objects.get(pk=sample_pk)
 
-		html = render_to_string('VariantDatabase/ajax_detail.html', {'variant': variant})
+		
+
+
+
+		html = render_to_string('VariantDatabase/ajax_detail.html', {'variant': variant, 'sample': sample})
 
 		return HttpResponse(html)
 

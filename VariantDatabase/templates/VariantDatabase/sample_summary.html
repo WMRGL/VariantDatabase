@@ -116,6 +116,7 @@
 	    <li class="active"><a data-toggle="tab" href="#variants">Variants</a></li>
 	    <li><a data-toggle="tab" href="#filter">Filter</a></li>
 	    <li><a data-toggle="tab" href="#QC">QC</a></li>
+	   	<li><a data-toggle="tab" href="#coverage">Coverage</a></li>
 	    <li><a data-toggle="tab" href="#history">History</a></li>
 	    <li><a data-toggle="tab" href="#report">Report</a></li>
 
@@ -134,7 +135,6 @@
 		      <li ><a href="#tab_a" data-toggle="pill">Detail</a></li>
 		      <li class="active"><a href="#tab_b" data-toggle="pill">IGV</a></li>
 		      <li><a href="#tab_c" data-toggle="pill">Evidence</a></li>
-		      <li><a href="#tab_d" data-toggle="pill">Coverage</a></li>
 		    </ul>
 	    <div class="tab-content col-lg-11">
 
@@ -614,6 +614,132 @@
 
 	</div>
 
+
+	<!--Coverage Tab with Gene/Exon Coverage -->
+	<div id="coverage" class="tab-pane fade">
+
+	<h3> Gene Coverage </h3>
+
+
+	<table class = 'table table-hover table-condensed'>
+
+	  	  	<thead>
+
+				<tr>
+					<th> Gene </th>
+					<th> 100x </th>
+					<th> 200x </th>
+					<th> 300x </th>
+					<th> 400x </th>
+					<th> 500x </th>
+					<th> 600x </th>
+					<th> Min </th>
+					<th> Max </th>
+					<th> Mean </th>
+
+				</tr>
+
+			</thead>
+
+			<tbody>
+
+			{% for gene in gene_coverage %}
+
+			<tr>
+
+				<td> {{gene.gene}} </td>
+				<td> {{gene.x100}} </td>
+				<td> {{gene.x200}} </td>
+				<td> {{gene.x300}} </td>
+				<td> {{gene.x400}} </td>
+				<td> {{gene.x500}} </td>
+				<td> {{gene.x600}} </td>
+				<td> {{gene.min_coverage}} </td>
+				<td> {{gene.max_coverage}} </td>
+				<td> {{gene.mean_coverage}} </td>
+
+			</tr>
+
+			{% endfor %}
+
+			</tbody>
+
+	</table>
+
+	<h3> Exon Coverage </h3>
+
+
+
+		<table class = 'table table-hover table-condensed'>
+
+	  	  	<thead>
+
+				<tr>
+					<th> Gene </th>
+					<th> Exon </th>
+					<th> 100x </th>
+					<th> 200x </th>
+					<th> 300x </th>
+					<th> 400x </th>
+					<th> 500x </th>
+					<th> 600x </th>
+					<th> Min </th>
+					<th> Max </th>
+					<th> Mean </th>
+
+				</tr>
+
+			</thead>
+
+			<tbody>
+
+			{% for exon in exon_coverage %}
+
+			<tr>
+
+				<td> {{exon.gene}} </td>
+				<td> {{exon.exon}} </td>
+				<td> {{exon.x100}} </td>
+				<td> {{exon.x200}} </td>
+				<td> {{exon.x300}} </td>
+				<td> {{exon.x400}} </td>
+				<td> {{exon.x500}} </td>
+				<td> {{exon.x600}} </td>
+				<td> {{exon.min_coverage}} </td>
+				<td> {{exon.max_coverage}} </td>
+				<td> {{exon.mean_coverage}} </td>
+
+			</tr>
+
+			{% endfor %}
+
+			</tbody>
+
+	</table>
+
+
+
+
+
+	
+
+
+
+	</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	<!--History Tab with link to History -->
 	<div id="history" class="tab-pane fade">
 
@@ -721,7 +847,7 @@ $(document).ready(function(){
       $.ajax({
     url: '/ajax_detail',
     type: 'get', // This is the default though, you don't actually need to always mention it
-    data: {"variant_hash" : variant_hash},
+    data: {"variant_hash" : variant_hash, 'sample_pk': {{sample.pk}}},
     success: function(data) {
 
         $("#detail").html(data);

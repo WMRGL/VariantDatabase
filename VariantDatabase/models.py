@@ -1000,20 +1000,16 @@ class Variant(models.Model):
 		return 'NA'
 
 
-	def get_transcripts(self):
 
-		"""
-		Return the transcript that has been picked by VEP
-		This is the variant with '1' in the PICK field of the VEP annotation
-		Data stored in VariantTranscript model
 
-		"""
 
-		picked = VariantTranscript.objects.filter(variant=self)
 
-		picked =[x.transcript.name for x in picked]
 
-		return picked
+
+
+
+
+
 
 
 
