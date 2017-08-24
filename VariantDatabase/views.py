@@ -182,7 +182,7 @@ def sample_summary(request, pk_sample ):
 				return redirect(create_sample_report, sample.pk, report.pk)
 
 
-	elif 'filterform' in request.GET:
+	elif 'filterform' in request.GET: #if the user clicked filter
 
 		filter_form = FilterForm(request.GET)
 

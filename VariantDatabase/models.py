@@ -1001,21 +1001,6 @@ class Variant(models.Model):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class VariantSample(models.Model):
 
 	"""
@@ -1278,6 +1263,12 @@ class GeneCoverage(models.Model):
 	mean_coverage = models.FloatField()
 	number_of_regions = models.IntegerField()
 
+	def get_percentages(self):
+
+		raw_data = [self.x100, self.x200, self.x300, self.x400, self.x500, self.x600]
+
+		return map(lambda x: round((float(x)/float(self.number_of_regions)*100),1), raw_data)
+
 class ExonCoverage(models.Model):
 
 	sample = models.ForeignKey(Sample)
@@ -1294,6 +1285,15 @@ class ExonCoverage(models.Model):
 	max_coverage = models.IntegerField()
 	mean_coverage = models.FloatField()
 	number_of_regions = models.IntegerField()
+
+
+	def get_percentages(self):
+
+		raw_data = [self.x100, self.x200, self.x300, self.x400, self.x500, self.x600]
+
+		return map(lambda x: round((float(x)/float(self.number_of_regions)*100),1), raw_data)
+
+
 
 
 
