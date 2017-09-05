@@ -474,38 +474,6 @@ class Sample(models.Model):
 
 
 
-
-class VariantInformation(models.Model):
-
-	"""
-	Model for holding an annotation type in the vcf.
-	
-	If a user has a VariantInformation object connected with them in the UserSetting model then that field will be displayed in the VCF.
-
-	"""
-
-	information  = models.CharField(max_length=50)
-	label = models.CharField(max_length=50, null=True, blank=True)
-	description  = models.TextField()
-
-	def __str__(self):
-		return self.information
-
-class UserSetting(models.Model):
-
-	"""
-
-	A user's current settings. If a VariantInformation model is present in this for a user 
-	then that column will be displayed in the views_sample_variants view e.g view vcf
-
-
-	"""
-	user = models.ForeignKey('auth.User')
-	variant_information = models.ForeignKey(VariantInformation)
-
-	def __str__(self):
-		return self.variant_information.information + " " + self.user.user_name
-
 class Consequence(models.Model):
 	"""
 	A model to hold the VEP consequences see : http://www.ensembl.org/info/genome/variation/predicted_data.html

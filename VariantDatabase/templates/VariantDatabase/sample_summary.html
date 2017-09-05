@@ -259,18 +259,43 @@
     </div><!-- end of container -->
 
 
-<hr>
+	<hr>
         
 
 		<strong> Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} | 
 	    <strong> Indels </strong> {{summary.indel_count}} / {{total_summary.indel_count}} | <strong> LOF : </strong> {{summary.lof_count}} / {{total_summary.lof_count}} |
 	    <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}}
 
+
+
+		  <div class="row" style='float:right; margin-right:75px' >
+		       <div class="col-lg-12">
+		     <div class="button-group">
+		        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-cog"></span> <span class="caret"></span></button>
+		<ul class="dropdown-menu">
+		  <li><a class="small" data-value="max_af" tabIndex="-1"><input type="checkbox"/>&nbsp;Max AF</a></li>
+		  <li><a class="small" data-value="genes" tabIndex="-1"><input type="checkbox"/>&nbsp;Genes</a></li>
+		  <li><a class="small" data-value="exac_col" tabIndex="-1"><input type="checkbox"/>&nbsp;ExAC</a></li>
+		  <li><a class="small" data-value="clinical_sig" tabIndex="-1"><input type="checkbox"/>&nbsp;Clin Sig</a></li>
+</li>
+		</ul>
+		  </div>
+		</div>
+		  </div>
+
+
+
+
+
+
 <hr>
 
 
 
-  <table id="variant_table" class = "table table-hover">
+
+
+
+  <table id="variant_table" class = "table table-hover ui-responsive" data-role="table" data-mode="columntoggle" id="myTable">
 
           <thead>
 
@@ -280,9 +305,11 @@
           <th> Variant </th>
           <th> Ref </th>
           <th> Alt </th>
-          <th> Worst Conseqeunce </th>
-          <th> Genes </th>
-          <th> Max AF </th>
+          <th> Worst Consequence </th>
+          <th class='genes'> Genes </th>
+          <th class='max_af'> Max AF </th>
+          <th class='exac_col'> ExAC </th>
+          <th class='clinical_sig'> Clin Sig </th>
 
 
 
@@ -306,8 +333,23 @@
         <td> {{variant.ref}} </td>
         <td> {{variant.alt}} </td>
         <td> {{variant.worst_consequence}} </td>
-        <td> {{variant.get_genes|join:" "}} </td>
-         <td> {{variant.max_af}} </td>
+        <td class='genes'> {{variant.get_genes|join:" "}} </td>
+        <td class='max_af'> {{variant.max_af}} </td>
+        <td class='exac_col'> 
+                <a class="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-placement="top" data-content='<ul class="list-group">
+                                                  <li class="list-group-item">ADJ AF : {{ variant.exac_adj_af}}</li>
+                                                  <li class="list-group-item">AFR AF : {{ variant.exac_afr_af}}</li>
+                                                  <li class="list-group-item">AMR AF : {{ variant.exac_amr_af}}</li>
+                                                  <li class="list-group-item">EAS AF : {{ variant.exac_eas_af}}</li>
+                                                  <li class="list-group-item">FIN AF : {{ variant.exac_fin_af}}</li>
+                                                  <li class="list-group-item">NFE AF : {{ variant.exac_nfe_af}}</li>
+                                                  <li class="list-group-item">OTH AF : {{ variant.exac_oth_af}}</li>
+                                                  <li class="list-group-item">SAS AF : {{ variant.exac_sas_af}}</li></ul>' >{{variant.exac_af}}</a>
+
+            </td>
+
+
+        <td class='clinical_sig'> {{variant.clinical_sig}} </td>
 
 
       </tr>
@@ -687,13 +729,28 @@
 				{% with gene_percentages=gene.get_percentages %}
 
 
-				<td> {{gene_percentages.0}} </td>
-				<td> {{gene_percentages.1}} </td>
-				<td> {{gene_percentages.2}} </td>
-				<td> {{gene_percentages.3}} </td>
-				<td> {{gene_percentages.4}} </td>
-				<td> {{gene_percentages.5}} </td>
+				{% for pc in gene_percentages %}
 
+
+
+				{% if pc >= 95 %}
+
+
+				<td class="success" > {{pc}} </td>
+
+
+				{% else %}
+
+
+				<td class="danger" > {{pc}} </td>
+
+				{% endif %}
+
+
+
+
+
+				{% endfor %}
 
 				{% endwith %}
 
@@ -766,13 +823,30 @@
 
 				{% with exon_percentages=exon.get_percentages %}
 
-				
-				<td> {{exon_percentages.0}} </td>
-				<td> {{exon_percentages.1}} </td>
-				<td> {{exon_percentages.2}} </td>
-				<td> {{exon_percentages.3}} </td>
-				<td> {{exon_percentages.4}} </td>
-				<td> {{exon_percentages.5}} </td>
+
+
+					{% for pc in exon_percentages %}
+
+
+
+					{% if pc >= 95 %}
+
+
+					<td class="success" > {{pc}} </td>
+
+
+					{% else %}
+
+
+					<td class="danger" > {{pc}} </td>
+
+					{% endif %}
+
+
+
+
+
+					{% endfor %}
 
 
 				{% endwith %}
@@ -791,22 +865,7 @@
 
 
 
-
-
-	
-
-
-
 	</div>
-
-
-
-
-
-
-
-
-
 
 
 
@@ -983,6 +1042,74 @@ $(document).ready(function(){
 
 
     });
+
+
+    //code for dro down check box
+
+	var options = [];
+
+	$( '.dropdown-menu a' ).on( 'click', function( event ) {
+
+	   var $target = $( event.currentTarget ),
+	       val = $target.attr( 'data-value' ),
+	       $inp = $target.find( 'input' ),
+	       idx;
+
+	   if ( ( idx = options.indexOf( val ) ) > -1 ) {
+	      options.splice( idx, 1 );
+	      setTimeout( function() { $inp.prop( 'checked', false ) }, 0);
+	   } else {
+	      options.push( val );
+	      setTimeout( function() { $inp.prop( 'checked', true ) }, 0);
+	   }
+
+	   $( event.target ).blur();
+	      
+	   console.log( options );
+
+	   var columns =['genes', 'max_af','exac_col','clinical_sig'];
+
+
+	   for (var i=0; i<columns.length; i++){
+
+
+	   		var name = columns[i];
+	   		console.log( name );
+
+
+	   	$(".".concat(name)).hide();
+
+	   };
+
+	   for (var i=0; i<options.length; i++){
+
+
+	   		var name = options[i];
+	   		console.log( name );
+
+
+	   	$(".".concat(name)).show();
+
+	   };
+
+
+
+
+	   return false;
+	});
+
+
+	$('.exac').popover({title: "", content: "", html: true, placement: "top",trigger: "hover"});  
+
+
+
+
+
+
+
+
+
+
 
 
 
