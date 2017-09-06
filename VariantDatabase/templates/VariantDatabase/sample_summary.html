@@ -128,134 +128,13 @@
 
 
   	<!--Variants Tab displays filtered variants -->
-  	<div id="variants" class="tab-pane active">
+  	<div id="variants" class="tab-pane active"> <!--detail div replaced using -->
 
-  	 <div class ="container-fluid" id='detail'>
-		    <ul class="nav nav-pills nav-stacked col-lg-1">
-		      <li ><a href="#tab_a" data-toggle="pill">Detail</a></li>
-		      <li class="active"><a href="#tab_b" data-toggle="pill">IGV</a></li>
-		      <li><a href="#tab_c" data-toggle="pill">Evidence</a></li>
-		    </ul>
-	    <div class="tab-content col-lg-11">
-
-	    <div class="tab-pane" id="tab_a">
-	    <h4>Detail</h4>
+  	 <div class ="container-fluid" id='detail'> 
+		    
 
 
-
-		            <table class = 'table table-bordered' >
-
-		            <thead>
-
-		              <tr>
-		                <th colspan="2">Summary</th>
-		              </tr>
-
-		            </thead>
-
-		            <tbody>
-
-		              <tr>
-		                <td> Chromsome </td>
-		                <td> {{ variant.chromosome }} </td>
-
-		              </tr>
-
-		              <tr>
-		                <td> Position </td>
-		                <td> {{ variant.position }} </td>
-
-		              </tr>
-
-		              <tr>
-		                <td> Ref </td>
-		                <td> {{ variant.ref }} </td>
-
-		              </tr>
-
-		              <tr>
-		                <td> Alt </td>
-		                <td> {{ variant.alt }} </td>
-
-		              </tr>
-
-		              <tr>
-		                <td> ID </td>
-		                <td> {{ variant.display_ids|join:", " }} </td>
-
-		              </tr>
-
-
-		              <tr>
-		                <td> Genes </td>
-		                <td>
-
-		                {% for gene in variant.get_genes %}
-
-
-		                  {{ gene }} 
-
-
-		                {% endfor %}
-
-
-		                </td>
-
-		              </tr>
-
-
-		              <tr>
-		                <td> Worst Consequence </td>
-		                <td> {{ variant.worst_consequence }} </td>
-
-		              </tr>
-
-		              <tr>
-		                <td> Rated as Pathogenic </td>
-		                <td> {{ variant.rated_as_pathogenic}} </td>
-
-		              </tr>
-
-		              <tr>
-		                <td> ClinVar Clin Sig </td>
-		                <td> {{ variant.clinical_sig }} </td>
-
-		              </tr>
-
-
-		              <tr>
-		                <td> Picked </td>
-		                <td> {{ variant.get_picked_transcript }} </td>
-
-		              </tr>
-
-		            </tbody>
-		          </table>
-
-
-
-	    </div>
-
-	      <div class="tab-pane active" id="tab_b">
-
-	      <h4>IGV</h4>
-	      	
-
-
-
-
-
-                
-            </div>
-            <div class="tab-pane" id="tab_c">
-                 <h4>Evidence</h4>
-                
-            </div>
-            <div class="tab-pane" id="tab_d">
-                 <h4>Comments</h4>
-                
-            </div>
-    </div><!-- tab content -->
+    
     </div><!-- end of container -->
 
 
@@ -336,7 +215,7 @@
         <td class='genes'> {{variant.get_genes|join:" "}} </td>
         <td class='max_af'> {{variant.max_af}} </td>
         <td class='exac_col'> 
-                <a class="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-placement="top" data-content='<ul class="list-group">
+                <a class="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-placement="top" data-container="body" data-content='<ul class="list-group">
                                                   <li class="list-group-item">ADJ AF : {{ variant.exac_adj_af}}</li>
                                                   <li class="list-group-item">AFR AF : {{ variant.exac_afr_af}}</li>
                                                   <li class="list-group-item">AMR AF : {{ variant.exac_amr_af}}</li>
@@ -975,8 +854,8 @@ $(document).ready(function(){
 
 
 
-      $.ajax({
-    url: '/ajax_detail',
+    $.ajax({
+    url: '/ajax/ajax_detail',
     type: 'get', // This is the default though, you don't actually need to always mention it
     data: {"variant_hash" : variant_hash, 'sample_pk': {{sample.pk}}},
     success: function(data) {
@@ -1098,12 +977,14 @@ $(document).ready(function(){
 	   return false;
 	});
 
-
+	//popover for ExaC frequencies
 	$('.exac').popover({title: "", content: "", html: true, placement: "top",trigger: "hover"});  
 
 
-
-
+	//advanced table
+	$('#variant_table').DataTable({
+        "searching": false, "lengthChange": false, "scrollY":"400px", "paging": false, "info": false, "colReorder": true
+    });
 
 
 

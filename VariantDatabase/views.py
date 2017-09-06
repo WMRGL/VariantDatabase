@@ -14,7 +14,7 @@ from django.db import transaction
 import csv
 import parsers
 from django.template.loader import render_to_string
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 
 
 @login_required
@@ -180,6 +180,8 @@ def sample_summary(request, pk_sample ):
 				report.initialise_report()
 
 				return redirect(create_sample_report, sample.pk, report.pk)
+
+
 
 
 	elif 'filterform' in request.GET: #if the user clicked filter
@@ -650,14 +652,32 @@ def ajax_detail(request):
 		variant= Variant.objects.get(variant_hash=str(variant_hash))
 		sample = Sample.objects.get(pk=sample_pk)
 
-		
+		variant_sample = VariantSample.objects.get(variant=variant, sample=sample)
 
+		comments =Comment.objects.filter(variant_sample=variant_sample)
 
-
-		html = render_to_string('VariantDatabase/ajax_detail.html', {'variant': variant, 'sample': sample})
+		html = render_to_string('VariantDatabase/ajax_detail.html', {'variant': variant, 'sample': sample, 'comments': comments})
 
 		return HttpResponse(html)
 
-def igv(request):
+	else:
 
-	return render(request, 'VariantDatabase/igv.html', {})
+		raise Http404
+
+
+def ajax_comments(request):
+
+
+	if request.is_ajax():
+
+		variant_hash = request.POST.get('variant_hash')
+		sample_pk = request.POST.get('sample_pk')
+		comment_text = request.POST.get('comment_text')
+
+		html = 'hi'
+
+		return HttpResponse(html)
+
+	else:
+
+		raise Http404

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Sample, Interpretation, Report, Worksheet, Section
+from .models import Sample, Interpretation, Report, Worksheet, Section, Comment
 
 
 class FilterForm(forms.Form):
@@ -125,3 +125,4 @@ class SampleSheetForm(forms.Form):
 	worksheet_name = forms.CharField(max_length=150)
 	sample_sheet = forms.FileField()
 	comment = forms.CharField(max_length=500)
+

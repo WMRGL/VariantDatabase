@@ -20,17 +20,17 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)$', views.create_sample_report, name='create_sample_report'),
 				url(r'^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/view$', views.view_sample_report, name='view_sample_report'),
 				url(r'^uploadsamplesheet/$', views.upload_sample_sheet, name='upload_sample_sheet'),
-				url(r'^ajax_detail/$', views.ajax_detail, name='ajax_detail'),
-				url(r'^igv/$', views.igv, name='igv'),
+				url(r'^ajax/ajax_detail/$', views.ajax_detail, name='ajax_detail'),
+				url(r'^ajax/ajax_comments/$', views.ajax_comments, name='ajax_comments'),
 
 
 
-]
+] 
 
-"""
+
 if settings.DEBUG is True:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG is True:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-"""
+

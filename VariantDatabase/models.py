@@ -983,7 +983,7 @@ class VariantSample(models.Model):
 	sample = models.ForeignKey(Sample)
 
 	def __str__(self):
-		return self.variant + self.sample
+		return str(self.variant) + str(self.sample)
 		
 
 
@@ -1216,6 +1216,11 @@ class ReadLaneQuality(models.Model):
 		return self.reads_pf/1000000
 
 class GeneCoverage(models.Model):
+	"""
+	Model to hold the gene coverage data for a sample.
+	Each Gene that a variant occurs in within a sample will have an entry in this model.
+
+	"""
 
 	sample = models.ForeignKey(Sample)
 	gene = models.ForeignKey(Gene)
@@ -1238,6 +1243,11 @@ class GeneCoverage(models.Model):
 		return map(lambda x: round((float(x)/float(self.number_of_regions)*100),1), raw_data)
 
 class ExonCoverage(models.Model):
+	"""
+	Model to hold the exon coverage data for a sample.
+	Each Exon that a variant occurs in within a sample will have an entry in this model.
+
+	"""
 
 	sample = models.ForeignKey(Sample)
 	gene = models.ForeignKey(Gene)
@@ -1261,6 +1271,38 @@ class ExonCoverage(models.Model):
 
 		return map(lambda x: round((float(x)/float(self.number_of_regions)*100),1), raw_data)
 
+
+class EvidenceType(models.Model):
+	"""
+	Evidence types e.g. screenshot, paper etc
+
+	"""
+
+	evidence_type = models.CharField(max_length=50)
+
+class Comment(models.Model):
+	"""
+	Model to hold user comments on a VariantSample
+
+	"""
+
+	user = models.ForeignKey('auth.User')
+	text = models.TextField()
+	time = models.DateTimeField()
+	variant_sample = models.ForeignKey('VariantSample')
+
+class Evidence(models.Model):
+	"""
+	Model to hold files that relate to evidence e.g. pdfs, screenshots
+
+	"""
+
+	user = models.ForeignKey('auth.User')
+	evidence_type = models.ForeignKey('EvidenceType')
+	file = models.FileField(upload_to='uploads/%y/%m/')
+	title = models.CharField(max_length=50)
+	time = models.DateTimeField()
+	variant_sample = models.ForeignKey('VariantSample')
 
 
 

@@ -1,8 +1,4 @@
 
-
-
-
-
     <ul class="nav nav-pills nav-stacked col-lg-1" >
       <li ><a href="#tab_a" data-toggle="pill">Detail</a></li>
       <li class="active"><a href="#tab_b" data-toggle="pill">IGV</a></li>
@@ -101,14 +97,31 @@
 
             </div>
             <div class="tab-pane active" id="tab_b">
-                 <h4>IGV</h4> 
 
-                <!-- <div id="myDiv"></div>   -->
+
+                 <div id="myDiv"></div>
 
             </div>
             <div class="tab-pane" id="tab_c">
                  <h4>Evidence</h4>
-                <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.</p>
+
+                 {{comments}}
+
+                 <hr>
+
+                  <form> {% csrf_token %}
+                    <div class="form-group">
+                     <label for="comment">Comment:</label>
+                    <textarea class="form-control" rows="5" id="comment_text"></textarea>
+                   </div>
+
+                  <button type="button" class="btn btn-default btn-sm" id='comment_button'>
+                    <span class="glyphicon glyphicon-plus"></span> Add Comment
+                  </button>
+                  </form>
+                
+
+
             </div>
             <div class="tab-pane" id="tab_d">
                  <h4>Gene Coverage</h4>
@@ -118,90 +131,117 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 <script type="text/javascript">
 
-    $(document).ready(function () {
-
-        var div,
-                options,
-                browser;
-
-        div = $("#myDiv")[0];
-        options = {
-            locus:"{{variant.chromosome}}:{{variant.position|add:-40}}-{{variant.position|add:40}}",
-            showKaryo: false,
-            showNavigation: true,
-            showRuler: true,
-            reference: {
-                fastaURL: "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta",
-                cytobandURL: "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/cytoBand.txt"
-            },
-            flanking: 1000,
-            apiKey: 'AIzaSyDUUAUFpQEN4mumeMNIRWXSiTh5cPtUAD0',
-            trackDefaults: {
-                bam: {
-                    coverageThreshold: 0.2,
-                    coverageQualityWeight: true
-                }
-            },
-            palette: [
-                ["#00A0B0", "#6A4A3C", "#CC333F", "#EB6841"]
-            ],
-            tracks: [
-                {
-                    name: "Genes",
-                    type: "annotation",
-                    format: "bed",
-                    sourceType: "file",
-                    url: "https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/refGene.hg19.bed.gz",
-                    indexURL: "https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/refGene.hg19.bed.gz.tbi",
-                    order: Number.MAX_VALUE,
-                    visibilityWindow: 300000000,
-                    displayMode: "EXPANDED"
-                },
-
-                 {
-                  
+$(document).ready(function () {
 
 
-                    url: '/static/213837-2-D17-26177-HP_S2.bwa.drm.realn.sorted.bam',
-                    name: 'mybam',
-                    visibilityWindow: 50000,
-                    colorBy: "strand",
+  //Here we get update the comments div using ajax
+  $("#comment_button").click(function(){
 
 
-                },
+    var comment_text = $("#comment_text").val()
+
+    //alert(comment_text);
+    $.ajax({
+    url: '/ajax/ajax_comments/',
+    type: 'POST', // This is the default though, you don't actually need to always mention it
+    data: {'one': 1, csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value},
+    success: function(data) {
+
+        alert(data);
+    },
+
+    failure: function(data) { 
+        alert('Got an error dude');
+    }
+        }); 
 
 
-                 {
-                  
-
-
-                    url: '/static/213837-2-D17-26177-HP_S2.unified.annovar.wmrgldb.vcf.gz',
-                    name: 'myvcf'
-
-
-                },   
-
-                {
-                  
-
-
-                    url: '/files/genomic_resources/panels/TSCP/version_1/TSCP_sanger_primers_no_overlaps.sorted.bed',
-                    name: 'primer_bed'
-
-
-                }                  
+  });
 
 
 
 
-            ]
-        };
-
-        browser = igv.createBrowser(div, options);
 
 
-    });
+
+  //Hear we init IGV.js
+  var div, options, browser;
+
+  div = $("#myDiv")[0];
+  options = {
+    locus:"{{variant.chromosome}}:{{variant.position|add:-40}}-{{variant.position|add:40}}",
+    showKaryo: false,
+    showNavigation: true,
+    showRuler: true,
+    reference: {
+      fastaURL: "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/hg19.fasta",
+      cytobandURL: "https://s3.amazonaws.com/igv.broadinstitute.org/genomes/seq/hg19/cytoBand.txt"
+      },
+    flanking: 1000,
+    apiKey: 'AIzaSyDUUAUFpQEN4mumeMNIRWXSiTh5cPtUAD0',
+    trackDefaults: {
+    bam: {
+      coverageThreshold: 0.2,
+      coverageQualityWeight: true
+        }
+      },
+    palette: [ ["#00A0B0", "#6A4A3C", "#CC333F", "#EB6841"]],
+     
+
+    tracks: [{
+      name: "Genes",
+      type: "annotation",
+      format: "bed",
+      sourceType: "file",
+      url: "https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/refGene.hg19.bed.gz",
+      indexURL: "https://s3.amazonaws.com/igv.broadinstitute.org/annotations/hg19/genes/refGene.hg19.bed.gz.tbi",
+      order: Number.MAX_VALUE,
+      visibilityWindow: 300000000,
+      displayMode: "EXPANDED"
+      },
+
+      {
+
+    url: '/static/213837-2-D17-26177-HP_S2.bwa.drm.realn.sorted.bam',
+    name: 'mybam',
+    visibilityWindow: 50000,
+    colorBy: "strand"
+
+      },
+
+      { 
+
+    url: '/static/213837-2-D17-26177-HP_S2.unified.annovar.wmrgldb.vcf.gz',
+    name: 'myvcf'
+
+      },   
+
+      {
+
+    url: '/files/genomic_resources/panels/TSCP/version_1/TSCP_sanger_primers_no_overlaps.sorted.bed',
+    name: 'primer_bed'
+      }                  
+
+      ]
+      };
+
+  browser = igv.createBrowser(div, options);
+
+
+
+});
 
 </script>
