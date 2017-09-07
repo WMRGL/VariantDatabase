@@ -1295,14 +1295,12 @@ class Evidence(models.Model):
 	"""
 	Model to hold files that relate to evidence e.g. pdfs, screenshots
 
-	"""
+	Must be associated with a comment
 
-	user = models.ForeignKey('auth.User')
+	"""
 	evidence_type = models.ForeignKey('EvidenceType')
 	file = models.FileField(upload_to='uploads/%y/%m/')
-	title = models.CharField(max_length=50)
-	time = models.DateTimeField()
-	variant_sample = models.ForeignKey('VariantSample')
+	comment = models.ForeignKey(Comment)
 
 
 

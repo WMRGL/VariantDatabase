@@ -1,16 +1,14 @@
- <h4>Evidence</h4>
+{% for comment in comments %}
 
-               {{comments}}
 
-               <hr>
+<div class="panel panel-default">
+  <div class="panel-heading">{{comment.user}} on {{comment.time}}</div>
+  <div class="panel-body">{{comment.text}}</div>
+</div>
 
-                <form>
-                  <div class="form-group">
-                   <label for="comment">Comment:</label>
-                  <textarea class="form-control" rows="5" id="comment_text"></textarea>
-                 </div>
 
-                <button type="button" class="btn btn-default btn-sm" id='comment_button'>
-                  <span class="glyphicon glyphicon-plus"></span> Add Comment
-                </button>
-                </form>
+
+
+
+
+{% endfor %}

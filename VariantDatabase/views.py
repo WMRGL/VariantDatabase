@@ -674,7 +674,23 @@ def ajax_comments(request):
 		sample_pk = request.POST.get('sample_pk')
 		comment_text = request.POST.get('comment_text')
 
-		html = 'hi'
+		variant_hash = variant_hash.strip()
+		sample_pk = sample_pk.strip()
+		comment_text = comment_text.strip()
+
+		variant= Variant.objects.get(variant_hash=str(variant_hash))
+		sample = Sample.objects.get(pk=sample_pk)
+		variant_sample = VariantSample.objects.get(variant=variant, sample=sample)
+
+		if len(comment_text) >1:
+
+			new_comment = Comment(user=request.user, text=comment_text, time=timezone.now(),variant_sample=variant_sample )
+
+			new_comment.save()
+
+		comments =Comment.objects.filter(variant_sample=variant_sample)
+
+		html = render_to_string('VariantDatabase/ajax_comments.html', {'comments': comments, 'variant': variant, 'sample': sample})
 
 		return HttpResponse(html)
 

@@ -92,8 +92,6 @@
             </tbody>
           </table>
 
-          
-
 
             </div>
             <div class="tab-pane active" id="tab_b">
@@ -105,11 +103,28 @@
             <div class="tab-pane" id="tab_c">
                  <h4>Evidence</h4>
 
-                 {{comments}}
+                 <div id='comment_box'>
+
+                 {% for comment in comments %}
+
+
+                 <div class="panel panel-default">
+                    <div class="panel-heading">{{comment.user}} on {{comment.time}}</div>
+                    <div class="panel-body">{{comment.text}}</div>
+                </div>
+
+
+
+                 {% endfor %}
+
+
+                 </div>
+
+                 <div id='varhash' style="display: none;" >{{variant.variant_hash}} </div>
 
                  <hr>
 
-                  <form> {% csrf_token %}
+                  <form class="col-lg-6"> {% csrf_token %}
                     <div class="form-group">
                      <label for="comment">Comment:</label>
                     <textarea class="form-control" rows="5" id="comment_text"></textarea>
@@ -118,8 +133,14 @@
                   <button type="button" class="btn btn-default btn-sm" id='comment_button'>
                     <span class="glyphicon glyphicon-plus"></span> Add Comment
                   </button>
+
+                  <label class="btn btn-default btn-sm">
+                      <span class="glyphicon glyphicon-plus"></span> Attach File <input type="file" style="display: none;">
+                  </label>
+
+
                   </form>
-                
+
 
 
             </div>
@@ -151,23 +172,29 @@ $(document).ready(function () {
   $("#comment_button").click(function(){
 
 
-    var comment_text = $("#comment_text").val()
+    var comment_text = $("#comment_text").val();
+    var var_hash = $("#varhash").text();
 
-    //alert(comment_text);
+
+    //alert(var_hash);
+
+    
     $.ajax({
     url: '/ajax/ajax_comments/',
     type: 'POST', // This is the default though, you don't actually need to always mention it
-    data: {'one': 1, csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value},
+    data: {'one': 1, csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,  'sample_pk': {{sample.pk}}, 'comment_text': comment_text, 'variant_hash': var_hash},
     success: function(data) {
 
-        alert(data);
+        $("#comment_box").html(data);
+        $("#comment_text").val('');
+
     },
 
     failure: function(data) { 
         alert('Got an error dude');
     }
         }); 
-
+  
 
   });
 
