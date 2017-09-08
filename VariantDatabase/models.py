@@ -1291,6 +1291,19 @@ class Comment(models.Model):
 	time = models.DateTimeField()
 	variant_sample = models.ForeignKey('VariantSample')
 
+
+	def get_evidence(self):
+
+		evidence = Evidence.objects.filter(comment=self)
+
+		if len(evidence) == 0:
+
+			return None
+		else:
+
+			return evidence
+
+
 class Evidence(models.Model):
 	"""
 	Model to hold files that relate to evidence e.g. pdfs, screenshots
@@ -1298,8 +1311,7 @@ class Evidence(models.Model):
 	Must be associated with a comment
 
 	"""
-	evidence_type = models.ForeignKey('EvidenceType')
-	file = models.FileField(upload_to='uploads/%y/%m/')
+	file = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
 	comment = models.ForeignKey(Comment)
 
 

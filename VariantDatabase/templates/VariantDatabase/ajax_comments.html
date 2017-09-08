@@ -3,12 +3,30 @@
 
 <div class="panel panel-default">
   <div class="panel-heading">{{comment.user}} on {{comment.time}}</div>
-  <div class="panel-body">{{comment.text}}</div>
+  <div class="panel-body">{{comment.text}}
+
+    {% if comment.get_evidence == None %}
+
+    {% else %}
+
+    <hr>
+
+    {% for evidence in comment.get_evidence %}
+
+      {{ evidence.file }}
+
+
+    {% endfor %}
+
+  {% endif %}
+
+
+
+  </div>
+
+  
 </div>
 
 
-
-
-
-
 {% endfor %}
+

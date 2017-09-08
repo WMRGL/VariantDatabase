@@ -92,12 +92,6 @@
 
     <br>
 
-    <div class="alert alert-info ">
-  		You are viewing information relating to sample:  <strong> {{ sample.name }} </strong> 
-  		
-
-	</div>
-
 	{% if sample.sample_qc_passed == 'FAIL' %}
 
 	   <div class="alert alert-danger ">
@@ -141,9 +135,9 @@
 	<hr>
         
 
-		<strong> Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} | 
+		<strong> Sample : </strong> {{ sample.name }} |<strong> Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} | 
 	    <strong> Indels </strong> {{summary.indel_count}} / {{total_summary.indel_count}} | <strong> LOF : </strong> {{summary.lof_count}} / {{total_summary.lof_count}} |
-	    <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}}
+	    <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}}  
 
 
 

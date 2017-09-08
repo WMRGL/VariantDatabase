@@ -15,6 +15,10 @@ import csv
 import parsers
 from django.template.loader import render_to_string
 from django.http import HttpResponse, Http404
+import re
+import base64
+from django.core.files.base import ContentFile
+from django.core.files import File
 
 
 @login_required
@@ -666,7 +670,12 @@ def ajax_detail(request):
 
 
 def ajax_comments(request):
+	"""
+	Ajax View - when the user clicks the upload comment/file button this updates the comment section of the page.
 
+	Clipboard paste only works on HTML5 enabled browser
+
+	"""
 
 	if request.is_ajax():
 
@@ -682,11 +691,44 @@ def ajax_comments(request):
 		sample = Sample.objects.get(pk=sample_pk)
 		variant_sample = VariantSample.objects.get(variant=variant, sample=sample)
 
-		if len(comment_text) >1:
+		if len(comment_text) >1: #Check user has entered a comment
 
 			new_comment = Comment(user=request.user, text=comment_text, time=timezone.now(),variant_sample=variant_sample )
 
 			new_comment.save()
+
+			if request.FILES.get('file', False) != False: #Deal with files selected using the file selector html widget 
+
+				file = request.FILES.get('file')
+
+				new_evidence = Evidence()
+
+				new_evidence.file = file
+
+				new_evidence.comment= new_comment
+
+				new_evidence.save()
+
+
+			if request.POST.get('image_data') !=None: #deal with images pasted in from the clipboard
+
+				image_data = request.POST.get('image_data')
+
+				image_data = image_data.strip() #strip of any leading characters
+
+				dataUrlPattern = re.compile('data:image/(png|jpeg);base64,(.*)$') #add appropiate header
+
+				ImageData = dataUrlPattern.match(image_data).group(2)
+
+				ImageData = base64.b64decode(ImageData) #to binary
+
+				new_evidence = Evidence()
+
+				new_evidence.comment= new_comment
+
+				new_evidence.file.save(str(sample.pk)+"_"+str(new_comment.pk)+"_clip_image.png", ContentFile(ImageData)) #save image
+
+				new_evidence.save()
 
 		comments =Comment.objects.filter(variant_sample=variant_sample)
 

@@ -103,14 +103,39 @@
             <div class="tab-pane" id="tab_c">
                  <h4>Evidence</h4>
 
-                 <div id='comment_box'>
+                 <div id='comment_box'> 
+
+                 <!-- Comment box folds the comments and files for the variant - updated via ajax -->
 
                  {% for comment in comments %}
 
 
                  <div class="panel panel-default">
                     <div class="panel-heading">{{comment.user}} on {{comment.time}}</div>
-                    <div class="panel-body">{{comment.text}}</div>
+                    <div class="panel-body">{{comment.text}}
+
+
+                      {% if comment.get_evidence == None %}
+
+                      {% else %}
+
+                        <hr>
+
+                        {% for evidence in comment.get_evidence %}
+
+                          {{ evidence.file }}
+
+
+                        {% endfor %}
+
+                      {% endif %}
+
+                    </div>
+
+
+
+
+                    
                 </div>
 
 
@@ -124,22 +149,37 @@
 
                  <hr>
 
-                  <form class="col-lg-6"> {% csrf_token %}
+                  <form enctype="multipart/form-data" class="col-lg-6"> {% csrf_token %}
                     <div class="form-group">
                      <label for="comment">Comment:</label>
-                    <textarea class="form-control" rows="5" id="comment_text"></textarea>
+                    <textarea class="form-control" rows="5" id="comment_text" style="resize:none;"></textarea>
                    </div>
 
                   <button type="button" class="btn btn-default btn-sm" id='comment_button'>
-                    <span class="glyphicon glyphicon-plus"></span> Add Comment
+                    <span class="glyphicon glyphicon-plus"></span> Add Comment/File
                   </button>
 
                   <label class="btn btn-default btn-sm">
-                      <span class="glyphicon glyphicon-plus"></span> Attach File <input type="file" style="display: none;">
-                  </label>
+                      <span class="glyphicon glyphicon-plus"></span> Attach File <input type="file" style="display: none;" id='file_upload' name='file'> 
+                  </label> 
+
+
+                  <hr>
+
+                  <div class="alert alert-info" id='file_name' style="display: none;">
+                    
+                  </div>
+
+
+                  <input type="hidden" id='hidden_image_field'>
+
 
 
                   </form>
+
+                  <canvas style="border:1px solid grey;" id="my_canvas" width="300" height="300"></canvas>
+
+
 
 
 
@@ -165,33 +205,69 @@
 
 <script type="text/javascript">
 
+
 $(document).ready(function () {
 
 
   //Here we get update the comments div using ajax
-  $("#comment_button").click(function(){
 
+  //This implements an ajax function that allows:
+  //a) adding comments
+  //b) adding files
+  //c) pasting in images from clipboard for upload
+
+
+
+  $("#comment_button").click(function(){
 
     var comment_text = $("#comment_text").val();
     var var_hash = $("#varhash").text();
 
+    var formData = new FormData(); //create empty form data
 
-    //alert(var_hash);
+    formData.append('csrfmiddlewaretoken',document.getElementsByName('csrfmiddlewaretoken')[0].value ); //add csfr token
+    formData.append('sample_pk', {{sample.pk}}); //add sample primark key
+    formData.append('comment_text', comment_text); //add comment text
+    formData.append('variant_hash', var_hash); //which variant are we looking at
 
-    
+    var file = $('#file_upload')[0].files[0];
+
+    var canvas = document.getElementById('my_canvas');
+
+    var dataURL = canvas.toDataURL("image/png");
+    document.getElementById('hidden_image_field').value = dataURL;
+
+    formData.append('file', file); //add file
+
+    if (canvas_entered ==true){
+
+
+      formData.append('image_data', $("#hidden_image_field").val()); //add image file
+
+
+    }
+
+   
     $.ajax({
     url: '/ajax/ajax_comments/',
-    type: 'POST', // This is the default though, you don't actually need to always mention it
-    data: {'one': 1, csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,  'sample_pk': {{sample.pk}}, 'comment_text': comment_text, 'variant_hash': var_hash},
+    type: 'POST', 
+    data: formData,
+
+    contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+    processData: false, // NEEDED, DON'T OMIT THIS
+
+
     success: function(data) {
 
         $("#comment_box").html(data);
         $("#comment_text").val('');
+        $('#file_name').hide();
+
 
     },
 
     failure: function(data) { 
-        alert('Got an error dude');
+        alert('Got an error');
     }
         }); 
   
@@ -200,6 +276,15 @@ $(document).ready(function () {
 
 
 
+
+
+
+  //Creates a box with the filename when a file is selected
+  $('#file_upload').on('change', function() { //runs when a file is selected
+    var file = this.files[0];
+    $('#file_name').text(file.name + " has been selected. Click Add Comment/File to upload.");
+    $('#file_name').show();
+});
 
 
 
@@ -269,6 +354,65 @@ $(document).ready(function () {
 
 
 
+
+
+//copy and paste from clipboard
+//Taken from https://stackoverflow.com/questions/18377891/how-can-i-let-user-paste-image-data-from-the-clipboard-into-a-canvas-element-in
+var CLIPBOARD = new CLIPBOARD_CLASS("my_canvas", true);
+
+var canvas_entered =false;
+
+function CLIPBOARD_CLASS(canvas_id, autoresize) {
+  var _self = this;
+  var canvas = document.getElementById(canvas_id);
+  var ctx = document.getElementById(canvas_id).getContext("2d");
+
+  //handlers
+  document.addEventListener('paste', function (e) { _self.paste_auto(e); }, false);
+
+  //on paste
+  this.paste_auto = function (e) {
+    if (e.clipboardData) {
+      var items = e.clipboardData.items;
+      if (!items) return;
+      
+      //access data directly
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          //image
+          var blob = items[i].getAsFile();
+          var URLObj = window.URL || window.webkitURL;
+          var source = URLObj.createObjectURL(blob);
+          this.paste_createImage(source);
+        }
+      }
+      e.preventDefault();
+    }
+  };
+  //draw pasted image to canvas
+  this.paste_createImage = function (source) {
+    var pastedImage = new Image();
+    canvas_entered =true;
+    pastedImage.onload = function () {
+      if(autoresize == true){
+        //resize
+        canvas.width = pastedImage.width;
+        canvas.height = pastedImage.height;
+      }
+      else{
+        //clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      ctx.drawImage(pastedImage, 0, 0);
+    };
+    pastedImage.src = source;
+  };
+}
+
+
+
 });
+
+
 
 </script>
