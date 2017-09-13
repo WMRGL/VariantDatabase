@@ -1,0 +1,81 @@
+ <style>
+                .thumbnail
+                {
+                    text-decoration:none;
+                    color:black;
+                    font-weight:bold;
+                }
+                .thumbnail span  /*CSS for enlarged image*/
+                {
+                    visibility: hidden;
+                    position: absolute;
+                    padding: 5px;
+                    border: 1px solid #000;
+                    background-color: #e5e5e5;
+                }
+                .thumbnail:hover span  /*CSS for enlarged image on hover*/
+                {
+                    visibility: visible;
+                    left: 600px;
+                    top: 750px;
+                }
+                .imgs td
+                {
+                    vertical-align:middle;
+                    padding: 0.5em;
+                    border: 1px solid black;
+                }
+                table.imgs
+                {
+                    border-collapse:collapse;
+                }
+                .nums th
+                {
+                    text-align: left;
+                }
+                table.nums
+                {
+                    margin-top: 1em;
+                    margin-left:20px;
+                    border: 1px dotted #83A4C3;
+                    background-color: #F5F5F5;
+                    padding: 0.5em;
+                }
+                .pad { padding-left:1em; vertical-align:top; }
+                .right { text-align:right; padding-left:1em; }
+
+
+				.header-fixed {
+				    width: 100% 
+				}
+
+				.header-fixed > thead,
+				.header-fixed > tbody,
+				.header-fixed > thead > tr,
+				.header-fixed > tbody > tr,
+				.header-fixed > thead > tr > th,
+				.header-fixed > tbody > tr > td {
+				    display: block;
+				}
+
+				.header-fixed > tbody > tr:after,
+				.header-fixed > thead > tr:after {
+				    content: ' ';
+				    display: block;
+				    visibility: hidden;
+				    clear: both;
+				}
+
+				.header-fixed > tbody {
+				    overflow-y: auto;
+				    height: 500px;
+				}
+
+				.header-fixed > tbody > tr > td,
+				.header-fixed > thead > tr > th {
+				    width: 16.6%;
+				    float: left;
+				}
+
+
+            </style>
