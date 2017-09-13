@@ -3,14 +3,12 @@ from VariantDatabase.models import *
 import django.contrib.auth  
 from django.contrib.auth.models import User
 import hashlib
-import sys
-import time
 import imp
 from django.db import transaction
 from django.utils import timezone
 
 
-pysam_extract = imp.load_source('pysam_extract', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/pysam_extract.py')
+vcf_parser = imp.load_source('vcf_parser', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/parsers/vcf_parser.py')
 
 
 class Command(BaseCommand):
@@ -47,7 +45,7 @@ class Command(BaseCommand):
 		vcf_file_path = options['vcf_file'][0]
 		sample_name = options['sample_name'][0]
 
-		validation_report = pysam_extract.validate_input(vcf_file_path, sample_name)
+		validation_report = vcf_parser.validate_input(vcf_file_path, sample_name)
 
 
 		if validation_report[0] == False:
@@ -66,22 +64,22 @@ class Command(BaseCommand):
 
 		try:
 
-			data = pysam_extract.create_master_list(vcf_file_path, sample_name)
+			data = vcf_parser.create_master_list(vcf_file_path, sample_name)
 			total_variants = len(data)
-			self.stdout.write(self.style.SUCCESS('Loaded data using pysam_extract - proceeding'))
+			self.stdout.write(self.style.SUCCESS('Loaded data using vcf_parser - proceeding'))
 			self.stdout.write(self.style.SUCCESS(str(total_variants)+ ' variants detected'))
 
 
 
 
 
-			annotation_type = pysam_extract.vep_annotated(vcf_file_path)
+			annotation_type = vcf_parser.vep_annotated(vcf_file_path)
 
 			self.stdout.write(self.style.SUCCESS('VEP annotation detected'))
 
 		except:
 
-			raise CommandError('Could not process data using pysam_extract function')
+			raise CommandError('Could not process data using vcf_parser function')
 
 
 		#Check we have an admin user in the database for the next stage
@@ -107,16 +105,7 @@ class Command(BaseCommand):
 		with transaction.atomic():
 
 			# Create a new sample using the information we have
-			"""
-			new_sample = Sample()
-			new_sample.name = sample_name
-			new_sample.worksheet = worksheet
-			new_sample.vcf_file = vcf_file_path
-			new_sample.visible = False
-			new_sample.status = '1'
-			new_sample.save()
-			"""
-
+		
 			sample = Sample.objects.filter(worksheet = worksheet, name=sample_name)
 
 			if len(sample) ==1:
@@ -152,37 +141,34 @@ class Command(BaseCommand):
 			for variant in data:
 
 
-
-				genotype = variant['genotype']
 				chromosome = variant['chrom']
 				pos = str(variant['pos'])
 				ref = variant['reference']
 				alt = variant['alt_alleles'][0]
 				hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
 
-				print chromosome, pos				
+				#print chromosome, pos				
 
-				allele_count = pysam_extract.count_alleles(genotype)
 
-				gene_list = pysam_extract.get_variant_genes_list(variant['transcript_data'])
+				gene_list = vcf_parser.get_variant_genes_list(variant['transcript_data'])
 
-				hgvsc = pysam_extract.get_hgvsc(variant['transcript_data'])
+				hgvsc = vcf_parser.get_hgvsc(variant['transcript_data'])
 
-				hgvsp = pysam_extract.get_hgvsp(variant['transcript_data'])
+				hgvsp = vcf_parser.get_hgvsp(variant['transcript_data'])
 
-				rs_number = pysam_extract.get_rs_number(variant['transcript_data'])
+				rs_number = vcf_parser.get_rs_number(variant['transcript_data'])
 
-				worst_consequence = pysam_extract.worst_consequence(variant['transcript_data'])
+				worst_consequence = vcf_parser.worst_consequence(variant['transcript_data'])
 
 				worst_consequence = Consequence.objects.get(name=worst_consequence)
 
-				canonical = pysam_extract.get_canonical_transcript_name(variant['transcript_data'])
+				canonical = vcf_parser.get_canonical_transcript_name(variant['transcript_data'])
 
-				max_af = pysam_extract.get_max_af(variant['transcript_data'])
+				max_af = vcf_parser.get_max_af(variant['transcript_data'])
 
-				allele_frequencies = pysam_extract.get_allele_frequencies(variant['transcript_data'])
+				allele_frequencies = vcf_parser.get_allele_frequencies(variant['transcript_data'])
 
-				clin_sig = pysam_extract.get_clin_sig(variant['transcript_data'])
+				clin_sig = vcf_parser.get_clin_sig(variant['transcript_data'])
 
 				af = allele_frequencies[0]
 				afr_af = allele_frequencies[1]
@@ -209,9 +195,7 @@ class Command(BaseCommand):
 				try:
 
 					new_variant = Variant.objects.get(variant_hash=hash_id)
-					new_variant.count = new_variant.allele_count+allele_count
-					new_variant.sample_count = new_variant.allele_count+1
-					new_variant.save()
+
 
 				except Variant.DoesNotExist:
 
@@ -221,7 +205,7 @@ class Command(BaseCommand):
 					 max_af= max_af,  af=af,  afr_af=afr_af, amr_af=amr_af,
 					 eur_af=eur_af, eas_af=eas_af, sas_af=sas_af, exac_af=exac_af, exac_adj_af=exac_adj_af,
 					 exac_afr_af= exac_afr_af, exac_amr_af=exac_amr_af,exac_eas_af=exac_eas_af, exac_fin_af=exac_fin_af,
-					 exac_nfe_af = exac_nfe_af, exac_oth_af=exac_oth_af, exac_sas_af=exac_sas_af,esp_aa_af=esp_aa_af,esp_ea_af=esp_ea_af,clinical_sig=clin_sig, allele_count=allele_count, sample_count=1)
+					 exac_nfe_af = exac_nfe_af, exac_oth_af=exac_oth_af, exac_sas_af=exac_sas_af,esp_aa_af=esp_aa_af,esp_ea_af=esp_ea_af,clinical_sig=clin_sig)
 
 					new_variant.save()
 
@@ -240,64 +224,74 @@ class Command(BaseCommand):
 							gene_model.save()
 							new_gene_count = new_gene_count+1
 
-						#new_variant_gene = VariantGene(gene =gene_model, variant = new_variant)
-						
-						#new_variant_gene.save()
 
 						
 					#Now create transcripts
 
 
-					for key in variant['transcript_data']:
+					for transcript_key in variant['transcript_data']:
 
-						
+						if transcript_key == "":
 
-						try:
+							try:
 
-							transcript_model = Transcript.objects.get(name=key)
+								transcript_model = Transcript.objects.get(name='no_transcript')
 
-						except Transcript.DoesNotExist:
+							except Transcript.DoesNotExist:
 
-							canonical = variant['transcript_data'][key]['CANONICAL']
-
-							if canonical == 'YES':
-
-								canonical = True
-							else:
-
-								canonical = False
-
-
-							gene = variant['transcript_data'][key]['SYMBOL']
-
-							if gene != "":
-
-
-								gene = Gene.objects.get(name=gene)
-
-								transcript_model = Transcript(name = key, canonical=canonical, gene =gene)
+								transcript_model = Transcript(name = 'no_transcript', canonical=False)
 
 								transcript_model.save()
 
-							else:
-								transcript_model = Transcript(name = key, canonical=canonical)
+						else:
 
-								transcript_model.save()
+							try:
+
+								transcript_model = Transcript.objects.get(name=transcript_key)
+
+							except Transcript.DoesNotExist:
+
+
+								canonical = variant['transcript_data'][transcript_key]['CANONICAL']
+
+								if canonical == 'YES':
+
+									canonical = True
+								else:
+
+									canonical = False
+
+
+								gene = variant['transcript_data'][transcript_key]['SYMBOL']
+
+								if gene != "":
+
+
+									gene = Gene.objects.get(name=gene)
+
+									transcript_model = Transcript(name = transcript_key, canonical=canonical, gene =gene)
+
+									transcript_model.save()
+
+								else:
+									transcript_model = Transcript(name = transcript_key, canonical=canonical)
+
+									transcript_model.save()
 
 
 						#now create transcriptvariant model
 
-						consequence = variant['transcript_data'][key]['Consequence']
-						exon = variant['transcript_data'][key]['EXON']
-						intron = variant['transcript_data'][key]['INTRON']
-						hgvsc_t = variant['transcript_data'][key]['HGVSc']
-						hgvsp_t = variant['transcript_data'][key]['HGVSp']
-						codons = variant['transcript_data'][key]['Codons']
-						cdna_position = variant['transcript_data'][key]['cDNA_position']
-						cds_position = variant['transcript_data'][key]['CDS_position']
-						protein_position = variant['transcript_data'][key]['Protein_position']
-						amino_acids = variant['transcript_data'][key]['Amino_acids']
-						picked = variant['transcript_data'][key]['PICK']
+						consequence = variant['transcript_data'][transcript_key]['Consequence']
+						exon = variant['transcript_data'][transcript_key]['EXON']
+						intron = variant['transcript_data'][transcript_key]['INTRON']
+						hgvsc_t = variant['transcript_data'][transcript_key]['HGVSc']
+						hgvsp_t = variant['transcript_data'][transcript_key]['HGVSp']
+						codons = variant['transcript_data'][transcript_key]['Codons']
+						cdna_position = variant['transcript_data'][transcript_key]['cDNA_position']
+						cds_position = variant['transcript_data'][transcript_key]['CDS_position']
+						protein_position = variant['transcript_data'][transcript_key]['Protein_position']
+						amino_acids = variant['transcript_data'][transcript_key]['Amino_acids']
+						picked = variant['transcript_data'][transcript_key]['PICK']
 
 						if picked == '1':
 
@@ -307,28 +301,32 @@ class Command(BaseCommand):
 
 							picked =False
 
+						#print chromosome, pos, type(transcript_model), transcript_model.pk
+
 						variant_transcript = VariantTranscript(variant = new_variant, transcript=transcript_model, consequence=consequence, exon=exon, intron = intron, hgvsc =hgvsc_t, hgvsp = hgvsp_t,codons=codons,cdna_position=cdna_position, protein_position=protein_position, amino_acids=amino_acids, picked =picked)
 											
 
 						variant_transcript.save()
 
 
-				#if new_variant.worst_consequence.impact <=13 and new_variant.max_af <0.05: # only create this model with interesting variants - needs work
 
 
-				new_variant_sample = VariantSample(variant=new_variant, sample=sample)
+				genotype = variant['genotype']
+				caller = variant['Caller']
+				allele_depth = variant['allele_depth']
+				filter_status = variant['filter_status']
+				total_count_forward = variant['TCF']
+				total_count_reverse = variant['TCR']
+				vafs = variant['VAFS']
+
+				new_variant_sample = VariantSample(variant=new_variant, sample=sample, genotype = genotype, caller=caller, allele_depth=allele_depth, filter_status=filter_status, total_count_forward=total_count_forward, total_count_reverse=total_count_reverse,vafs=vafs )
 
 				new_variant_sample.save()
 
 				var_sample_count = var_sample_count +1
 
-
-
 				var_count = var_count +1
 
-			#new_sample.visible = True
-
-			#new_sample.save()
 
 			self.stdout.write(self.style.SUCCESS('Complete'))
 			self.stdout.write(self.style.SUCCESS(str(var_count)+ ' variants in file'))
@@ -338,6 +336,8 @@ class Command(BaseCommand):
 
 			complete = True
 
+
+			#raise CommandError('Sample ' + sample.name + ' has been processed before. Ending.')
 
 		if complete != True:
 

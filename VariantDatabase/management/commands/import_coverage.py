@@ -4,7 +4,7 @@ from django.db import transaction
 import glob
 import imp
 
-parsers = imp.load_source('parsers', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/parsers.py')
+parsers = imp.load_source('parsers', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/parsers/parsers.py')
 
 
 class Command(BaseCommand):

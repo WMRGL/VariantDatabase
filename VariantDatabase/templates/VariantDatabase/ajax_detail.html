@@ -3,7 +3,6 @@
       <li ><a href="#tab_a" data-toggle="pill">Detail</a></li>
       <li class="active"><a href="#tab_b" data-toggle="pill">IGV</a></li>
       <li><a href="#tab_c" data-toggle="pill">Evidence</a></li>
-      <li><a href="#tab_d" data-toggle="pill">Coverage</a></li>
     </ul>
     <div class="tab-content col-lg-11">
             <div class="tab-pane" id="tab_a">
@@ -184,22 +183,8 @@
 
 
             </div>
-            <div class="tab-pane" id="tab_d">
-                 <h4>Gene Coverage</h4>
-                 
-            </div>
+
     </div><!-- tab content -->
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -226,7 +211,7 @@ $(document).ready(function () {
     var formData = new FormData(); //create empty form data
 
     formData.append('csrfmiddlewaretoken',document.getElementsByName('csrfmiddlewaretoken')[0].value ); //add csfr token
-    formData.append('sample_pk', {{sample.pk}}); //add sample primark key
+    formData.append('sample_pk', {{sample.pk}}); //add sample primary key
     formData.append('comment_text', comment_text); //add comment text
     formData.append('variant_hash', var_hash); //which variant are we looking at
 
@@ -262,6 +247,7 @@ $(document).ready(function () {
         $("#comment_box").html(data);
         $("#comment_text").val('');
         $('#file_name').hide();
+        $('#file_upload').val('');
 
 
     },

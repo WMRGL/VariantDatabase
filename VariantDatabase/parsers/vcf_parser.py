@@ -116,7 +116,17 @@ def create_master_list(file,sample):
 
 		sample_vcf = rec.samples[sample]
 
-		variant_data_dict['genotype'] = sample_vcf['GT']
+		genotype = sample_vcf['GT']
+
+
+		if sample_vcf.phased == True:
+
+			variant_data_dict['genotype'] = "|".join(str(x) for x in genotype )
+
+		else:
+
+			variant_data_dict['genotype'] = "/".join(str(x) for x in genotype )
+
 
 		variant_data_dict['pos'] = rec.pos
 
@@ -129,6 +139,18 @@ def create_master_list(file,sample):
 		variant_data_dict['alt_alleles'] = rec.alts
 
 		variant_data_dict['quality'] = rec.qual
+
+		filter_status = rec.filter
+
+		if len(filter_status.keys()) == 0:
+
+			variant_data_dict['filter_status'] = "."
+
+		else:
+			variant_data_dict['filter_status'] =  ";".join(filter_status.keys())
+
+
+		variant_data_dict['allele_depth'] = ":".join(str(x) for x in sample_vcf['AD'])
 
 		chromosome = variant_data_dict['chrom']
 		pos = str(variant_data_dict['pos'])

@@ -1,9 +1,8 @@
 from __future__ import unicode_literals
 from django.db import models
 from django.utils import timezone
-from variant_classifier import classify
 from django.db.models import Q
-import pysam_extract
+import parsers.vcf_parser as vcf_parser
 from django.contrib.contenttypes.models import ContentType
 from auditlog.models import LogEntry
 from auditlog.registry import auditlog
@@ -573,6 +572,9 @@ class Transcript(models.Model):
 			return None
 
 
+
+
+
 class Variant(models.Model):
 
 	"""
@@ -617,9 +619,7 @@ class Variant(models.Model):
 	esp_ea_af = models.FloatField()
 	esp_aa_af = models.FloatField()
 
-	#Counts 
-	allele_count = models.IntegerField()
-	sample_count = models.IntegerField()
+
 
 	def __str__(self):
 		return self.chromosome + " " + str(self.position) + " " +  self.ref + " " +self.alt
@@ -757,7 +757,7 @@ class Variant(models.Model):
 
 			for hgvsp in self_hgvsp:
 
-				transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
+				transcript, codon = vcf_parser.extract_codon_from_hgvs(hgvsp)
 
 				if transcript == False:
 
@@ -776,7 +776,7 @@ class Variant(models.Model):
 
 					for hgvsp in variant_hgvsp_list:
 
-						transcript, codon = pysam_extract.extract_codon_from_hgvs(hgvsp)
+						transcript, codon = vcf_parser.extract_codon_from_hgvs(hgvsp)
 
 						transcript_list_vars.append((transcript.strip(),codon))
 
@@ -917,55 +917,57 @@ class Variant(models.Model):
 
 		"""
 
-		picked = VariantTranscript.objects.filter(variant=self).filter(picked=True)[0].transcript.name
+		picked = VariantTranscript.objects.filter(variant=self).filter(picked=True)
 
 		return picked
 
 	def get_picked_hgvsc(self):
 
+
+
 		picked = self.get_picked_transcript()
+	
+		if len(picked) ==1:
 
-		hgvsc_list = self.hgvsc_list()
+			picked = picked[0]
 
-		if len(hgvsc_list) ==1:
+		
+			if picked.transcript == None or picked.hgvsc=="":
 
-			return hgvsc_list[0]
+				return None
 
+			else:
 
+				return picked.hgvsc
 
-		for hgvsc in hgvsc_list:
+	
+		else:
 
-			if picked in hgvsc:
+			return "Error"
 
-				return hgvsc
-
-
-		return None
-
-
+		
 
 	def get_picked_hgvsp(self):
 
 		picked = self.get_picked_transcript()
+	
+		if len(picked) ==1:
 
-		hgvsc_list = self.hgvsp_list()
+			picked = picked[0]
 
-		if len(hgvsc_list) ==1:
+		
+			if picked.transcript == None or picked.hgvsp=="":
 
-			return hgvsc_list[0]
+				return None
 
-		elif len(hgvsc_list) ==0:
+			else:
 
-			return 'NA'
+				return picked.hgvsp
 
-		for hgvsc in hgvsc_list:
+	
+		else:
 
-			if picked in hgvsc:
-
-				return hgvsc
-
-
-		return 'NA'
+			return "Error"
 
 
 
@@ -981,6 +983,18 @@ class VariantSample(models.Model):
 
 	variant = models.ForeignKey(Variant)
 	sample = models.ForeignKey(Sample)
+
+
+	genotype = models.CharField(max_length =50)
+	caller = models.CharField(max_length=50)
+	allele_depth = models.CharField(max_length=50)
+	filter_status = models.CharField(max_length=100)
+	vafs = models.CharField(max_length=25) #list of VAFs from each caller - in the order listed in -Caller
+	total_count_forward = models.IntegerField(null=True, blank=True)
+	total_count_reverse = models.IntegerField(null=True, blank=True)
+
+
+
 
 	def __str__(self):
 		return str(self.variant) + str(self.sample)

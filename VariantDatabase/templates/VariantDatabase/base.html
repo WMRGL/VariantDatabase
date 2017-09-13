@@ -10,6 +10,10 @@
 
    <title>Variant Database</title>
 
+
+
+   {% block js-head %}
+
     <!-- Bootstrap CSS - NOT REQUIRED FOR IGV -->
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 
@@ -21,10 +25,6 @@
     <link rel="stylesheet" type="text/css"
           href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css"/>
 
-    <!-- IGV CSS -->
-    <link rel="stylesheet" type="text/css" href="{% static 'igv.css' %}">
-
-
     <!-- jQuery JS -->
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
@@ -32,26 +32,16 @@
     <!-- Bootstrap JS -  NOT REQUIRED FOR IGV -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 
-    <!-- IGV JS-->
-    <script type="text/javascript" src="{% static 'igv.js' %}"></script>
-
 
     <link rel="stylesheet" href= "{% static 'css/default.css' %}">
 
-    <!-- Datatables -->
-
-  <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-
-  <script type="text/javascript" src="https://cdn.datatables.net/colreorder/1.4.0/js/dataTables.colReorder.min.js"></script>
-
-  <link rel="stylesheet" href= "https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
-
-  <link rel="stylesheet" href= "https://cdn.datatables.net/colreorder/1.4.0/css/colReorder.dataTables.min.css">
-
- 
 
 
 
+
+
+
+  {% endblock js-head %}
 
 </head>
 

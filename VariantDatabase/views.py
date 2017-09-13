@@ -7,12 +7,12 @@ import hashlib
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.cache import cache
-import pysam_extract
+import parsers.vcf_parser as vcf_parser
 from django.forms import modelformset_factory
 import collections
 from django.db import transaction
 import csv
-import parsers
+import parsers.file_parsers as parsers
 from django.template.loader import render_to_string
 from django.http import HttpResponse, Http404
 import re
@@ -123,11 +123,11 @@ def list_sample_variants(request, pk_sample):
 
 	if data == None:
 
-		data = pysam_extract.create_master_list_canonical(vcf_file_path, sample.name) #create variant list
+		data = vcf_parser.create_master_list_canonical(vcf_file_path, sample.name) #create variant list
 		cache.set(sample.name, data, 600)
 
 
-	vep_annotated = pysam_extract.vep_annotated(vcf_file_path)
+	vep_annotated = vcf_parser.vep_annotated(vcf_file_path)
 
 
 	paginator = Paginator(data,50)
@@ -217,9 +217,9 @@ def sample_summary(request, pk_sample ):
 
 		consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
 
-		variant_samples =VariantSample.objects.filter(sample=sample, variant__worst_consequence__in=consequences_query_set).values_list('variant_id', flat=True)
+		variant_samples =VariantSample.objects.filter(sample=sample, variant__worst_consequence__in=consequences_query_set).filter(variant__max_af__lte=max_af).order_by('-variant__worst_consequence__impact', 'variant__max_af') #performance?
 
-		variants = Variant.objects.filter(variant_hash__in= variant_samples).filter(max_af__lte=max_af).order_by('worst_consequence__impact', 'max_af')
+		variants = Variant.objects.filter(variant_hash__in= variant_samples.values_list('variant_id', flat=True))
 
 		summary = sample.variant_query_set_summary(variants)
 
@@ -228,7 +228,7 @@ def sample_summary(request, pk_sample ):
 		exon_coverage = ExonCoverage.objects.filter(sample=sample)
 
 
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary,
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variant_samples, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary,
 					 'filter_form': filter_form, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage })
 
 
@@ -262,9 +262,9 @@ def sample_summary(request, pk_sample ):
 
 		consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
 
-		variant_samples =VariantSample.objects.filter(sample=sample, variant__worst_consequence__in=consequences_query_set).values_list('variant_id', flat=True)
+		variant_samples =VariantSample.objects.filter(sample=sample, variant__worst_consequence__in=consequences_query_set).filter(variant__max_af__lte=filter_dict['freq_max_af']).order_by('variant__worst_consequence__impact', 'variant__max_af')
 
-		variants = Variant.objects.filter(variant_hash__in= variant_samples).filter(max_af__lte=filter_dict['freq_max_af']).order_by('worst_consequence__impact', 'max_af')
+		variants = Variant.objects.filter(variant_hash__in= variant_samples.values_list('variant_id', flat=True))
 
 		summary = sample.variant_query_set_summary(variants)
 
@@ -272,8 +272,7 @@ def sample_summary(request, pk_sample ):
 
 		exon_coverage = ExonCoverage.objects.filter(sample=sample)
 
-
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variants, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary,
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variant_samples, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary,
 					 'filter_form': filter_form, 'filter_dict': filter_dict, 'cons': consequences_to_include, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage})
 
 
@@ -553,7 +552,7 @@ def view_sample_report(request, pk_sample, pk_report):
 
 	return render(request, 'VariantDatabase/view_sample_report.html' , {'report': report, 'report_variants': report_variants})
 
-
+@login_required
 def upload_sample_sheet(request):
 	"""
 	Upload a SampleSheet

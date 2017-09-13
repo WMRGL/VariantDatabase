@@ -1,94 +1,56 @@
 <!--Sample Summary Page - displays variants, WC, history , reports etc   -->
 
 {% extends 'VariantDatabase/base.html' %}
+{% load static %}
+ {% block content %}
+
+ 
+
+  	{% block js-head %}
+
+
+  	{{block.super}}
+  
+
+	<link rel="stylesheet" href= "{% static 'css/qc_display.css' %}">
+
+
+    <!-- IGV JS-->
+    <script type="text/javascript" src="{% static 'js/igv.js' %}"></script>
+
+
+    <!-- IGV CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/igv.css' %}">
+
+    <!-- Datatables -->
+
+  	<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+
+  	<link rel="stylesheet" href= "https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+
+
+  	<!-- Datatables -colreorder extension -->
+
+  	<script type="text/javascript" src="https://cdn.datatables.net/colreorder/1.4.0/js/dataTables.colReorder.min.js"></script>
+
+  	<link rel="stylesheet" href= "https://cdn.datatables.net/colreorder/1.4.0/css/colReorder.dataTables.min.css">
+
+ 
+  	<!-- Datatables -buttons extension -->
+
+
+  	<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.colVis.min.js"></script>
+
+  	<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+
+ 	<link rel="stylesheet" href= "https://cdn.datatables.net/buttons/1.4.1/css/buttons.dataTables.min.css">
+
+	{% endblock js-head %}
 
 
 
-  {% block content %}
 
- <style>
-                .thumbnail
-                {
-                    text-decoration:none;
-                    color:black;
-                    font-weight:bold;
-                }
-                .thumbnail span  /*CSS for enlarged image*/
-                {
-                    visibility: hidden;
-                    position: absolute;
-                    padding: 5px;
-                    border: 1px solid #000;
-                    background-color: #e5e5e5;
-                }
-                .thumbnail:hover span  /*CSS for enlarged image on hover*/
-                {
-                    visibility: visible;
-                    left: 600px;
-                    top: 750px;
-                }
-                .imgs td
-                {
-                    vertical-align:middle;
-                    padding: 0.5em;
-                    border: 1px solid black;
-                }
-                table.imgs
-                {
-                    border-collapse:collapse;
-                }
-                .nums th
-                {
-                    text-align: left;
-                }
-                table.nums
-                {
-                    margin-top: 1em;
-                    margin-left:20px;
-                    border: 1px dotted #83A4C3;
-                    background-color: #F5F5F5;
-                    padding: 0.5em;
-                }
-                .pad { padding-left:1em; vertical-align:top; }
-                .right { text-align:right; padding-left:1em; }
-
-
-				.header-fixed {
-				    width: 100% 
-				}
-
-				.header-fixed > thead,
-				.header-fixed > tbody,
-				.header-fixed > thead > tr,
-				.header-fixed > tbody > tr,
-				.header-fixed > thead > tr > th,
-				.header-fixed > tbody > tr > td {
-				    display: block;
-				}
-
-				.header-fixed > tbody > tr:after,
-				.header-fixed > thead > tr:after {
-				    content: ' ';
-				    display: block;
-				    visibility: hidden;
-				    clear: both;
-				}
-
-				.header-fixed > tbody {
-				    overflow-y: auto;
-				    height: 500px;
-				}
-
-				.header-fixed > tbody > tr > td,
-				.header-fixed > thead > tr > th {
-				    width: 16.6%;
-				    float: left;
-				}
-
-
-            </style>
-
-
+	<div id='sample_pk' style="display: none;" >{{sample.pk}} </div>
 
     <br>
 
@@ -133,6 +95,11 @@
 
 
 	<hr>
+
+	<div id ="button_group" style='float:right; margin-right:25px' > </div>
+
+
+
         
 
 		<strong> Sample : </strong> {{ sample.name }} |<strong> Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} | 
@@ -141,22 +108,8 @@
 
 
 
-		  <div class="row" style='float:right; margin-right:75px' >
-		       <div class="col-lg-12">
-		     <div class="button-group">
-		        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-cog"></span> <span class="caret"></span></button>
-		<ul class="dropdown-menu">
-		  <li><a class="small" data-value="max_af" tabIndex="-1"><input type="checkbox"/>&nbsp;Max AF</a></li>
-		  <li><a class="small" data-value="genes" tabIndex="-1"><input type="checkbox"/>&nbsp;Genes</a></li>
-		  <li><a class="small" data-value="exac_col" tabIndex="-1"><input type="checkbox"/>&nbsp;ExAC</a></li>
-		  <li><a class="small" data-value="clinical_sig" tabIndex="-1"><input type="checkbox"/>&nbsp;Clin Sig</a></li>
-</li>
-		</ul>
-		  </div>
-		</div>
-		  </div>
 
-
+	     
 
 
 
@@ -164,7 +117,26 @@
 <hr>
 
 
+<style> 
 
+
+ td.details-control {
+    background: url('http://www.datatables.net/examples/resources/details_open.png') no-repeat center center;
+    cursor: pointer;
+}
+tr.shown td.details-control {
+    background: url('http://www.datatables.net/examples/resources/details_close.png') no-repeat center center;
+}
+
+
+
+
+
+
+
+
+
+</style>
 
 
 
@@ -174,15 +146,22 @@
 
         <tr>
           <th style="display:none;"> Variant Hash </th>
+          <th></th>
           <th> HGVSc </th>
           <th> Variant </th>
           <th> Ref </th>
           <th> Alt </th>
           <th> Worst Consequence </th>
-          <th class='genes'> Genes </th>
-          <th class='max_af'> Max AF </th>
-          <th class='exac_col'> ExAC </th>
-          <th class='clinical_sig'> Clin Sig </th>
+          <th> Genes </th>
+          <th> Max AF </th>
+          <th> ExAC </th>
+          <th> Clin Sig </th>
+          <th> Genotype </th>
+          <th> Callers </th>
+          <th> AD </th>
+          <th> VAFS </th>
+          <th> TCF </th>
+          <th> TCR </th>
 
 
 
@@ -199,30 +178,39 @@
 
       <tr class='variant'>
 
-        <td style="display:none;"> {{variant.variant_hash}}</td>
-        <td> {{variant.get_picked_hgvsc}} </td>
+        <td style="display:none;"> {{variant.variant.variant_hash}}</td>
 
-        <td> {{variant.chromosome}} {{variant.position}} </td>
-        <td> {{variant.ref}} </td>
-        <td> {{variant.alt}} </td>
-        <td> {{variant.worst_consequence}} </td>
-        <td class='genes'> {{variant.get_genes|join:" "}} </td>
-        <td class='max_af'> {{variant.max_af}} </td>
-        <td class='exac_col'> 
+
+        <td class="details-control"></td>
+        <td> {{variant.variant.get_picked_hgvsc}} </td>
+
+        <td> {{variant.variant.chromosome}} {{variant.variant.position}} </td>
+        <td> {{variant.variant.ref|truncatechars:10}} </td>
+        <td> {{variant.variant.alt|truncatechars:10}} </td>
+        <td> {{variant.variant.worst_consequence}} </td>
+        <td> {{variant.variant.get_genes|join:" "}} </td>
+        <td> {{variant.variant.max_af}} </td>
+        <td> 
                 <a class="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-placement="top" data-container="body" data-content='<ul class="list-group">
-                                                  <li class="list-group-item">ADJ AF : {{ variant.exac_adj_af}}</li>
-                                                  <li class="list-group-item">AFR AF : {{ variant.exac_afr_af}}</li>
-                                                  <li class="list-group-item">AMR AF : {{ variant.exac_amr_af}}</li>
-                                                  <li class="list-group-item">EAS AF : {{ variant.exac_eas_af}}</li>
-                                                  <li class="list-group-item">FIN AF : {{ variant.exac_fin_af}}</li>
-                                                  <li class="list-group-item">NFE AF : {{ variant.exac_nfe_af}}</li>
-                                                  <li class="list-group-item">OTH AF : {{ variant.exac_oth_af}}</li>
-                                                  <li class="list-group-item">SAS AF : {{ variant.exac_sas_af}}</li></ul>' >{{variant.exac_af}}</a>
+                                                  <li class="list-group-item">ADJ AF : {{ variant.variant.exac_adj_af}}</li>
+                                                  <li class="list-group-item">AFR AF : {{ variant.variant.exac_afr_af}}</li>
+                                                  <li class="list-group-item">AMR AF : {{ variant.variant.exac_amr_af}}</li>
+                                                  <li class="list-group-item">EAS AF : {{ variant.variant.exac_eas_af}}</li>
+                                                  <li class="list-group-item">FIN AF : {{ variant.variant.exac_fin_af}}</li>
+                                                  <li class="list-group-item">NFE AF : {{ variant.variant.exac_nfe_af}}</li>
+                                                  <li class="list-group-item">OTH AF : {{ variant.variant.exac_oth_af}}</li>
+                                                  <li class="list-group-item">SAS AF : {{ variant.variant.exac_sas_af}}</li></ul>' >{{variant.variant.exac_af}}</a>
 
             </td>
 
 
-        <td class='clinical_sig'> {{variant.clinical_sig}} </td>
+        <td> {{variant.variant.clinical_sig}} </td>
+        <td> {{variant.genotype}} </td>
+        <td> {{variant.caller}} </td>
+        <td> {{variant.allele_depth}} </td>
+        <td> {{variant.vafs}} </td>
+        <td> {{variant.total_count_forward}} </td>
+        <td> {{variant.total_count_reverse}} </td>
 
 
       </tr>
@@ -831,166 +819,8 @@
 </div>
 
 
-<script>
-$(document).ready(function(){
-    $(".variant").click(function(){
+<script type="text/javascript" src="{% static 'js/sample_summary.js' %}"></script>
 
-
-	//add colour to selected row	
-	var variant_hash  = $(this).children().eq(0).text();
-
-	var selected = $(this).hasClass("success");
-	$(this).siblings().removeClass("success");
-
-
-	if(!selected)
-	$(this).addClass("success");
-
-
-
-    $.ajax({
-    url: '/ajax/ajax_detail',
-    type: 'get', // This is the default though, you don't actually need to always mention it
-    data: {"variant_hash" : variant_hash, 'sample_pk': {{sample.pk}}},
-    success: function(data) {
-
-        $("#detail").html(data);
-    },
-    failure: function(data) { 
-        alert('Got an error dude');
-    }
-}); 
-
-
-    });
-
-
-    $("#togglecovdata").click(function(){ //toggle coverage columns with only raw data i.e. not percentages
-
-    	$(".hidecol").toggle();
-
-    });
-
-    $("#selectall").click(function(){ //select everything in the filter form
-
-
-    	$("#id_upstream_gene_variant").prop("checked", true);
-		$("#id_transcript_amplification").prop("checked", true);
-		$("#id_transcript_ablation").prop("checked", true);
-		$("#id_synonymous_variant").prop("checked", true);
-		$("#id_stop_retained_variant").prop("checked", true);
-		$("#id_stop_lost").prop("checked", true);
-		$("#id_stop_gained").prop("checked", true);
-		$("#id_start_lost").prop("checked", true);
-		$("#id_splice_region_variant").prop("checked", true);
-		$("#id_splice_donor_variant").prop("checked", true);
-		$("#id_splice_acceptor_variant").prop("checked", true);
-		$("#id_regulatory_region_variant").prop("checked", true);
-		$("#id_regulatory_region_amplification").prop("checked", true);
-		$("#id_regulatory_region_ablation").prop("checked", true);
-		$("#id_protein_altering_variant").prop("checked", true);
-		$("#id_non_coding_transcript_variant").prop("checked", true);
-		$("#id_non_coding_transcript_exon_variant").prop("checked", true);
-		$("#id_missense_variant").prop("checked", true);
-		$("#id_mature_miRNA_variant").prop("checked", true);
-		$("#id_intron_variant").prop("checked", true);
-		$("#id_intergenic_variant").prop("checked", true);
-		$("#id_inframe_insertion").prop("checked", true);
-		$("#id_inframe_deletion").prop("checked", true);
-		$("#id_incomplete_terminal_codon_variant").prop("checked", true);
-		$("#id_frameshift_variant").prop("checked", true);
-		$("#id_feature_truncation").prop("checked", true);
-		$("#id_feature_elongation").prop("checked", true);
-		$("#id_downstream_gene_variant").prop("checked", true);
-		$("#id_coding_sequence_variant").prop("checked", true);
-		$("#id_TF_binding_site_variant").prop("checked", true);
-		$("#id_TFBS_amplification").prop("checked", true);
-		$("#id_TFBS_ablation").prop("checked", true);
-		$("#id_NMD_transcript_variant").prop("checked", true);
-		$("#id_five_prime_UTR_variant").prop("checked", true);
-		$("#id_three_prime_UTR_variant").prop("checked", true);
-
-		$("#id_freq_max_af").val(1);
-
-
-
-    });
-
-
-    //code for dro down check box
-
-	var options = [];
-
-	$( '.dropdown-menu a' ).on( 'click', function( event ) {
-
-	   var $target = $( event.currentTarget ),
-	       val = $target.attr( 'data-value' ),
-	       $inp = $target.find( 'input' ),
-	       idx;
-
-	   if ( ( idx = options.indexOf( val ) ) > -1 ) {
-	      options.splice( idx, 1 );
-	      setTimeout( function() { $inp.prop( 'checked', false ) }, 0);
-	   } else {
-	      options.push( val );
-	      setTimeout( function() { $inp.prop( 'checked', true ) }, 0);
-	   }
-
-	   $( event.target ).blur();
-	      
-	   console.log( options );
-
-	   var columns =['genes', 'max_af','exac_col','clinical_sig'];
-
-
-	   for (var i=0; i<columns.length; i++){
-
-
-	   		var name = columns[i];
-	   		console.log( name );
-
-
-	   	$(".".concat(name)).hide();
-
-	   };
-
-	   for (var i=0; i<options.length; i++){
-
-
-	   		var name = options[i];
-	   		console.log( name );
-
-
-	   	$(".".concat(name)).show();
-
-	   };
-
-
-
-
-	   return false;
-	});
-
-	//popover for ExaC frequencies
-	$('.exac').popover({title: "", content: "", html: true, placement: "top",trigger: "hover"});  
-
-
-	//advanced table
-	$('#variant_table').DataTable({
-        "searching": false, "lengthChange": false, "scrollY":"400px", "paging": false, "info": false, "colReorder": true
-    });
-
-
-
-
-
-
-
-
-
-
-});
-</script>
 
 
 
