@@ -227,9 +227,13 @@ def sample_summary(request, pk_sample ):
 
 		exon_coverage = ExonCoverage.objects.filter(sample=sample)
 
+		user_settings = UserSetting.objects.filter(user=request.user)
+
+		
+
 
 		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variant_samples, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary,
-					 'filter_form': filter_form, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage })
+					 'filter_form': filter_form, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage , 'user_settings': user_settings })
 
 
 	else:
@@ -272,8 +276,12 @@ def sample_summary(request, pk_sample ):
 
 		exon_coverage = ExonCoverage.objects.filter(sample=sample)
 
+		user_settings = UserSetting.objects.filter(user=request.user)
+
+		
+
 		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variant_samples, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary,
-					 'filter_form': filter_form, 'filter_dict': filter_dict, 'cons': consequences_to_include, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage})
+					 'filter_form': filter_form, 'filter_dict': filter_dict, 'cons': consequences_to_include, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage, 'user_settings': user_settings})
 
 
 
@@ -618,7 +626,6 @@ def upload_sample_sheet(request):
 
 						for sample in sample_data:
 
-							sample_id = sample[0]
 							sample_name = sample[1]
 							sample_plate = sample[2]
 							sample_well = sample[3]
@@ -627,7 +634,7 @@ def upload_sample_sheet(request):
 							sample_project = sample[6]
 
 							new_sample = Sample(name= sample_name, worksheet=new_worksheet, vcf_file='None', visible=True,status='1',
-							 sample_id=sample_id, sample_plate =sample_plate, sample_well=sample_well, i7_index_id=sample_i7_index, index=sample_index, sample_project=sample_project )
+								sample_plate =sample_plate, sample_well=sample_well, i7_index_id=sample_i7_index, index=sample_index, sample_project=sample_project )
 
 							new_sample.save()
 

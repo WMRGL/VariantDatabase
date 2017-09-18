@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
 from VariantDatabase.models import *
-import django.contrib.auth  
 from django.contrib.auth.models import User
 import hashlib
 import imp
@@ -317,7 +316,7 @@ class Command(BaseCommand):
 				filter_status = variant['filter_status']
 				total_count_forward = variant['TCF']
 				total_count_reverse = variant['TCR']
-				vafs = variant['VAFS']
+				vafs = ":".join(str(x) for x in variant['VAFS'])
 
 				new_variant_sample = VariantSample(variant=new_variant, sample=sample, genotype = genotype, caller=caller, allele_depth=allele_depth, filter_status=filter_status, total_count_forward=total_count_forward, total_count_reverse=total_count_reverse,vafs=vafs )
 

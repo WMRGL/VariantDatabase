@@ -2,11 +2,9 @@
 
 {% extends 'VariantDatabase/base.html' %}
 {% load static %}
- {% block content %}
 
- 
 
-  	{% block js-head %}
+	{% block js-head %}
 
 
   	{{block.super}}
@@ -50,7 +48,17 @@
 
 
 
+ {% block content %}
+
+ 
+
+  
+
+
+	
+
 	<div id='sample_pk' style="display: none;" >{{sample.pk}} </div>
+	<div id='user_settings' style="display: none;" >{{user_settings.0.columns_to_hide}}  </div>
 
     <br>
 
@@ -145,27 +153,23 @@ tr.shown td.details-control {
           <thead>
 
         <tr>
-          <th style="display:none;"> Variant Hash </th>
-          <th></th>
-          <th> HGVSc </th>
-          <th> Variant </th>
-          <th> Ref </th>
-          <th> Alt </th>
-          <th> Worst Consequence </th>
-          <th> Genes </th>
-          <th> Max AF </th>
-          <th> ExAC </th>
-          <th> Clin Sig </th>
-          <th> Genotype </th>
-          <th> Callers </th>
-          <th> AD </th>
-          <th> VAFS </th>
-          <th> TCF </th>
-          <th> TCR </th>
-
-
-
-
+          <th style="display:none;" class='variant_hash'> Variant Hash </th>
+          <th class='expand_box'></th>
+          <th class='hgvsc'> HGVSc </th>
+          <th class='variant_desc'> Variant </th>
+          <th class ='reference'> Ref </th>
+          <th class='alt'> Alt </th>
+          <th class='worst_consequence'> Worst Consequence </th>
+          <th class="genes"> Genes </th>
+          <th class= "max_af"> Max AF </th>
+          <th class='exac_frequency'> ExAC </th>
+          <th class='clinsig'> Clin Sig </th>
+          <th class='genotype'> Genotype </th>
+          <th class='callers'> Callers </th>
+          <th class='allele_depth'> AD </th>
+          <th class= 'vafs'> VAFS </th>
+          <th class = 'tcf'> TCF </th>
+          <th class='tcr'> TCR </th>
 
         </tr>
 

@@ -189,7 +189,7 @@ class Worksheet(models.Model):
 		Returns True if we are at the first stage i.e 'New Worksheet'.
 		"""
 
-		if self.status == '1':
+		if self.status == '2':
 
 			return True
 
@@ -282,13 +282,11 @@ class Sample(models.Model):
 	name = models.CharField(max_length=50, unique=True)
 	worksheet = models.ForeignKey(Worksheet)
 	vcf_file = models.TextField()
-	bam_file_pindel = models.TextField(null=True)
-	bam_file_bwa = models.TextField(null=True)
+	bam_file_pindel = models.TextField(null=True, blank=True)
+	bam_file_bwa = models.TextField(null=True, blank=True)
 	visible = models.BooleanField() #To allow the hiding of a sample
 	status = models.CharField(max_length=1, choices = choices)
 
-	sample_id = models.CharField(max_length=50) #from sample sheet
-	sample_plate = models.CharField(max_length =50)
 	sample_well = models.CharField(max_length =10)
 	i7_index_id = models.IntegerField()
 	index = models.CharField(max_length =50)
@@ -921,11 +919,13 @@ class Variant(models.Model):
 
 		return picked
 
+
+
 	def get_picked_hgvsc(self):
 
 
 
-		picked = self.get_picked_transcript()
+		picked = VariantTranscript.objects.filter(variant=self).filter(picked=True)
 	
 		if len(picked) ==1:
 
@@ -933,8 +933,20 @@ class Variant(models.Model):
 
 		
 			if picked.transcript == None or picked.hgvsc=="":
+				
+				transcripts = VariantTranscript.objects.filter(variant=self)
 
-				return None
+				if len(transcripts) ==1:
+
+					return None
+
+				else:
+
+
+					transcripts = transcripts.exclude(hgvsc="")
+
+					return transcripts[0].hgvsc
+
 
 			else:
 
@@ -949,7 +961,7 @@ class Variant(models.Model):
 
 	def get_picked_hgvsp(self):
 
-		picked = self.get_picked_transcript()
+		picked = VariantTranscript.objects.filter(variant=self).filter(picked=True)
 	
 		if len(picked) ==1:
 
@@ -957,8 +969,20 @@ class Variant(models.Model):
 
 		
 			if picked.transcript == None or picked.hgvsp=="":
+				
+				transcripts = VariantTranscript.objects.filter(variant=self)
 
-				return None
+				if len(transcripts) ==1:
+
+					return None
+
+				else:
+
+
+					transcripts = transcripts.exclude(hgvsp="")
+
+					return transcripts[0].hgvsp
+
 
 			else:
 
@@ -1327,6 +1351,18 @@ class Evidence(models.Model):
 	"""
 	file = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
 	comment = models.ForeignKey(Comment)
+
+
+class UserSetting(models.Model):
+
+	"""
+	A class for storing user settings - mainly which columns we want to see
+
+
+	"""
+
+	columns_to_hide= models.CharField(max_length=200, default="['allele_depth','vafs','tcf', 'tcr', 'clinsig']")
+	user = models.ForeignKey('auth.User')
 
 
 

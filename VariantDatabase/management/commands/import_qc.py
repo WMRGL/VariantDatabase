@@ -4,6 +4,22 @@ from interop import py_interop_run_metrics, py_interop_run, py_interop_summary
 from django.db import transaction
 
 def get_read_lane_data(read, lane, summary):
+	"""
+	Gets the read QC data for an individual read.
+
+	Input:
+
+	read = an integer representing the read number.
+	lane = an integer representing the lane.
+	summary = the summary provided by the py_interop_summary.run_summary() command.
+			  See get_qc_run_summary() function.
+
+	Output:
+
+	A dictionary containing the QC data for the read/lane/summar combination that is specified in the input.
+
+
+	"""
     
     qc_data ={}
     
@@ -63,7 +79,7 @@ def get_all_qc_data(summary):
     return data
 
 
-def get_summary(ngs_folder_path):
+def get_qc_run_summary(ngs_folder_path):
 
 	run_folder = ngs_folder_path
 
@@ -109,7 +125,7 @@ class Command(BaseCommand):
 				raise CommandError('Could not find that Worksheet: Enter a number e.g.1-5')
 
 
-			summary = get_summary(ngs_folder_path)
+			summary = get_qc_run_summary(ngs_folder_path)
 
 			qc_data = get_all_qc_data(summary)
 

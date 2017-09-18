@@ -21,21 +21,29 @@ Sample Summary Javascript - For the page sample_summary.html
 $(document).ready(function(){
 
 
+
+
+
 	//DataTable Initialisation 
+
+
+	var user_settings = $('#user_settings').text()
+
+
 	var variant_table = $('#variant_table').DataTable({
 		"searching": false, "lengthChange": false, "scrollY":"600px", "paging": false, "info": false, "colReorder": true,"order": [],
 		 "columnDefs": [
 
 						{
 
-						targets: [0,1,2,3,4,5],
+						targets: ['variant_hash','expand_box','variant_desc','reference','alt','worst_consequence'],
 						className: 'noVis'
 
 						},
 
 						{
 
-						targets:[13,14,15,16],
+						targets:user_settings,
 						visible:false
 
 
@@ -125,20 +133,6 @@ $(document).ready(function(){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	$("#togglecovdata").click(function(){ //toggle coverage columns with only raw data i.e. not percentages
 
 		$(".hidecol").toggle();
@@ -191,10 +185,10 @@ $(document).ready(function(){
 
 
 	//popover for ExaC frequencies
-	$('.exac').popover({title: "", content: "", html: true, placement: "top",trigger: "hover"});  
+	$('.exac').popover({title: "", content: "", html: true, placement: "top",trigger: "click"});  
 
 
-
+	//$('.exac').popover({title: "", content: "", html: true, placement: "top",trigger: "hover"});  
 
 
 
