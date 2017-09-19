@@ -318,6 +318,7 @@ def parse_gene_coverage(file_path):
 
 			return master_list
 
+
 		else:
 
 			return False

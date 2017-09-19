@@ -50,9 +50,6 @@
 
  {% block content %}
 
- 
-
-  
 
 
 	
@@ -128,6 +125,8 @@
 <style> 
 
 
+
+
  td.details-control {
     background: url('http://www.datatables.net/examples/resources/details_open.png') no-repeat center center;
     cursor: pointer;
@@ -148,7 +147,7 @@ tr.shown td.details-control {
 
 
 
-  <table id="variant_table" class = "table table-hover ui-responsive" data-role="table" data-mode="columntoggle" id="myTable">
+  <table id="variant_table" class = "table table-hover" data-role="table" data-mode="columntoggle">
 
           <thead>
 
@@ -170,6 +169,7 @@ tr.shown td.details-control {
           <th class= 'vafs'> VAFS </th>
           <th class = 'tcf'> TCF </th>
           <th class='tcr'> TCR </th>
+          <th class='filter_status'> Filter </th>
 
         </tr>
 
@@ -182,19 +182,19 @@ tr.shown td.details-control {
 
       <tr class='variant'>
 
-        <td style="display:none;"> {{variant.variant.variant_hash}}</td>
+        <td class='variant_hash' style="display:none;"> {{variant.variant.variant_hash}}</td>
 
 
         <td class="details-control"></td>
-        <td> {{variant.variant.get_picked_hgvsc}} </td>
+        <td class='hgvsc'> {{variant.variant.get_picked_hgvsc}} </td>
 
-        <td> {{variant.variant.chromosome}} {{variant.variant.position}} </td>
-        <td> {{variant.variant.ref|truncatechars:10}} </td>
-        <td> {{variant.variant.alt|truncatechars:10}} </td>
-        <td> {{variant.variant.worst_consequence}} </td>
-        <td> {{variant.variant.get_genes|join:" "}} </td>
-        <td> {{variant.variant.max_af}} </td>
-        <td> 
+        <td class='variant_desc'> {{variant.variant.chromosome}} {{variant.variant.position}} </td>
+        <td class ='reference'> {{variant.variant.ref|truncatechars:10}} </td>
+        <td class='alt'> {{variant.variant.alt|truncatechars:10}} </td>
+        <td class='worst_consequence'> {{variant.variant.worst_consequence}} </td>
+        <td class="genes"> {{variant.variant.get_genes|join:" "}} </td>
+        <td class= "max_af"> {{variant.variant.max_af}} </td>
+        <td class='exac_frequency'> 
                 <a class="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-placement="top" data-container="body" data-content='<ul class="list-group">
                                                   <li class="list-group-item">ADJ AF : {{ variant.variant.exac_adj_af}}</li>
                                                   <li class="list-group-item">AFR AF : {{ variant.variant.exac_afr_af}}</li>
@@ -208,13 +208,14 @@ tr.shown td.details-control {
             </td>
 
 
-        <td> {{variant.variant.clinical_sig}} </td>
-        <td> {{variant.genotype}} </td>
-        <td> {{variant.caller}} </td>
-        <td> {{variant.allele_depth}} </td>
-        <td> {{variant.vafs}} </td>
-        <td> {{variant.total_count_forward}} </td>
-        <td> {{variant.total_count_reverse}} </td>
+        <td class='clinsig'> {{variant.variant.clinical_sig}} </td>
+        <td class='genotype'> {{variant.genotype}} </td>
+        <td class='callers'> {{variant.caller}} </td>
+        <td class='allele_depth'> {{variant.allele_depth}} </td>
+        <td class= 'vafs'> {{variant.vafs}} </td>
+        <td class = 'tcf'> {{variant.total_count_forward}} </td>
+        <td class='tcr'> {{variant.total_count_reverse}} </td>
+        <td class='filter_status'> {{variant.filter_status}} </td>
 
 
       </tr>

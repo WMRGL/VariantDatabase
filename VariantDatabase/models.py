@@ -281,7 +281,7 @@ class Sample(models.Model):
 
 	name = models.CharField(max_length=50, unique=True)
 	worksheet = models.ForeignKey(Worksheet)
-	vcf_file = models.TextField()
+	vcf_file = models.TextField(null=True, blank=True)
 	bam_file_pindel = models.TextField(null=True, blank=True)
 	bam_file_bwa = models.TextField(null=True, blank=True)
 	visible = models.BooleanField() #To allow the hiding of a sample
@@ -1361,7 +1361,7 @@ class UserSetting(models.Model):
 
 	"""
 
-	columns_to_hide= models.CharField(max_length=200, default="['allele_depth','vafs','tcf', 'tcr', 'clinsig']")
+	columns_to_hide= models.CharField(max_length=200, default="allele_depth,vafs,tcf,tcr,clinsig")
 	user = models.ForeignKey('auth.User')
 
 

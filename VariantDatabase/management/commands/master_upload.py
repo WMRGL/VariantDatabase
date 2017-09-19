@@ -219,7 +219,7 @@ def upload_run_qc(worksheet_dir, worksheet_name):
 
 
 
-def upload_sample_qc(output_dir, sample_name, worksheet_name):
+def upload_sample_qc(output_dir, sample_name):
 
 	"""
 	Uploads the sample qc for a specific sample.
@@ -229,8 +229,6 @@ def upload_sample_qc(output_dir, sample_name, worksheet_name):
 	output_dir = The directory containing the pipeline output e.g. alignments, beds
 
 	sample_name = A string representing the unique sample_name
-
-	worksheet_name = A string representing the worksheet name.
 
 
 	Output:
@@ -256,6 +254,7 @@ def upload_sample_qc(output_dir, sample_name, worksheet_name):
 
 
 	stats_location = glob.glob(output_dir+ "archive_" + "*" + "/"+"*QC_stats.zip")
+
 
 	if len(stats_location) != 1:
 
@@ -315,8 +314,7 @@ def upload_sample_qc(output_dir, sample_name, worksheet_name):
 	#Now upload image files
 
 
-	with zipfile.ZipFile(stats_location) as myzip: 
-
+	with zipfile.ZipFile(stats_location) as myzip:
 
 		acgt_cycles_image = image_names['acgt_cycles_image']
 
@@ -430,26 +428,509 @@ def upload_all_sample_qcs(output_dir, sample_names):
 
 	"""
 
+
+	for sample in sample_names:
+
+		upload_sample_qc(output_dir,sample)
+
+	return None
+
+
+
+
+def upload_gene_coverage(output_dir, sample_name):
+
+	"""
+	Uploads the gene coverage for a sample. This is stored within the re_analysis folder in the file named *gene-count-data.tsv.gz
+
+	Input:
+
+
+	output_dir = The pipeline output directory.
+	sample_name = The unique sample name.
+
+
+	Output:
+
+	None - Uploads and returns None.
+
+	"""
+
+	#Get the sample  - if we cannot find it then raise and error.
+	try:
+
+		sample = Sample.objects.get(name = sample_name)
+
+	except Sample.DoesNotExist:
+
+
+		raise CommandError("Cannot find a sample in the DB with name " + sample_name + ".")
+
+
+	#Check if coverage data is already uploaded against this sample
+
+	coverage = GeneCoverage.objects.filter(sample=sample)
+
+	if coverage.exists():
+
+		raise CommandError("Gene coverage data already uploaded for sample: " + sample_name + ".")
+
+
+	#Get the file
+
+
+	query = output_dir +   "/reanalysis_data*/" + sample_name +".gene-count-data.tsv.gz"
+
+	gene_data_file = glob.glob(query)
+
+	#Check glob has found only one file
+
+	if len(gene_data_file) != 1:
+
+		raise CommandError("Found more than one file for sample: " + sample_name)
+
+	else:
+
+		gene_data_file = gene_data_file[0]
+
+
+	gene_coverage_data = file_parsers.parse_gene_coverage(gene_data_file)
+
+
+	if gene_coverage_data == False:
+
+		raise CommandError("Could not parse the coverage data file: " + gene_data_file)
+
+	for sample_data in gene_coverage_data: #Go through each sample and insert a GeneCoverage instance into DB
+
+
+		gene = sample_data['Gene']
+
+
+		try:
+
+			gene = Gene.objects.get(name=gene)
+
+		except Gene.DoesNotExist:
+
+			gene = Gene(name=gene)
+
+			gene.save()
+
+		gene_coverage = GeneCoverage(sample=sample, gene=gene, x100=sample_data['100x'],x200=sample_data['200x'], x300=sample_data['300x'], x400=sample_data['400x'], x500=sample_data['500x'],
+										x600=sample_data['600x'], min_coverage= sample_data['Min'], max_coverage = sample_data['Max'], mean_coverage= sample_data['Mean'], number_of_regions = sample_data['region'] )
+
+		gene_coverage.save()
+
+	return None
+
+
+def upload_exon_coverage(output_dir, sample_name):
+
+	"""
+	Uploads the exon coverage for a sample. This is stored within the re_analysis folder in the file named *exon-count-data.tsv.gz
+
+	Input:
+
+
+	output_dir = The pipeline output directory.
+	sample_name = The unique sample name.
+
+
+	Output:
+
+	None - Uploads and returns None.
+
+	"""
+
+	#Get the sample  - if we cannot find it then raise and error.
+	try:
+
+		sample = Sample.objects.get(name = sample_name)
+
+	except Sample.DoesNotExist:
+
+
+		raise CommandError("Cannot find a sample in the DB with name " + sample_name + ".")
+
+
+	#Check if coverage data is already uploaded against this sample
+
+	coverage = ExonCoverage.objects.filter(sample=sample)
+
+	if coverage.exists():
+
+		raise CommandError("Exon coverage data already uploaded for sample: " + sample_name + ".")
+
+
+	#Get the file
+
+	query = output_dir +   "/reanalysis_data*/" + sample_name +".exon-count-data.tsv.gz"
+
+	exon_data_file = glob.glob(query)
+
+	#Check glob has found only one file
+
+	if len(exon_data_file) != 1:
+
+		raise CommandError("Found more than one file for sample: " + sample_name)
+
+	else:
+
+		exon_data_file = exon_data_file[0]
+
+
+	exon_coverage_data = file_parsers.parse_exon_coverage(exon_data_file)
+
+	if exon_coverage_data == False:
+
+		raise CommandError("Could not parse the coverage data file: " + exon_data_file)
+
+	for sample_data in exon_coverage_data: #Go through each exon coverage and insert a ExonCoverage instance into DB
+
+		gene = sample_data['Gene']
+
+
+		try:
+
+			gene = Gene.objects.get(name=gene)
+
+		except Gene.DoesNotExist:
+
+			gene = Gene(name=gene)
+
+			gene.save()
+
+		exon_coverage = ExonCoverage(sample=sample, gene=gene, x100=sample_data['100x'],x200=sample_data['200x'], x300=sample_data['300x'], x400=sample_data['400x'], x500=sample_data['500x'],
+										x600=sample_data['600x'], min_coverage= sample_data['Min'], max_coverage = sample_data['Max'], mean_coverage= sample_data['Mean'], number_of_regions = sample_data['region'],exon = sample_data['Exon'] )
+
+		exon_coverage.save()
+
+	return None
+
+
+
+def upload_all_exon_gene_coverage(output_dir, sample_names):
+
+
+	"""
+	Calls upload_exon_coverage() and upload_gene_coverage() on all samples in sample_list
+
+	Input:
+
+	output_dir = The directory containing the pipeline output e.g. alignments, beds
+
+	sample_names = A list containing the sample_names to be processed.
+
+
+	Output:
+
+	None - uploads and returns None
+
+
+	"""
+
+	for sample in sample_names:
+
+		upload_exon_coverage(output_dir, sample)
+
+		upload_gene_coverage(output_dir, sample)
+
+	return None
+
+
+
+
+def upload_sample_vcf(output_dir, sample_name):
+
 	
 
-	pass
+	#Get the sample  - if we cannot find it then raise and error.
+	try:
+
+		sample = Sample.objects.get(name = sample_name)
+
+	except Sample.DoesNotExist:
+
+
+		raise CommandError("Cannot find a sample in the DB with name " + sample_name + ".")
+
+
+
+	already_uploaded = VariantSample.objects.filter(sample=sample)
+
+
+	if already_uploaded.exists():
+
+		raise CommandError("Stuff already uploaded against this sample.")
+
+
+	#Find VCF file
+
+	query = output_dir +   "vcfs*/" + sample_name +"*.vcf.gz"
+
+	print query
+
+	vcf_file_path = glob.glob(query)
+
+	print vcf_file_path
+
+	if len(vcf_file_path) != 1:
+
+		raise CommandError("Found more than one file for sample: " + sample_name)
+
+	else:
+
+		vcf_file_path = vcf_file_path[0]
+
+	#validate vcf
+
+	validation_report = vcf_parser.validate_input(vcf_file_path, sample_name)
+
+
+	if validation_report[0] == False:
+
+		raise CommandError('Error opening vcf file: '+ validation_report[1])
+
+
+	if vcf_parser.vep_annotated(vcf_file_path) == False:
+
+		raise CommandError("No VEP annotations detected in vcf")
+
+
+	#Check we have an admin user in the database for the next stage
+		
+
+	try:
+
+		user = User.objects.get(pk=1) # a superuser has to have been created
+
+	except:
+
+		raise CommandError('Could not find an appropiate user to use for downstream data entry - please create an admin with pk=1')
+
+
+	#Try and parse the vcf using the vcf_parser
+	try:
+
+		vcf_data = vcf_parser.create_master_list(vcf_file_path, sample_name)
+
+	except:
+
+		raise CommandError('Could not process data using vcf_parser function')
+
+
+	#update sample information e.g. vcf location.
+
+	sample.vcf_file = vcf_file_path
+
+	sample.save()
+
+	for variant in vcf_data:
+
+		chromosome = variant['chrom']
+		pos = str(variant['pos'])
+		ref = variant['reference']
+		alt = variant['alt_alleles'][0]
+		hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
+
+		#print chromosome, pos				
+
+
+		gene_list = vcf_parser.get_variant_genes_list(variant['transcript_data'])
+
+		hgvsc = vcf_parser.get_hgvsc(variant['transcript_data'])
+
+		hgvsp = vcf_parser.get_hgvsp(variant['transcript_data'])
+
+		rs_number = vcf_parser.get_rs_number(variant['transcript_data'])
+
+		worst_consequence = vcf_parser.worst_consequence(variant['transcript_data'])
+
+		worst_consequence = Consequence.objects.get(name=worst_consequence)
+
+		canonical = vcf_parser.get_canonical_transcript_name(variant['transcript_data'])
+
+		max_af = vcf_parser.get_max_af(variant['transcript_data'])
+
+		allele_frequencies = vcf_parser.get_allele_frequencies(variant['transcript_data'])
+
+		clin_sig = vcf_parser.get_clin_sig(variant['transcript_data'])
+
+		af = allele_frequencies[0]
+		afr_af = allele_frequencies[1]
+		amr_af = allele_frequencies[2]
+		eur_af = allele_frequencies[3]
+		eas_af = allele_frequencies[4]
+		sas_af = allele_frequencies[5]
+		exac_af = allele_frequencies[6]
+		exac_adj_af = allele_frequencies[7]
+		exac_afr_af = allele_frequencies[8]
+		exac_amr_af = allele_frequencies[9]
+		exac_eas_af = allele_frequencies[10]
+		exac_fin_af = allele_frequencies[11]
+		exac_nfe_af = allele_frequencies[12]
+		exac_oth_af = allele_frequencies[13]
+		exac_sas_af = allele_frequencies[14]
+		esp_aa_af = allele_frequencies[15]
+		esp_ea_af = allele_frequencies[16]
+
+		#Look for a variant in the database if we have not seen it before create a new one 
+
+		try:
+
+			new_variant = Variant.objects.get(variant_hash=hash_id)
+
+
+		except Variant.DoesNotExist:
+
+			new_variant = Variant(chromosome=chromosome, position=pos,
+			 ref= ref, alt=alt, variant_hash= hash_id, HGVSc = hgvsc, rs_number=rs_number,
+			 last_updated= timezone.now(), HGVSp= hgvsp, worst_consequence=worst_consequence,
+			 max_af= max_af,  af=af,  afr_af=afr_af, amr_af=amr_af,
+			 eur_af=eur_af, eas_af=eas_af, sas_af=sas_af, exac_af=exac_af, exac_adj_af=exac_adj_af,
+			 exac_afr_af= exac_afr_af, exac_amr_af=exac_amr_af,exac_eas_af=exac_eas_af, exac_fin_af=exac_fin_af,
+			 exac_nfe_af = exac_nfe_af, exac_oth_af=exac_oth_af, exac_sas_af=exac_sas_af,esp_aa_af=esp_aa_af,esp_ea_af=esp_ea_af,clinical_sig=clin_sig)
+
+			new_variant.save()
+
+
+			for gene in gene_list:
+
+				try:
+
+					gene_model = Gene.objects.get(name = gene[0])
+
+				except Gene.DoesNotExist:
+
+					gene_model = Gene(name=gene[0])
+					gene_model.save()
+
+
+
+			#Now create transcripts
+
+
+			for transcript_key in variant['transcript_data']:
+
+				if transcript_key == "":
+
+					try:
+
+						transcript_model = Transcript.objects.get(name='no_transcript')
+
+					except Transcript.DoesNotExist:
+
+						transcript_model = Transcript(name = 'no_transcript', canonical=False)
+
+						transcript_model.save()
+
+				else:
+
+					try:
+
+						transcript_model = Transcript.objects.get(name=transcript_key)
+
+					except Transcript.DoesNotExist:
+
+
+						canonical = variant['transcript_data'][transcript_key]['CANONICAL']
+
+						if canonical == 'YES':
+
+							canonical = True
+						else:
+
+							canonical = False
+
+
+						gene = variant['transcript_data'][transcript_key]['SYMBOL']
+
+						if gene != "":
+
+
+							gene = Gene.objects.get(name=gene)
+
+							transcript_model = Transcript(name = transcript_key, canonical=canonical, gene =gene)
+
+							transcript_model.save()
+
+						else:
+							transcript_model = Transcript(name = transcript_key, canonical=canonical)
+
+							transcript_model.save()
+
+
+				#now create transcriptvariant model
+
+				consequence = variant['transcript_data'][transcript_key]['Consequence']
+				exon = variant['transcript_data'][transcript_key]['EXON']
+				intron = variant['transcript_data'][transcript_key]['INTRON']
+				hgvsc_t = variant['transcript_data'][transcript_key]['HGVSc']
+				hgvsp_t = variant['transcript_data'][transcript_key]['HGVSp']
+				codons = variant['transcript_data'][transcript_key]['Codons']
+				cdna_position = variant['transcript_data'][transcript_key]['cDNA_position']
+				cds_position = variant['transcript_data'][transcript_key]['CDS_position']
+				protein_position = variant['transcript_data'][transcript_key]['Protein_position']
+				amino_acids = variant['transcript_data'][transcript_key]['Amino_acids']
+				picked = variant['transcript_data'][transcript_key]['PICK']
+
+				if picked == '1':
+
+					picked = True
+
+				else:
+
+					picked =False
+
+				#print chromosome, pos, type(transcript_model), transcript_model.pk
+
+				variant_transcript = VariantTranscript(variant = new_variant, transcript=transcript_model, consequence=consequence, exon=exon, intron = intron, hgvsc =hgvsc_t, hgvsp = hgvsp_t,codons=codons,cdna_position=cdna_position, protein_position=protein_position, amino_acids=amino_acids, picked =picked)
+									
+
+				variant_transcript.save()
 
 
 
 
-def upload_gene_coverage(path):
+		genotype = variant['genotype']
+		caller = variant['Caller']
+		allele_depth = variant['allele_depth']
+		filter_status = variant['filter_status']
+		total_count_forward = variant['TCF']
+		total_count_reverse = variant['TCR']
+		vafs = ":".join(str(x) for x in variant['VAFS'])
 
-	pass
+		new_variant_sample = VariantSample(variant=new_variant, sample=sample, genotype = genotype, caller=caller, allele_depth=allele_depth, filter_status=filter_status, total_count_forward=total_count_forward, total_count_reverse=total_count_reverse,vafs=vafs )
+
+		new_variant_sample.save()
+
+	return None
 
 
-def upload_exon_coverage(path):
 
-	pass
+def upload_all_sample_variants(output_dir, sample_names):
+
+	for sample in sample_names:
 
 
-def upload_sample_vcf(sample_vcf_path):
+		upload_sample_vcf(output_dir, sample)
 
-	pass
+
+	return None
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class Command(BaseCommand):
 
@@ -482,8 +963,6 @@ class Command(BaseCommand):
 
 
 
-
-
 		sample_sheet_data = process_sample_sheet(worksheet_dir)
 
 		sample_names =  file_parsers.get_sample_names(sample_sheet_data)
@@ -502,8 +981,20 @@ class Command(BaseCommand):
 			upload_run_qc(worksheet_dir, worksheet_name)
 
 
-			self.stdout.write(self.style.SUCCESS("Run QC data Uploaded."))
+			self.stdout.write(self.style.SUCCESS("Run QC data uploaded."))
 
 
-			upload_sample_qc(output_dir, sample_names[1], worksheet_name)
+			upload_all_sample_qcs(output_dir, sample_names)
 
+
+			self.stdout.write(self.style.SUCCESS("Sample QC data uploaded."))
+
+
+			self.stdout.write(self.style.SUCCESS("Run QC data uploaded."))
+
+			upload_all_exon_gene_coverage(output_dir, sample_names)
+
+			self.stdout.write(self.style.SUCCESS("Run Exon/Gene coverage data uploaded."))
+
+
+			upload_all_sample_variants(output_dir, sample_names)

@@ -119,9 +119,13 @@ class Command(BaseCommand):
 
 			sample = sample[0]
 
-			if sample.vcf_file != 'None':
+			"""
+
+			if sample.vcf_file != None:
 
 				raise CommandError('Sample ' + sample.name + ' has been processed before. Ending.')
+
+			"""
 
 			sample.vcf_file = vcf_file_path
 

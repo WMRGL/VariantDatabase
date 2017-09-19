@@ -40,39 +40,37 @@ def get_sam_stats(sample_name, stats_location):
 
 	sample_qc_dict ={}
 
-	try:
+	
 
-		with zipfile.ZipFile(stats_location) as myzip:
+	with zipfile.ZipFile(stats_location) as myzip:
 
-			with myzip.open(file_name, "r") as csvfile:
+		with myzip.open(file_name, "r") as csvfile:
 
-				reader = csv.reader(csvfile, delimiter="\t")
+			reader = csv.reader(csvfile, delimiter="\t")
 
-				for row in reader:
+			for row in reader:
 
-					if row[0] == "SN":
+				if row[0] == "SN":
 
-						sample_qc_dict[row[1][:-1]] = row[2]
-
-
-			csvfile.close()
-
-		myzip.close()
+					sample_qc_dict[row[1][:-1]] = row[2]
 
 
+		csvfile.close()
 
-		if len(sample_qc_dict) ==0:
-
-			return False
-
-		else:
-
-			return sample_qc_dict
+	myzip.close()
 
 
-	except:
+
+	if len(sample_qc_dict) ==0:
 
 		return False
+
+	else:
+
+		return sample_qc_dict
+
+
+
 
 	
 

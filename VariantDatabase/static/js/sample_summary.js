@@ -21,17 +21,22 @@ Sample Summary Javascript - For the page sample_summary.html
 $(document).ready(function(){
 
 
-
-
-
 	//DataTable Initialisation 
 
 
-	var user_settings = $('#user_settings').text()
+	var user_settings = $('#user_settings').text().trim();
+
+	var temp = new Array();
+
+	temp = user_settings.split(",");
+
+	console.log(temp);
+
+	
 
 
 	var variant_table = $('#variant_table').DataTable({
-		"searching": false, "lengthChange": false, "scrollY":"600px", "paging": false, "info": false, "colReorder": true,"order": [],
+		"searching": false, "lengthChange": false, "scrollY":"600px","scrollX": true, "autoWidth": false, "paging": false, "info": false, "colReorder": true,"order": [],
 		 "columnDefs": [
 
 						{
@@ -43,13 +48,16 @@ $(document).ready(function(){
 
 						{
 
-						targets:user_settings,
-						visible:false
+						targets: temp  ,
+						visible: false
 
 
 
 					}]
 	});
+
+
+
 
 	// column filter button for datatable - This moves the button group to a custom area
 	var buttons = new $.fn.dataTable.Buttons(variant_table, {
@@ -185,10 +193,9 @@ $(document).ready(function(){
 
 
 	//popover for ExaC frequencies
-	$('.exac').popover({title: "", content: "", html: true, placement: "top",trigger: "click"});  
+	$('.exac').popover({title: "", content: "", html: true, placement: "top",trigger: "hover"});  
 
 
-	//$('.exac').popover({title: "", content: "", html: true, placement: "top",trigger: "hover"});  
 
 
 
