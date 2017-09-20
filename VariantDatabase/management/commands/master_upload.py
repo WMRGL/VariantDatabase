@@ -14,9 +14,15 @@ import glob
 import zipfile
 from django.core.files import File
 
-vcf_parser = imp.load_source('vcf_parser', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/parsers/vcf_parser.py')
-file_parsers = imp.load_source('file_parsers', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/parsers/file_parsers.py')
-sam_stats_parser = imp.load_source('sam_stats_parser', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/parsers/sam_stats_parser.py')
+import VariantDatabase.parsers.vcf_parser as vcf_parser
+import VariantDatabase.parsers.file_parsers as file_parsers
+import VariantDatabase.parsers.sam_stats_parser as sam_stats_parser
+
+
+
+#vcf_parser = imp.load_source('vcf_parser', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/parsers/vcf_parser.py')
+#file_parsers = imp.load_source('file_parsers', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/parsers/file_parsers.py')
+#sam_stats_parser = imp.load_source('sam_stats_parser', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/parsers/sam_stats_parser.py')
 
 
 
@@ -66,7 +72,7 @@ def upload_sample_sheet(sample_sheet_data):
 
 
 	N.B - Not all sample information is uploaded at this stage e.g. QC, vcf file_path
-
+	N.B - At the moment it assumes all samples are in the same project i.e. the subsection is found in the header. This may need to change.
 
 	"""
 
@@ -253,7 +259,7 @@ def upload_sample_qc(output_dir, sample_name):
 	#get data from archive directory with output directory e.g. MPN/213837_v0.3.10/archive_MPN_213837/MPN_213837_QC_stats/
 
 
-	stats_location = glob.glob(output_dir+ "archive_" + "*" + "/"+"*QC_stats.zip")
+	stats_location = glob.glob(output_dir+ "archive" + "*" + "/"+"*QC_stats.zip")
 
 
 	if len(stats_location) != 1:
@@ -643,7 +649,22 @@ def upload_all_exon_gene_coverage(output_dir, sample_names):
 
 def upload_sample_vcf(output_dir, sample_name):
 
-	
+	"""
+	Takes a VEP annotated vcf and uploads the variants contained within it.
+
+	Input:
+
+	output_dir = The directory containing the pipline output.
+	sample_name = A string representing the unique sample name.
+
+
+	Output:
+
+	None - uploads and returns None.
+
+
+	"""
+
 
 	#Get the sample  - if we cannot find it then raise and error.
 	try:
@@ -669,11 +690,8 @@ def upload_sample_vcf(output_dir, sample_name):
 
 	query = output_dir +   "vcfs*/" + sample_name +"*.vcf.gz"
 
-	print query
-
 	vcf_file_path = glob.glob(query)
 
-	print vcf_file_path
 
 	if len(vcf_file_path) != 1:
 
@@ -883,14 +901,12 @@ def upload_sample_vcf(output_dir, sample_name):
 
 					picked =False
 
-				#print chromosome, pos, type(transcript_model), transcript_model.pk
 
-				variant_transcript = VariantTranscript(variant = new_variant, transcript=transcript_model, consequence=consequence, exon=exon, intron = intron, hgvsc =hgvsc_t, hgvsp = hgvsp_t,codons=codons,cdna_position=cdna_position, protein_position=protein_position, amino_acids=amino_acids, picked =picked)
+				variant_transcript = VariantTranscript(variant = new_variant, transcript=transcript_model, consequence=consequence, exon=exon, intron = intron,
+														 hgvsc =hgvsc_t, hgvsp = hgvsp_t,codons=codons,cdna_position=cdna_position, protein_position=protein_position, amino_acids=amino_acids, picked =picked)
 									
 
 				variant_transcript.save()
-
-
 
 
 		genotype = variant['genotype']
@@ -901,7 +917,8 @@ def upload_sample_vcf(output_dir, sample_name):
 		total_count_reverse = variant['TCR']
 		vafs = ":".join(str(x) for x in variant['VAFS'])
 
-		new_variant_sample = VariantSample(variant=new_variant, sample=sample, genotype = genotype, caller=caller, allele_depth=allele_depth, filter_status=filter_status, total_count_forward=total_count_forward, total_count_reverse=total_count_reverse,vafs=vafs )
+		new_variant_sample = VariantSample(variant=new_variant, sample=sample, genotype = genotype, caller=caller, allele_depth=allele_depth,
+										 filter_status=filter_status, total_count_forward=total_count_forward, total_count_reverse=total_count_reverse,vafs=vafs )
 
 		new_variant_sample.save()
 
@@ -910,9 +927,25 @@ def upload_sample_vcf(output_dir, sample_name):
 
 
 def upload_all_sample_variants(output_dir, sample_names):
+	"""	
+	Calls the upload_sample_vcf() function on each sample in the list sample_names
+
+	Input:
+
+	output_dir = The directory containing the pipeline output.
+	sample_names = A list containing the sample_names.
+
+
+	Output: 
+
+
+	None - uploads and returns None.
+
+	"""
 
 	for sample in sample_names:
 
+		print sample
 
 		upload_sample_vcf(output_dir, sample)
 
@@ -920,28 +953,27 @@ def upload_all_sample_variants(output_dir, sample_names):
 	return None
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 class Command(BaseCommand):
 
 
-	help = "This is the master uploader for the database"
+	help = "This is the master uploader for the database."
 
 
 	def add_arguments(self, parser):
 
-		parser.add_argument('--worksheet_dir', '-w', action='store',help="The directory containing the folder with the samplesheet. This folder also contains InterOp folder with run QC.",)
-		parser.add_argument('--output_dir', '-o', action='store',help="The directory containing the folder with the run output e.g. alignments/, /vcfs, /archive",)
+		parser.add_argument('--worksheet_dir', '-w', action='store',help="The directory containing the folder with the samplesheet. This folder also contains InterOp folder with run QC.")
+		parser.add_argument('--output_dir', '-o', action='store',help="The directory containing the folder with the run output e.g. alignments/, /vcfs, /archive")
+
+		parser.add_argument('--sample_sheet', action='store_true',default= False ,help="""Add this option to import the information within the SampleSheet.csv file into the database.
+																						 This will import a new worksheet and create sample objects as specified in the SampleSheet.""")
+
+		parser.add_argument('--run_qc', action='store_true',default= False ,help="Add this option to import the run QC information into the database. This is the information contained within the InterOp files.")
+		parser.add_argument('--sample_qc', action='store_true',default= False ,help="Add this option to import the sample QC information into the database. This is the information created by the SamStats program.")
+		parser.add_argument('--coverage', action='store_true',default= False ,help="dd this option to import the Gene and Exon coverage information into the database.")
+		parser.add_argument('--variants', action='store_true',default= False ,help="Add this option to import the variant information contained within the VEP annotated vcf files.")
+
+		parser.add_argument('--single_sample', action='store' ,help="Upload the data for only this sample. Assumes Sample already exists in DB. N.B - sample_sheet and run_qc inactive with this option.")
+
 
 
 
@@ -951,6 +983,10 @@ class Command(BaseCommand):
 
 		output_dir = options['output_dir']
 
+		if worksheet_dir == None or output_dir == None:
+
+			raise CommandError('Please enter appropriate arguments. See help for detail.')
+
 
 		if worksheet_dir[-1] != "/":
 
@@ -959,8 +995,6 @@ class Command(BaseCommand):
 		if output_dir[-1] != "/":
 
 			output_dir= output_dir+"/"
-
-
 
 
 		sample_sheet_data = process_sample_sheet(worksheet_dir)
@@ -973,28 +1007,96 @@ class Command(BaseCommand):
 		with transaction.atomic():
 
 
-			upload_sample_sheet(sample_sheet_data)
-
-			self.stdout.write(self.style.SUCCESS("Uploaded SampleSheet: " +worksheet_name + " with " + str(len(sample_names)) + " samples."))
-			self.stdout.write(self.style.SUCCESS("Processing run QC data"))
-
-			upload_run_qc(worksheet_dir, worksheet_name)
+			if options["single_sample"] == None:
 
 
-			self.stdout.write(self.style.SUCCESS("Run QC data uploaded."))
+				if options['sample_sheet'] ==True:
+
+					upload_sample_sheet(sample_sheet_data)
+
+					self.stdout.write(self.style.SUCCESS("Uploaded SampleSheet: " +worksheet_name + " with " + str(len(sample_names)) + " samples."))
 
 
-			upload_all_sample_qcs(output_dir, sample_names)
+				if options['run_qc'] == True:
 
 
-			self.stdout.write(self.style.SUCCESS("Sample QC data uploaded."))
+					self.stdout.write(self.style.SUCCESS("Processing run QC data."))
+
+					upload_run_qc(worksheet_dir, worksheet_name)
+
+					self.stdout.write(self.style.SUCCESS("Run QC data successfully uploaded."))
 
 
-			self.stdout.write(self.style.SUCCESS("Run QC data uploaded."))
 
-			upload_all_exon_gene_coverage(output_dir, sample_names)
-
-			self.stdout.write(self.style.SUCCESS("Run Exon/Gene coverage data uploaded."))
+				if options['sample_qc'] == True:
 
 
-			upload_all_sample_variants(output_dir, sample_names)
+					self.stdout.write(self.style.SUCCESS("Processing sample QC data."))
+
+					upload_all_sample_qcs(output_dir, sample_names)
+
+					self.stdout.write(self.style.SUCCESS("Sample QC data uploaded."))
+
+
+				if options['coverage'] == True:
+
+					self.stdout.write(self.style.SUCCESS("Processing gene/exon coverage data."))
+
+					upload_all_exon_gene_coverage(output_dir, sample_names)
+
+					self.stdout.write(self.style.SUCCESS("Run Exon/Gene coverage data uploaded."))
+
+
+				if options['variants'] == True:
+
+					self.stdout.write(self.style.SUCCESS("Processing variant data."))
+
+					upload_all_sample_variants(output_dir, sample_names)
+
+
+					self.stdout.write(self.style.SUCCESS("Variant upload complete."))
+
+				self.stdout.write(self.style.SUCCESS("Upload Complete"))
+
+				return None
+
+			else:
+
+
+				#This is if the user has selected the single_sample option
+
+				self.stdout.write(self.style.SUCCESS("Processing data for single sample: " + options['single_sample'] ))
+
+				if options['sample_qc'] == True:
+
+					self.stdout.write(self.style.SUCCESS("Processing sample QC data."))
+
+					upload_sample_qc(output_dir, options['single_sample'])
+
+					self.stdout.write(self.style.SUCCESS("Sample QC data uploaded."))
+
+
+				if options['coverage'] == True:
+
+					self.stdout.write(self.style.SUCCESS("Processing gene/exon coverage data."))
+
+					upload_gene_coverage(output_dir, options['single_sample'])
+					upload_exon_coverage(output_dir, options['single_sample'])
+
+
+					self.stdout.write(self.style.SUCCESS("Run Exon/Gene coverage data uploaded."))
+
+
+				if options['variants'] == True:
+
+					self.stdout.write(self.style.SUCCESS("Processing variant data."))
+
+					upload_sample_vcf(output_dir, options['single_sample'])
+
+
+					self.stdout.write(self.style.SUCCESS("Variant upload complete."))
+
+				self.stdout.write(self.style.SUCCESS("Upload Complete"))
+
+				return None
+
