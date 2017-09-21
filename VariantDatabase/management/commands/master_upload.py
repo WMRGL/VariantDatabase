@@ -962,8 +962,6 @@ class Command(BaseCommand):
 		parser.add_argument('--single_sample', action='store' ,help="Upload the data for only this sample. Assumes Sample already exists in DB. N.B - sample_sheet and run_qc inactive with this option.")
 
 
-
-
 	def handle(self, *args, **options):
 
 		worksheet_dir = options['worksheet_dir']

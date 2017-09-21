@@ -223,6 +223,10 @@ class Worksheet(models.Model):
 
 
 	def get_quality_data(self):
+		"""
+		Gets the ReadLaneQuality objects associated with the worksheet. Sort into correct order for display. 
+
+		"""
 
 		data = ReadLaneQuality.objects.filter(worksheet=self).order_by('read', 'lane')
 
@@ -411,6 +415,10 @@ class Sample(models.Model):
 		return summary_dict
 
 	def total_variant_summary(self):
+		"""
+		Get the summary information for all variants in the sample.
+
+		"""
 
 		variants = self.get_variants()
 
@@ -418,6 +426,10 @@ class Sample(models.Model):
 
 
 	def get_error_rate(self):
+		"""
+		Calculate the error rate for the sample using the information imported from the .stats file.
+
+		"""
 
 		if self.mismatches == None or self.bases_mapped_cigar == None:
 
@@ -444,6 +456,11 @@ class Sample(models.Model):
 
 
 	def sample_qc_passed(self):
+		"""
+		Checks the sample QC against the Subsection options.
+
+
+		"""
 
 		if (self.raw_total_sequences == None or 
 			self.average_length == None or
@@ -865,8 +882,16 @@ class Variant(models.Model):
 
 
 	def get_picked_hgvsc(self):
+		"""
+		Which hgvsc to show in the summary page.
 
+		Can go with the one that VEP has picked i.e added a PICK flag too.
 
+		Some problems with this when there are multiple genes. 
+
+		So if we get no hgvsc for the picked we get one that does have one.
+
+		"""
 
 		picked = VariantTranscript.objects.filter(variant=self).filter(picked=True)
 	
@@ -903,6 +928,17 @@ class Variant(models.Model):
 		
 
 	def get_picked_hgvsp(self):
+
+		"""
+		Which hgvsp to show in the summary page.
+
+		Can go with the one that VEP has picked i.e added a PICK flag too.
+
+		Some problems with this when there are multiple genes. 
+
+		So if we get no hgvsp for the picked we get one that does have one.
+
+		"""
 
 		picked = VariantTranscript.objects.filter(variant=self).filter(picked=True)
 	
@@ -1073,7 +1109,7 @@ class VariantTranscript(models.Model):
 
 	def __str__(self):
 
-		return self.variant.chromosome+str(self.variant.position)
+		return self.variant.chromosome+ " " + str(self.variant.position) + self.transcript.name
 
 class Report(models.Model):
 	"""
@@ -1088,6 +1124,12 @@ class Report(models.Model):
 
 	sample = models.ForeignKey(Sample)
 	status = models.CharField(max_length=1, choices = choices)
+
+
+
+	def __str__(self):
+
+		return self.sample.name+ " " + str(self.pk)
 
 
 	def get_history(self):
@@ -1161,6 +1203,13 @@ class ReportVariant(models.Model):
 
 
 class ReadLaneQuality(models.Model):
+	"""
+	This model hold the data parsed from the Illumina InterOp files.
+
+	A separate object is created for each lane-read combination.
+
+
+	"""
 
 	worksheet = models.ForeignKey(Worksheet)
 	read = models.IntegerField()
@@ -1181,6 +1230,11 @@ class ReadLaneQuality(models.Model):
 	error_rate_50 = models.FloatField(null=True)
 	error_rate_75 = models.FloatField(null=True)
 	error_rate_100 = models.FloatField(null=True)
+
+
+	def __str__(self):
+
+		return self.worksheet.name+ " " + str(self.pk)
 
 
 	def format_density(self):
@@ -1220,6 +1274,13 @@ class GeneCoverage(models.Model):
 	mean_coverage = models.FloatField()
 	number_of_regions = models.IntegerField()
 
+
+	def __str__(self):
+
+		return self.sample.name+ " " + self.gene.name + " " +str(self.pk)
+
+
+
 	def get_percentages(self):
 
 		raw_data = [self.x100, self.x200, self.x300, self.x400, self.x500, self.x600]
@@ -1249,6 +1310,10 @@ class ExonCoverage(models.Model):
 	number_of_regions = models.IntegerField()
 
 
+	def __str__(self):
+
+		return self.sample.name+ " " + self.gene.name + " " +str(self.pk)
+
 	def get_percentages(self):
 
 		raw_data = [self.x100, self.x200, self.x300, self.x400, self.x500, self.x600]
@@ -1275,6 +1340,10 @@ class Comment(models.Model):
 	time = models.DateTimeField()
 	variant_sample = models.ForeignKey('VariantSample')
 
+	def __str__(self):
+
+		return str(self.variant_sample) + " " +str(self.pk)
+
 
 	def get_evidence(self):
 
@@ -1283,6 +1352,7 @@ class Comment(models.Model):
 		if len(evidence) == 0:
 
 			return None
+
 		else:
 
 			return evidence
@@ -1290,9 +1360,9 @@ class Comment(models.Model):
 
 class Evidence(models.Model):
 	"""
-	Model to hold files that relate to evidence e.g. pdfs, screenshots
+	Model to hold files that relate to evidence e.g. pdfs, screenshots.
 
-	Must be associated with a comment
+	Must be associated with a comment.
 
 	"""
 	file = models.FileField(upload_to='uploads/%y/%m/', null=True, blank=True)
@@ -1302,16 +1372,13 @@ class Evidence(models.Model):
 class UserSetting(models.Model):
 
 	"""
-	A class for storing user settings - mainly which columns we want to see
+	A class for storing user settings - mainly which columns we want to see.
 
 
 	"""
 
 	columns_to_hide= models.CharField(max_length=200, default="allele_depth,vafs,tcf,tcr,clinsig")
 	user = models.ForeignKey('auth.User')
-
-
-
 
 auditlog.register(Report)
 auditlog.register(Worksheet)

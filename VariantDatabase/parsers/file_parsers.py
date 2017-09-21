@@ -70,9 +70,6 @@ def get_read_lane_data(read, lane, summary):
 
 	return qc_data
 
-
-
-
 def get_all_qc_data(summary):
 	"""
 	Gets the qc data for all the read/lane combinations for that particular run.

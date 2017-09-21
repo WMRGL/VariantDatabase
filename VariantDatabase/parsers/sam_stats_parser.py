@@ -69,11 +69,6 @@ def get_sam_stats(sample_name, stats_location):
 
 		return sample_qc_dict
 
-
-
-
-	
-
 def get_sam_images(sample_name, stats_location):
 	"""
 	Returns a dictionary of the file locations. Dict Key is the image_type.

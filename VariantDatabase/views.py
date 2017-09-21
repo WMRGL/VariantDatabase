@@ -126,7 +126,7 @@ def sample_summary(request, pk_sample):
 			if key != 'csrfmiddlewaretoken' and key != 'filterform' and 'freq' not in key:
 
 
-				if key == 'five_prime_UTR_variant':
+				if key == 'five_prime_UTR_variant': #can't start python variables with a number so have to change key from 5_prime_UTR_variant to five_prime_UTR_variant
 
 					consequences_to_include.append('5_prime_UTR_variant')
 
@@ -142,7 +142,7 @@ def sample_summary(request, pk_sample):
 
 		consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
 
-		variant_samples =VariantSample.objects.filter(sample=sample, variant__worst_consequence__in=consequences_query_set).filter(variant__max_af__lte=max_af).order_by('-variant__worst_consequence__impact', 'variant__max_af') #performance?
+		variant_samples =VariantSample.objects.filter(sample=sample, variant__worst_consequence__in=consequences_query_set).filter(variant__max_af__lte=max_af).order_by('variant__worst_consequence__impact', 'variant__max_af') #performance?
 
 		variants = Variant.objects.filter(variant_hash__in= variant_samples.values_list('variant_id', flat=True))
 
@@ -153,9 +153,6 @@ def sample_summary(request, pk_sample):
 		exon_coverage = ExonCoverage.objects.filter(sample=sample)
 
 		user_settings = UserSetting.objects.filter(user=request.user)
-
-		
-
 
 		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variant_samples, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary,
 					 'filter_form': filter_form, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage , 'user_settings': user_settings })
@@ -234,8 +231,6 @@ def variant_detail(request, pk_sample, variant_hash):
 	return render(request, 'VariantDatabase/variant_detail.html', {'variant': variant, 'transcripts': transcripts, 'other_alleles': other_alleles})
 
 
-
-
 @login_required
 def search(request):
 
@@ -273,8 +268,6 @@ def search(request):
 			
 
 	return render(request, 'VariantDatabase/search.html', {'gene_name': gene_name, 'alts': alts})
-
-
 
 
 @login_required
@@ -408,7 +401,7 @@ def view_sample_report(request, pk_sample, pk_report):
 	return render(request, 'VariantDatabase/view_sample_report.html' , {'report': report, 'report_variants': report_variants})
 
 
-
+@login_required
 def ajax_detail(request):
 
 	if request.is_ajax():
@@ -434,7 +427,7 @@ def ajax_detail(request):
 
 		raise Http404
 
-
+@login_required
 def ajax_comments(request):
 	"""
 	Ajax View - when the user clicks the upload comment/file button this updates the comment section of the page.
