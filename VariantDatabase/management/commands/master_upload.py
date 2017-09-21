@@ -17,7 +17,7 @@ from django.core.files import File
 import VariantDatabase.parsers.vcf_parser as vcf_parser
 import VariantDatabase.parsers.file_parsers as file_parsers
 import VariantDatabase.parsers.sam_stats_parser as sam_stats_parser
-
+import VariantDatabase.utils.variant_utilities as variant_utilities
 
 
 def process_sample_sheet(worksheet_dir):
@@ -744,7 +744,9 @@ def upload_sample_vcf(output_dir, sample_name):
 		pos = str(variant['pos'])
 		ref = variant['reference']
 		alt = variant['alt_alleles'][0]
-		hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
+		#hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
+
+		hash_id = variant_utilities.get_variant_hash(chromosome, pos,ref,alt)
 
 		gene_list = vcf_parser.get_variant_genes_list(variant['transcript_data'])
 

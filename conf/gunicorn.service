@@ -1,0 +1,12 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=cuser
+Group=cuser
+WorkingDirectory=/home/cuser/Documents/Project/webserver_test
+ExecStart=/home/cuser/Documents/Project/webserver_test/myvenv/bin/gunicorn --workers 1 --bind unix:/home/cuser/Documents/Project/webserver_test/run/myproject.sock myproject.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

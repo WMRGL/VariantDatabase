@@ -3,16 +3,12 @@ from VariantDatabase.models import *
 from django.contrib.auth.decorators import login_required
 from .forms import *
 from django.utils import timezone
-import hashlib
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.core.cache import cache
 import parsers.vcf_parser as vcf_parser
+import parsers.file_parsers as parsers
 from django.forms import modelformset_factory
 import collections
-from django.db import transaction
-import csv
-import parsers.file_parsers as parsers
 from django.template.loader import render_to_string
 from django.http import HttpResponse, Http404
 import re
@@ -82,7 +78,7 @@ def list_worksheet_samples(request, pk_worksheet):
 
 
 @login_required
-def sample_summary(request, pk_sample ):
+def sample_summary(request, pk_sample):
 
 	"""
 	This view displays the various information about a sample
