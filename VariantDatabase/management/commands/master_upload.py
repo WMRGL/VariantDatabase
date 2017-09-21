@@ -20,12 +20,6 @@ import VariantDatabase.parsers.sam_stats_parser as sam_stats_parser
 
 
 
-#vcf_parser = imp.load_source('vcf_parser', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/parsers/vcf_parser.py')
-#file_parsers = imp.load_source('file_parsers', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/parsers/file_parsers.py')
-#sam_stats_parser = imp.load_source('sam_stats_parser', '/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/parsers/sam_stats_parser.py')
-
-
-
 def process_sample_sheet(worksheet_dir):
 	"""
 	Calls file_parsers.parse_sample_sheet()
@@ -752,22 +746,13 @@ def upload_sample_vcf(output_dir, sample_name):
 		alt = variant['alt_alleles'][0]
 		hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
 
-		#print chromosome, pos				
-
-
 		gene_list = vcf_parser.get_variant_genes_list(variant['transcript_data'])
-
-		hgvsc = vcf_parser.get_hgvsc(variant['transcript_data'])
-
-		hgvsp = vcf_parser.get_hgvsp(variant['transcript_data'])
 
 		rs_number = vcf_parser.get_rs_number(variant['transcript_data'])
 
 		worst_consequence = vcf_parser.worst_consequence(variant['transcript_data'])
 
 		worst_consequence = Consequence.objects.get(name=worst_consequence)
-
-		canonical = vcf_parser.get_canonical_transcript_name(variant['transcript_data'])
 
 		max_af = vcf_parser.get_max_af(variant['transcript_data'])
 
@@ -803,8 +788,8 @@ def upload_sample_vcf(output_dir, sample_name):
 		except Variant.DoesNotExist:
 
 			new_variant = Variant(chromosome=chromosome, position=pos,
-			 ref= ref, alt=alt, variant_hash= hash_id, HGVSc = hgvsc, rs_number=rs_number,
-			 last_updated= timezone.now(), HGVSp= hgvsp, worst_consequence=worst_consequence,
+			 ref= ref, alt=alt, variant_hash= hash_id, rs_number=rs_number,
+			 last_updated= timezone.now(), worst_consequence=worst_consequence,
 			 max_af= max_af,  af=af,  afr_af=afr_af, amr_af=amr_af,
 			 eur_af=eur_af, eas_af=eas_af, sas_af=sas_af, exac_af=exac_af, exac_adj_af=exac_adj_af,
 			 exac_afr_af= exac_afr_af, exac_amr_af=exac_amr_af,exac_eas_af=exac_eas_af, exac_fin_af=exac_fin_af,

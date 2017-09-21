@@ -590,8 +590,6 @@ class Variant(models.Model):
 	position  = models.IntegerField()
 	ref = models.TextField()
 	alt = models.TextField()
-	HGVSc =models.TextField()
-	HGVSp = models.TextField()
 	last_updated =  models.DateTimeField(default = timezone.now)
 	rs_number = models.CharField(max_length =50)
 	worst_consequence = models.ForeignKey(Consequence)
@@ -654,28 +652,6 @@ class Variant(models.Model):
 
 		return list(set(my_list))
 
-	def hgvsc_list(self):
-		"""
-		Return hgvs cDNA as a list
-		"""
-
-		hgvs_list = []
-
-		split = self.HGVSc.split(",")
-
-		return split
-
-	def hgvsp_list(self):
-		"""
-		Return hgvs Protein as a list
-
-		"""
-
-		hgvs_list = []
-
-		split = self.HGVSp.split(",")
-
-		return split
 
 
 	def display_ids(self):
@@ -686,39 +662,6 @@ class Variant(models.Model):
 		variant_ids = self.rs_number.split("&")
 
 		return variant_ids
-
-
-	def rated_as_pathogenic(self):
-		"""	
-		Check through ACMG sections and see if the variant has ever been classified as pathogenic.
-
-		Note that this does not inlcude the new Reporting section.
-
-		TODO: update to include reporting section. Need to do more requirements capturing to see if this is necessary.  
-		"""
-
-
-		classifications = Interpretation.objects.filter(variant=self)
-
-		path_classifications = ["Pathogenic (Ia)","Pathogenic (Ib)","Pathogenic (Ic)", "Pathogenic (Id)", "Pathogenic (II)", "Pathogenic (IIIa)",
-							"Pathogenic (IIIb)", "Pathogenic (IIIc)", "Likely Pathogenic (I)", "Likely Pathogenic (II)", "Likely Pathogenic (III)",
-							"Likely Pathogenic (IV)", "Likely Pathogenic (V)", "Likely Pathogenic (VI)"
-							]
-
-		if classifications == False:
-
-			return False
-
-		else:
-
-			for classification in classifications:
-
-				if classification.classification in path_classifications:
-
-					return True
-
-
-		return False
 
 
 
@@ -1025,12 +968,12 @@ class VariantSample(models.Model):
 		
 
 
-
+"""
 class ClassificationCode(models.Model):
-	"""
+
 	For the ACMG guidlines e.g PVS1
 
-	"""
+
 
 	text = models.CharField(max_length = 25)
 
@@ -1038,9 +981,9 @@ class ClassificationCode(models.Model):
 		return self.text
 
 class Question(models.Model):
-	"""
+
 	Question in the ACMG guidelines
-	"""
+
 
 	text = models.CharField(max_length =300)
 	description = models.TextField()
@@ -1053,9 +996,9 @@ class Question(models.Model):
 
 
 class Interpretation(models.Model):
-	"""
+
 	An interpretation from the ACMG guidlines
-	"""
+
 
 	author = models.ForeignKey('auth.User')
 	variant = models.ForeignKey(Variant)
@@ -1070,10 +1013,10 @@ class Interpretation(models.Model):
 
 
 	def get_classification(self):
-		"""
+
 		Returns the final classification of the Interpretation e.g. likely pathogenic
 
-		"""
+
 
 		all_answers = UserAnswer.objects.filter(interpretation=self.pk)
 
@@ -1091,9 +1034,9 @@ class Interpretation(models.Model):
 
 
 class UserAnswer(models.Model):
-	"""
+
 	Stores the answers to the questions of the ACMG guidelines
-	"""
+
 
 	interpretation = models.ForeignKey(Interpretation)
 	user_question = models.ForeignKey(Question, null=True )
@@ -1104,6 +1047,9 @@ class UserAnswer(models.Model):
 	def __str__(self):
 
 		return str(self.pk)
+"""
+
+
 
 class VariantTranscript(models.Model):
 	"""

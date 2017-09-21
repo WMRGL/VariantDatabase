@@ -26,7 +26,6 @@
    <ul class="nav nav-tabs">
 
     <li class="active"><a data-toggle="tab" href="#summary">Summary</a></li>
-    <li><a data-toggle="tab" href="#classification">Classification</a></li>
 
   </ul>
 
@@ -35,7 +34,7 @@
   <div class="tab-content">
     <div id="summary" class="tab-pane fade in active">
       <div class = "row">
-        <div class = 'col-sm-4'>
+        <div class = 'col-lg-4'>
 
 
 
@@ -110,137 +109,11 @@
 
           </tr>
 
-          <tr>
-            <td> Similar </td>
-            <td> {{ variant.get_similar }} </td>
-
-          </tr>
-
         </tbody>
       </table>
 
     </div>
 
-
-    <div class = 'col-sm-2'>
-        <table class = 'table table-bordered' >
-          <thead>
-            <tr>
-              <th>HGVSc</th>
-            </tr>
-          </thead>
-
-         <tbody>
-
-          {% for hgvs in variant.hgvsc_list %}
-
-           <tr><td> {{ hgvs }} </td></tr>
-  
-        {% endfor %}
-
-        </tbody>
-      </table>
-
-    </div>
-
-    <div class = 'col-sm-2'>
-
-      <table class = 'table table-bordered' >
-          <thead>
-            <tr>
-              <th>HGVSp</th>
-            </tr>
-          </thead>
-
-         <tbody>
-
-          {% for hgvs in variant.hgvsp_list %}
-
-            <tr> <td> {{ hgvs }} </td> </tr>
-
-          {% endfor %}
-
-        </tbody>
-    </table>
-
-    </div>
-
-    <div class = 'col-sm-2'>
-
-      <table class = 'table table-bordered'>
-          <thead >
-            <tr>
-              <th colspan="2">Frequency</th>
-            </tr>
-          </thead>
-
-          <tbody>
-
-             <tr>
-                <td> Max AF </td> 
-
-                  {% if variant.max_af < 0.01 %}
-
-
-                      <td class="bg-danger"> {{variant.max_af}} </td>
-
-                  {% else %}
-
-                    <td> {{variant.max_af}} </td>
-
-                  {% endif %}
-
-             </tr>
-
-
-             <tr>
-                <td> 1000G AF </td> 
-                <td>
-
-                    <a id="1000g" href="#" data-toggle="popover" title="1000G Pop AF" data-content='<ul class="list-group">
-                        <li class="list-group-item">AFR AF : {{ variant.afr_af}}</li>
-                        <li class="list-group-item">AMR AF : {{ variant.amr_af}}</li>
-                        <li class="list-group-item">EUR AF : {{ variant.eur_af}}</li>
-                        <li class="list-group-item">EAS AF : {{ variant.eas_af}}</li>
-                        <li class="list-group-item">SAS AF : {{ variant.sas_af}}</li> </ul>' >{{variant.af}}</a>
-                </td>
-
-            </tr>
-            <tr>
-              <td> ExAC AF </td> 
-              <td>
-                <a id="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-content='<ul class="list-group">
-                    <li class="list-group-item">ADJ AF : {{ variant.exac_adj_af}}</li>
-                    <li class="list-group-item">AFR AF : {{ variant.exac_afr_af}}</li>
-                    <li class="list-group-item">AMR AF : {{ variant.exac_amr_af}}</li>
-                    <li class="list-group-item">EAS AF : {{ variant.exac_eas_af}}</li>
-                    <li class="list-group-item">FIN AF : {{ variant.exac_fin_af}}</li>
-                    <li class="list-group-item">NFE AF : {{ variant.exac_nfe_af}}</li>
-                    <li class="list-group-item">OTH AF : {{ variant.exac_oth_af}}</li>
-                    <li class="list-group-item">SAS AF : {{ variant.exac_sas_af}}</li></ul>' >{{variant.exac_af}}</a>
-
-              </td>
-
-            </tr>
-
-            <tr>
-
-               <td> ESP AA AF </td>
-               <td> {{variant.esp_aa_af }} </td>
-
-            </tr>
-
-             <tr>
-
-               <td> ESP EA AF </td>
-               <td> {{variant.esp_ea_af }} </td>
-
-             </tr>
-
-          </tbody>
-      </table>
-
-    </div>
   </div>
 
     <hr>
@@ -353,52 +226,7 @@
 </div>
 
 
-<div id="classification" class="tab-pane fade">
 
-{% if classifications|length > 0 %}
-
-    <table id="variant_table" class = 'table table-hover'>
-        <thead>
-
-          <tr>
-            <th> User </th>
-            <th> Date </th>
-            <th> Result </th>
-            <th> View </th>
-          </tr>
-
-        </thead>
-
-      {% for classification in classifications %}
-
-        <tr>
-
-            <td> {{ classification.author}} </td>
-            <td> {{ classification.date}} </td>
-            <td> {{ classification.get_classification}} </td>
-            <td>  <a href="{% url 'report' pk_interpretation=classification.pk %}"> View </a> </td>
-
-
-        </tr>
-
-    {% endfor %}
-
-
-    </table>
-
-{% else %}
-
-  <div class="alert alert-info">
-    No classifications for this variant.
-  </div>
-
-
-
-   
-{% endif %}
-
-
-</div>
 
 
 <script>

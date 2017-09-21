@@ -23,9 +23,16 @@ VariantDatabase allows the following:
 
 ### Requirements
 
-##### Languages
+
+##### Prerequisites
+
+`CentOS7`
 
 `Python 2.7.11`
+
+`Pip`
+
+`virtualenv`
 
 
 ##### Python Packages
@@ -78,8 +85,7 @@ Within your python virtualenv type:
 
 ##### Step 3 - Test
 
-Coming Soon!
-
+`python manage.py test`
 
 ##### Step 5 - Run
 
@@ -218,6 +224,9 @@ For the vcf files to be correctly parsed by the VariantDatabase parser (parsers/
 Once VEP is installed annotate your vcfs with the following command:
 
 `vep -i input_vcf -o output.vcf --cache --fork 4  --refseq --vcf --flag_pick --exclude_predicted --everything --dont_skip --total_length --offline --fasta fasta_location`
+
+Other VCF annotations that are required include: INFO/Caller, FORMAT/AD, INFO/TCF, INFO/TCR and INFO/VAFS 
+
 
 They can then be bgzipped in preparation for database import:
 

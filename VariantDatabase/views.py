@@ -75,80 +75,9 @@ def list_worksheet_samples(request, pk_worksheet):
 		quality_data = worksheet.get_quality_data()
 
 
-
-
 	samples_in_worksheet = Sample.objects.filter(worksheet = worksheet, visible=True)
 
 	return render(request, 'VariantDatabase/list_worksheet_samples.html', {'samples_in_worksheet': samples_in_worksheet, 'form': form, 'worksheet': worksheet, 'quality_data': quality_data})
-
-
-
-@login_required
-def list_sample_variants(request, pk_sample):
-
-	"""
-	This view displays the variants from a vcf file in a html table.
-
-	The columns that are present can be configured in the user settings page.
-
-
-	"""
-
-	sample = get_object_or_404(Sample, pk=pk_sample) 
-
-	#Get the user's settings.
-	#Create a field list containing the custom INFO fields the user requires.
-	#Then this will be passed to the template for rendering.
-
-	user_settings = UserSetting.objects.filter(user=request.user)
-
-	field_list = []
-	heading_list = []
-
-	for setting in user_settings:
-
-		field_list.append(setting.variant_information.information.replace('.', '_')) #create a list containing the INFO field IDs needed N.B replace '.' with '_' for template
-		heading_list.append(setting.variant_information.label)
-
-
-	#Get the vcf file and get the data e.g. ref, chrom, INFO
-	#Get the genes from the vcf file
-	#Pass these to the template
-
-	vcf_file_path = sample.vcf_file
-
-
-	#avoid recalculating using cache
-	data = cache.get(sample.name)
-
-	if data == None:
-
-		data = vcf_parser.create_master_list_canonical(vcf_file_path, sample.name) #create variant list
-		cache.set(sample.name, data, 600)
-
-
-	vep_annotated = vcf_parser.vep_annotated(vcf_file_path)
-
-
-	paginator = Paginator(data,50)
-
-	page = request.GET.get('page')
-
-	try:
-
-		variants = paginator.page(page)
-
-	except PageNotAnInteger:
-
-		variants =paginator.page(1)
-
-
-	except:
-
-		variants = paginator.page(paginator.num_pages)
-
-
-	return render(request, 'VariantDatabase/list_sample_variants.html', {'sample': sample, 'variants': variants, 'field_list': field_list, 'heading_list': heading_list, 'vep': vep_annotated})
 
 
 
@@ -304,37 +233,15 @@ def variant_detail(request, pk_sample, variant_hash):
 
 	transcripts = VariantTranscript.objects.filter(variant = variant)
 
-	classifications = Interpretation.objects.filter(variant=variant)
 
 
-	if request.method == "POST": #if user has asked to do a new classification
-
-		form = InterpretationForm(request.POST)
-
-		if form.is_valid():
-
-			interpretation = form.save(commit=False)
-			interpretation.author = request.user
-			interpretation.variant = variant
-			interpretation.sample = sample
-			interpretation.date = timezone.now()
-			interpretation.finished = False
-			interpretation.save()
-
-			return redirect(all_questions, interpretation.pk)
-
-
-	else:
-
-		form = InterpretationForm()
-
-	return render(request, 'VariantDatabase/variant_detail.html', {'variant': variant, 'form': form, 'classifications': classifications, 'transcripts': transcripts, 'other_alleles': other_alleles})
+	return render(request, 'VariantDatabase/variant_detail.html', {'variant': variant, 'transcripts': transcripts, 'other_alleles': other_alleles})
 
 
 
 
 @login_required
-def view_all_variants(request):
+def search(request):
 
 	""""
 	A search page for Variants.
@@ -369,69 +276,10 @@ def view_all_variants(request):
 
 			
 
-	return render(request, 'VariantDatabase/view_all_variants.html', {'gene_name': gene_name, 'alts': alts})
-
-
-@login_required
-def all_questions(request, pk_interpretation):
-	"""
-	Show all questions from the ACMG guidelines
-
-	"""
-
-	interpretation = get_object_or_404(Interpretation, pk = pk_interpretation)
+	return render(request, 'VariantDatabase/search.html', {'gene_name': gene_name, 'alts': alts})
 
 
 
-	if request.method == 'POST':
-
-		dict = {'questions_1': [1],'questions_2': [2], 'questions_3': [3], 'questions_4': [4], 
-				'questions_5': [5], 'questions_6': [6], 'questions_7': [7], 'questions_8': [8], 
-				'questions_9': [9], 'questions_10': [10], 'questions_11': [11], 'questions_12': [12], 
-				'questions_13': [13], 'questions_14': [14], 'questions_15': [15], 'questions_16': [16], 
-				'questions_17': [17], 'questions_18': [18], 'questions_19': [19], 'questions_20': [20], 
-				'questions_21': [21], 'questions_22': [22], 'questions_23': [23], 'questions_24': [24], 
-				'questions_25': [25], 'questions_26': [26], 'questions_27': [27], 'questions_28': [28] } #dictionary holds names of fields of AllAnswersForm along with a list holding the Question Number
-
-
-		for key in dict:
-
-			dict[key] = dict[key]+[ request.POST.get(key)] #Add the User's answer from the AllAnswersForm to the dictionary
-
-
-		for key in dict:
-
-			question_number = dict[key][0] 
-
-			question = get_object_or_404(Question, pk = question_number)
-
-			UserAnswer.objects.create(interpretation = interpretation, user_question = question, user_answer= dict[key][1], date = timezone.now()) #now create a UserAnswer instance with that info
-
-		interpretation.classification = interpretation.get_classification()
-		interpretation.finished = True
-
-		interpretation.save()
-		return redirect('report', pk_interpretation)
-
-
-	else:
-
-
-		all_questions = Question.objects.all()
-
-		question_form = AllAnswersForm()
-
-		list_of_fields =[]
-
-		for field in question_form:
-
-			list_of_fields.append(field)
-
-
-		zipped = zip(all_questions, list_of_fields) #combine 
-
-
-	return render(request, 'VariantDatabase/all_questions.html', {'zipped': zipped, 'interpretation': interpretation})
 
 @login_required
 def report(request, pk_interpretation):
@@ -484,6 +332,10 @@ def view_gene(request, gene_pk):
 
 @login_required
 def view_detached_variant(request, variant_hash):
+	"""
+	View a variant independent of any sample it is associated with.
+
+	"""
 	
 	variant = get_object_or_404(Variant, variant_hash=variant_hash)
 
@@ -491,9 +343,8 @@ def view_detached_variant(request, variant_hash):
 
 	transcripts = VariantTranscript.objects.filter(variant = variant)
 
-	classifications = Interpretation.objects.filter(variant=variant)
 
-	return render(request, 'VariantDatabase/variant_view.html', {'variant': variant, 'transcripts': transcripts, 'other_alleles': other_alleles, 'classifications': classifications } )
+	return render(request, 'VariantDatabase/variant_view.html', {'variant': variant, 'transcripts': transcripts, 'other_alleles': other_alleles} )
 
 @login_required
 def create_sample_report(request, pk_sample, pk_report):
@@ -560,94 +411,7 @@ def view_sample_report(request, pk_sample, pk_report):
 
 	return render(request, 'VariantDatabase/view_sample_report.html' , {'report': report, 'report_variants': report_variants})
 
-@login_required
-def upload_sample_sheet(request):
-	"""
-	Upload a SampleSheet
-	First stage of the data flow
 
-	"""
-
-	error = [0,'None']
-
-	if request.method == 'POST':
-
-		form = SampleSheetForm(request.POST, request.FILES)
-
-		if form.is_valid():
-
-			list =[]
-
-			comment = form.cleaned_data['comment']
-			worksheet_name = form.cleaned_data['worksheet_name']
-			sample_sheet = request.FILES['sample_sheet']
-
-			list.append(form.cleaned_data)
-
-			#does a worksheet with that name exist?
-
-			worksheet = Worksheet.objects.filter(name = worksheet_name)
-
-			if worksheet.exists():
-
-				error = [1,'Worksheet with this name already exists!']
-
-				return render(request, 'VariantDatabase/upload_sample_sheet.html', {'form': form, 'error': error})
-
-			else:
-
-				with transaction.atomic():
-
-					sample_data, subsection_name = parsers.parse_sample_sheet(sample_sheet)
-
-					subsection = SubSection.objects.filter(name=subsection_name)
-
-					if not subsection.exists(): # Does a subsection/project with that name exist
-
-						error = [1, 'No Subsection found - please create one']
-
-						return render(request, 'VariantDatabase/upload_sample_sheet.html', {'form': form, 'error': error})
-
-
-					elif sample_data == False: #does it have correct titles
-
-						error = [2,'Could not process SampleSheet']
-
-						return render(request, 'VariantDatabase/upload_sample_sheet.html', {'form': form, 'error': error})
-
-
-					else:
-
-						subsection = subsection[0]
-
-						new_worksheet = Worksheet(name=worksheet_name, sub_section=subsection,comment=comment, status ='1')
-
-						new_worksheet.save()
-
-						for sample in sample_data:
-
-							sample_name = sample[1]
-							sample_plate = sample[2]
-							sample_well = sample[3]
-							sample_i7_index = sample[4]
-							sample_index = sample[5]
-							sample_project = sample[6]
-
-							new_sample = Sample(name= sample_name, worksheet=new_worksheet, vcf_file='None', visible=True,status='1',
-								sample_plate =sample_plate, sample_well=sample_well, i7_index_id=sample_i7_index, index=sample_index, sample_project=sample_project )
-
-							new_sample.save()
-
-						error = [3,'SampleSheet uploaded']
-
-						return render(request, 'VariantDatabase/upload_sample_sheet.html', {'form': form, 'error': error})
-
-	else:
-
-		form = SampleSheetForm()
-		
-
-	return render(request, 'VariantDatabase/upload_sample_sheet.html', {'form': form, 'error': error})
 
 def ajax_detail(request):
 

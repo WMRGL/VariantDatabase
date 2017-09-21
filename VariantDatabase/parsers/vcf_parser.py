@@ -1,53 +1,118 @@
+"""
+A series of functions for parsing VEP annotated vcf files.
+
+Typically annotated using the following command:
+
+vep -i input_vcf -o output.vcf --cache --fork 4 --refseq --vcf --flag_pick --exclude_predicted --everything --dont_skip --total_length --offline --fasta fasta_location
+
+Uses Pysam as a VCF parser - see URL below for detail:
+
+http://pysam.readthedocs.io/en/latest/usage.html#working-with-vcf-bcf-formatted-files
+
+"""
+
 from pysam import VariantFile
 import hashlib
 import re
 
+
 def get_fields(csq_info_string):
 
 	"""
-	This function takes the CSQ info field from the header and breaks it up into a list
+	This function takes the CSQ info field from the header and breaks it up into a list.
+
+	Input:
+
+	csq_info_string = A string representing the CSQ field from the VCF header e.g. 
+
+	"##INFO=<ID=CSQ,Number=.,Type=String,Description='Consequence annotations from Ensembl VEP. Format: Allele|Consequence|IMPACT|SYMBOL'>"
+
+
+	Output:
+
+	csq_info_list = A list containing the annoatation titles from the Format : part of the csq_info_string e.g.
+
+	['Allele', 'Consequence', 'IMPACT', 'SYMBOL']
 
 
 	"""
 
+	csq_info_string = csq_info_string.strip()
+
 	index =  csq_info_string.index('Format:') +8
 
-	return csq_info_string[index:len(csq_info_string)-3].split('|')
+
+	csq_info_list = csq_info_string[index:len(csq_info_string)-2].split('|')
+
+	return csq_info_list
 
 
 def get_variant_csq(variant_csq_string):
 
 	"""
 
-	This function takes the CSQ field for a particualr variant and breaks it up into a list
+	This function takes the CSQ field for a particular variant and breaks it up into a list.
 
+	Input:
+
+	variant_csq_string = A string containing the csq annotations for a particular sampel within the vcf e.g.
+
+	"A|B|C|D"
+
+	Output:
+
+	A list containing the variant_csq_string split up.
 
 	"""
 
 	return variant_csq_string.split('|')
 
 
-def create_csq_dict(field_list, var_csq):
+def create_csq_dict(field_list, variant_csq_list):
 	"""
-	combine the CSQ info fields from the header and the csq data for a particular variant into a dictionary
+	Combine the csq_info_list from the header and the csq data for a particular variant into a dictionary.
 
+	Input:
 
+	field_list = Output from get_fields()
+
+	variant_csq_list = Output from get_variant_csq()
+
+	Output:
+
+	csq_dict = A dictionary combing the two inputs - field_list items are the keys.
+
+	
 	"""
 
-	zipped = zip(field_list, var_csq)
+	zipped = zip(field_list, variant_csq_list)
 
-	dict = {}
+	csq_dict = {}
 
 	for info in zipped:
 
-		dict[info[0]] = info[1]
+		csq_dict[info[0]] = info[1]
 
 
-	return dict
+	return csq_dict
 
 
 
 def validate_input(file_path, sample):
+	"""
+	Validates a vcf file.
+
+	Input:
+
+	file_path = The path to the vcf file
+
+	sample = sample name
+
+	Output:
+
+	list = A list where the first item is either True or False
+
+	"""
 
 	##is it a '.vcf.gz' file
 	ending = file_path[-7:]
@@ -56,13 +121,15 @@ def validate_input(file_path, sample):
 
 		return [False, 'Not a .vcf.gz file']
 
-		#now check chromosomes are in right format and that sample is in file
+	#now check chromosomes are in right format and that sample is in file
 	try:
 
 		bcf_in = VariantFile(file_path)
 
 
 		for rec in bcf_in.fetch():
+
+			#Check that the chromomes and alts are in correct format - chr1
 
 			chrom = rec.chrom
 			alt = rec.alts
@@ -94,8 +161,36 @@ def validate_input(file_path, sample):
 
 
 def create_master_list(file,sample):
+	"""
+	Create a list containing each variant in the vcf.
+
+	Each variant is a dictionary within the list e.g.
+
+	[{variant1:},{variant1:}]
+
+	Each variant dict consists of sub dictionarys for different transcripts e.g.
+
+	{"variant_hash": "xyz", "chr" :1, "pos": 434353, "transcript_data: {"NM_0001": {"consequence": "intron"}, "NM_0002": {"consequence": "splice_site"}} }
+
+
+	Input:
+
+
+	file = A path to the vcf file to be loaded/
+
+	sample = The sample name
+
+	Output:
+
+
+	master_list = A list containing dictionaries with all the information on all the variants in the vcf.
+
+	"""
+
 
 	bcf_in = VariantFile(file)
+
+
 
 	try:
 
@@ -103,9 +198,10 @@ def create_master_list(file,sample):
 
 		csq_fields = get_fields(csq_fields)
 
+
 	except:
 
-		pass
+		raise ValueError('Problem parsing CSQ header in vcf.')
 
 	master_list =[]
 
@@ -170,6 +266,8 @@ def create_master_list(file,sample):
 
 				csq_data = rec.info['CSQ']
 
+				#print csq_data
+
 				all_transcript__dict ={}
 
 				for transcript in csq_data:
@@ -194,50 +292,14 @@ def create_master_list(file,sample):
 
 	return master_list
 
-def get_genes_in_file(file, sample):
-
-	bcf_in = VariantFile(file)
-
-	gene_list =[]
-
-	for rec in bcf_in.fetch():
-
-		if 'Gene.refGene' in rec.info.keys():
-
-			for gene in rec.info['Gene.refGene']:
-
-				gene_list.append(gene)
-
-		else:
-
-			return 'An error occured - can not find Gene.refGene key in info field'
-
-
-	return list(set(gene_list))
-
-
-def get_canonical_transcript_name(transcript_data):
-
-	try:
-
-
-		for transcript in transcript_data:
-
-			if transcript_data[transcript]['PICK'] == '1':
-
-				return transcript_data[transcript]['Feature']
-
-	except:
-
-		return "None"
-
-
-	
-
-
 
 def get_canonical_transcript(transcript_data):
+	"""
+	Returns the transcript with where the 'PICK' flag is set to 1
 
+	Note - Used by create_master_list_canonical()
+
+	"""
 
 	for transcript in transcript_data:
 
@@ -248,21 +310,21 @@ def get_canonical_transcript(transcript_data):
 
 	return transcript_data[0]
 
-			
-def get_transcript_names(transcript_data):
-
-	transcript_names = []
-
-	for transcript in transcript_data:
-
-		transcript_names.append((transcript,transcript_data[transcript]['SYMBOL'] ))
-
-
-	return transcript_names
-
-
 
 def get_variant_genes(transcript_data):
+	"""
+	Returns a string containing all the genes names for a variant.
+
+	Input:
+
+	transcript_data = The dictionary containing the transcript_data.
+
+	Output:
+
+	A string of all the genes in the vcf seperated by a comma.
+
+
+	"""
 
 
 	genes =[]
@@ -275,14 +337,26 @@ def get_variant_genes(transcript_data):
 
 			genes.append(gene_name)
 
-		
 
 	genes = list(set(genes))
 
 	return ", ".join(genes)
 
 def get_variant_genes_list(transcript_data):
+	"""
+	Creates a list containing all the genes within a vcf.
 
+	Input:
+
+	transcript_data = The transcript data section of the variant dictionary.
+
+
+	Output:
+
+	A list of the unique genes in the vcf. List contains tuples with gene name and strand e.g. [(BRCA1, 1), (P53, 1)]
+
+
+	"""
 
 	genes =[]
 
@@ -300,6 +374,11 @@ def get_variant_genes_list(transcript_data):
 	
 
 def create_master_list_canonical(file,sample):
+
+	"""
+	Same purpose as create_master_list() except only gets picked transcript.
+
+	"""
 
 	bcf_in = VariantFile(file)
 
@@ -395,13 +474,22 @@ def create_master_list_canonical(file,sample):
 	return master_list
 
 
-
 def vep_annotated(file):
+	"""
+	Returns True if CSQ annotations are present.
 
+	Input:
+
+	file = path to vcf file
+
+	Output:
+
+	Returns True if CSQ is in header else False.
+
+	"""
 
 	bcf_in = VariantFile(file)
 
-	
 	try:
 
 		bcf_in.header.info['CSQ'].record
@@ -412,64 +500,20 @@ def vep_annotated(file):
 
 		return False
 
-def get_hgvsc(transcript_data):
-
-
-	hgvs_names = []
-
-	for transcript in transcript_data:
-
-		try:
-
-			hgvs = transcript_data[transcript]['HGVSc']
-
-		except:
-
-			return "None"
-
-		if hgvs != "":
-
-			hgvs_names.append(hgvs)
-
-	if hgvs_names == False:
-
-		return "None"
-
-
-	return ", ".join(hgvs_names)
-
-
-def get_hgvsp(transcript_data):
-
-
-	hgvs_names = []
-
-	for transcript in transcript_data:
-
-		try:
-
-			hgvs = transcript_data[transcript]['HGVSp']
-
-		except:
-
-			return "None"
-
-		if hgvs != "":
-
-			hgvs_names.append(hgvs)
-
-
-	if hgvs_names == False:
-
-		return "None"
-
-
-	return ", ".join(hgvs_names)
-
-
-
 
 def get_rs_number(transcript_data):
+	"""
+	Gets the rs number of other variant ID contained within the transcript_data dict
+
+
+	Input:
+
+	transcript_data = The dictionary containing all the transcript_data - see create_master_list()
+
+	Output:
+
+	Either a string of all unique ids or "None" if an error occurs or they cannot be found.
+	"""
 
 	rs_numbers = []
 
@@ -481,7 +525,7 @@ def get_rs_number(transcript_data):
 
 		except:
 
-			return "None"
+			rs_number = "None"
 
 
 
@@ -494,10 +538,22 @@ def get_rs_number(transcript_data):
 		return "None"
 
 
-	return "".join(list(set(rs_numbers)))
+	return "|".join(list(set(rs_numbers)))
 
 
 def get_max_af(transcript_data):
+	"""
+	Simply returns the MAX_AF from the transcript_data dict for a variant - see create_master_list()
+
+	Input:
+
+	transcript_data = The dictionary containing all the transcript_data - see create_master_list()
+
+	Output:
+
+	Float of the max allele frequency
+
+	"""
 
 
 	for transcript in transcript_data:
@@ -517,6 +573,18 @@ def get_max_af(transcript_data):
 
 def get_clin_sig(transcript_data):
 
+	"""
+	Simply returns the clinical significance from the transcript_data dict for a variant - see create_master_list()
+
+	Input:
+
+	transcript_data = The dictionary containing all the transcript_data - see create_master_list()
+
+	Output:
+
+	String of the clinical significance
+
+	"""
 
 	for transcript in transcript_data:
 
@@ -533,6 +601,22 @@ def get_clin_sig(transcript_data):
 		return clin_sig
 
 def get_allele_frequencies(transcript_data):
+	"""
+	Gets a list containing all the allelle frequencies for a variant e..g Exac, AF, AA_AF
+
+	Input:
+
+	transcript_data = The dictionary containing all the transcript_data - see create_master_list()
+
+	Output:
+
+	List containing all the allele frequencies as floats.
+
+
+	Note: If the AF freq is listed as '' i.e. blank we put 0.0 is this correct?
+
+
+	"""
 
 
 	for transcript in transcript_data:
@@ -563,7 +647,7 @@ def get_allele_frequencies(transcript_data):
 
 	new_allele_freqs =[]
 
-	for allele_freq in allele_freqs:
+	for allele_freq in allele_freqs: # covert to floats - in addition some AFs are formatted 0.1&0.1 for some reason so split them up
 
 
 		if '&' in allele_freq:
@@ -571,7 +655,6 @@ def get_allele_frequencies(transcript_data):
 			allele_freq = allele_freq.split('&')
 
 			new_allele_freqs.append(float(max(allele_freq)))
-
 
 
 		elif allele_freq == "":
@@ -590,6 +673,25 @@ def get_allele_frequencies(transcript_data):
 
 
 def worst_consequence(transcript_data):
+	"""
+	Looks through all the transcripts for a variant and returns the worst_consequence. e.g. if the consequence in one
+	transcript is stop_gained and in the other missense_variant then the function will return stop_gained.
+
+	Input:
+
+	transcript_data = The dictionary containing all the transcript_data - see create_master_list()
+
+	Output:
+
+	vep_consequences[worst] = The worst VEP consequence for that variant. 
+
+
+	See URL below for more detail:
+
+	https://www.ensembl.org/info/genome/variation/predicted_data.html
+
+
+	"""
 
 	vep_consequences = ["transcript_ablation", "splice_acceptor_variant", "splice_donor_variant",  "stop_gained", "frameshift_variant",
 						"stop_lost", "start_lost", "transcript_amplification", "inframe_insertion", "inframe_deletion", "missense_variant",
@@ -613,21 +715,13 @@ def worst_consequence(transcript_data):
 			return "None"
 
 
-
-
-
-
 		if consequence != "":
 
-			consequence = consequence.split('&')
+			consequence = consequence.split('&') #split when formatted like regulatory_region_amplification&feature_elongation
 
 			for x in consequence:
 
 				consequences.append(x)
-
-
-
-
 
 
 	if consequences == False:
@@ -635,13 +729,11 @@ def worst_consequence(transcript_data):
 		return "None"
 
 
-	worst = 100
+	worst = 1000 #longer than vep_consequences
 
 	for consequence in consequences:
 
 		index = vep_consequences.index(consequence)
-
-
 
 		if index < worst:
 
@@ -651,6 +743,23 @@ def worst_consequence(transcript_data):
 
 
 def extract_codon_from_hgvs(hgvsp):
+	"""
+	Given the HGVS for a variant get the codon number. Only works for missense!
+
+	Input:
+
+	hgvsp = A string of the HGVSp
+
+	Output:
+
+	transcript: The transcript
+
+	codon: the codon number
+
+	See - Variant.same_codon_missense() in Models.py
+
+
+	"""
 
 	try:
 
@@ -663,48 +772,8 @@ def extract_codon_from_hgvs(hgvsp):
 	return transcript, re.findall(r'\d+', codon)[0]
 
 
-def process_exon_intron(exon_or_intron):
-
-	"""
-	returns the number e.g. converts 11/12 to 11
-
-	"""
-
-	if exon_or_intron == "":
-
-		return -1
-
-	else:
-
-		return int(exon_or_intron.split('/')[0])
-
-def count_alleles(genotype):
-
-	count = 0
-
-	for allele in genotype:
-
-		if allele == 1:
-
-			count = count+1
-
-	return count
-
-
-
-
 if __name__ == '__main__':
 
 
+	x = create_master_list("/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf",'WS61594_14000835' )
 
-	#  create_master_list("205908-2-D16-48971-MH_S2.unified.annovar.wmrgldb-sorted.vcf.gz",'205908-2-D16-48971-MH_S2' ):
-
-	#print create_master_list("data/out2-sorted.vcf.gz",'WS61594_14000835')
-
-	x = create_master_list("data/out7-sorted.vcf.gz",'WS61594_14000835' )
-
-	print get_canonical_transcript(x[1]['transcript_data'])
-
-	print  get_transcript_names(x[1]['transcript_data'])
-
-	print  get_variant_genes(x[1]['transcript_data'])
