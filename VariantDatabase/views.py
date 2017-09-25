@@ -271,22 +271,6 @@ def search(request):
 
 
 @login_required
-def report(request, pk_interpretation):
-
-	"""
-	A report of the classification (ACMG guidlines)
-
-	"""
-
-	interpretation = get_object_or_404(Interpretation, pk= pk_interpretation)
-
-	all_answers = UserAnswer.objects.filter(interpretation=pk_interpretation).order_by('user_answer', 'user_question__classification')
-
-	classification = interpretation.get_classification()
-
-	return render(request, 'VariantDatabase/report.html', {'all_answers' : all_answers, 'interpretation': interpretation, 'classification': classification})
-
-@login_required
 def view_gene(request, gene_pk):
 	"""
 	A view to allow the user to view all the Variants in a Gene.

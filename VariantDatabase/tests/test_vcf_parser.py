@@ -68,13 +68,13 @@ class TestVcfParser(unittest.TestCase):
 
 	def test_validate_input(self):
 
-		input1 = vcf_parser.validate_input('VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf.gz', 'WS61594_14000835')
+		input1 = vcf_parser.validate_input('VariantDatabase/tests/test_files/vcfs/vep_annotated_test_vcf.vcf.gz', 'WS61594_14000835')
 
-		input2 = vcf_parser.validate_input('VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
+		input2 = vcf_parser.validate_input('VariantDatabase/tests/test_files/vcfs/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
 
-		input3 = vcf_parser.validate_input('VariantDatabase/tests/test_files/vep.vcf.gz', 'WS61594_14000835')
+		input3 = vcf_parser.validate_input('VariantDatabase/tests/test_files/vcfs/vep.vcf.gz', 'WS61594_14000835')
 
-		input4 = vcf_parser.validate_input('VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf.gz', 'incorrect_sample_name')
+		input4 = vcf_parser.validate_input('VariantDatabase/tests/test_files/vcfs/vep_annotated_test_vcf.vcf.gz', 'incorrect_sample_name')
 
 		self.assertEqual(input1[0], True)
 		self.assertEqual(input2[0], False)
@@ -83,7 +83,7 @@ class TestVcfParser(unittest.TestCase):
 
 	def test_create_master_list(self):
 
-		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
+		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vcfs/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
 
 
 		self.assertEqual(master_list[0]['reference'], 'C')
@@ -98,7 +98,7 @@ class TestVcfParser(unittest.TestCase):
 
 	def test_get_variant_genes_list(self):
 
-		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
+		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vcfs/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
 
 		input1=master_list[0]['transcript_data']
 
@@ -119,7 +119,7 @@ class TestVcfParser(unittest.TestCase):
 
 	def test_vep_annotated(self):
 
-		input1 = vcf_parser.vep_annotated('VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf.gz')
+		input1 = vcf_parser.vep_annotated('VariantDatabase/tests/test_files/vcfs/vep_annotated_test_vcf.vcf.gz')
 
 
 		self.assertEqual(input1, True)
@@ -127,7 +127,7 @@ class TestVcfParser(unittest.TestCase):
 
 	def test_get_rs_number(self):
 
-		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
+		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vcfs/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
 
 		input1 = master_list[0]['transcript_data']
 
@@ -154,7 +154,7 @@ class TestVcfParser(unittest.TestCase):
 
 	def test_get_max_af(self):
 
-		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
+		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vcfs/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
 
 		input1 = master_list[0]['transcript_data']
 
@@ -172,7 +172,7 @@ class TestVcfParser(unittest.TestCase):
 
 	def test_get_clin_sig(self):
 
-		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
+		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vcfs/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
 
 		input1 = master_list[0]['transcript_data']
 
@@ -193,7 +193,7 @@ class TestVcfParser(unittest.TestCase):
 
 	def test_get_allele_frequencies(self):
 
-		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
+		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vcfs/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
 
 		input1 = master_list[0]['transcript_data']
 
@@ -204,7 +204,7 @@ class TestVcfParser(unittest.TestCase):
 
 	def test_worst_consequence(self):
 
-		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
+		master_list = vcf_parser.create_master_list('VariantDatabase/tests/test_files/vcfs/vep_annotated_test_vcf.vcf', 'WS61594_14000835')
 
 		input1 = master_list[0]['transcript_data']
 		input2 = {'NM_002617.3': {'Consequence': 'transcript_ablation'}, 'NM_002614.3': {'Consequence': 'splice_acceptor_variant'}}
@@ -242,3 +242,6 @@ class TestVcfParser(unittest.TestCase):
 
 
 
+if __name__ == '__main__':
+	suite = unittest.TestLoader().loadTestsFromTestCase(TestStringMethods)
+	unittest.TextTestRunner(verbosity=3).run(suite)

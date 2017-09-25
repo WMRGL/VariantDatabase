@@ -153,7 +153,7 @@ def parse_sample_sheet(file):
 
 	Input:
 
-	file = The path to the SampleSheet.csv file.
+	file = The path to the SampleSheet.csv file. 
 
 	Output:
 
@@ -161,8 +161,16 @@ def parse_sample_sheet(file):
 
 		1) sample_list= A list containing information on all the samples e.g. sample_id, sample_plate, index.
 		2) subsection = The Subsection name. This is also called the Project Name or Project. e.g. OGT_MPN
+		3) worksheet = The worksheet name. This is under experiment name.
 
 	The first item in the list will be False if an error has occured.
+
+
+	Note: The SubSection should be in the header under project name e.g. MPN_SureSeq_OGT
+	Note: The worksheet name should in the header under experiment_name MPN_213837
+
+
+	See VariantDatabase/test/test_files/sample_sheets/SampleSheet_valid.csv for a correctly formatted sample sheet.
 
 
 	"""
@@ -196,6 +204,10 @@ def parse_sample_sheet(file):
 
 					subsection = row[1]
 
+					if subsection =="":
+
+						return [False, 'No subsection.']
+
 
 
 				if row[0] == 'Experiment Name':
@@ -226,8 +238,7 @@ def parse_sample_sheet(file):
 					
 					if row[0] == "" and flag ==1: #we have got to the end
 
-
-						if len(sample_list) == 0: # empty SampleSheet.csv
+						if len(sample_list[1:]) == 0: # empty SampleSheet.csv
 
 							return [False, 'There are no samples in the SampleSheet.']
 
@@ -235,16 +246,14 @@ def parse_sample_sheet(file):
 
 							return [sample_list[1:], subsection, worksheet]
 
-
-
-
 					else:
 
 						sample_list.append([row[0], row[1],row[2],row[3],row[4],row[5],row[6]])
 
 
-			if len(sample_list) == 0: # empty SampleSheet.csv
+			if len(sample_list[1:]) == 0: # empty SampleSheet.csv
 
+				
 				return [False, 'There are no samples in the SampleSheet.']
 
 			else:

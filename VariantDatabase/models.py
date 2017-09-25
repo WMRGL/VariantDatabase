@@ -699,6 +699,7 @@ class Variant(models.Model):
 				4e) if so then add to list to be returned
 
 
+		NOTE : NOT TESTED!
 		"""
 
 		if self.worst_consequence.name == 'missense_variant':
@@ -711,7 +712,7 @@ class Variant(models.Model):
 
 			transcript_list =[]
 
-			self_hgvsp = self.hgvsp_list()
+			self_hgvsp = VariantTranscript.objects.filter(variant=self).values_list('hgvsp', flat=True)
 
 			for hgvsp in self_hgvsp:
 
@@ -728,7 +729,7 @@ class Variant(models.Model):
 
 				if variant.worst_consequence.name == 'missense_variant':
 
-					variant_hgvsp_list = variant.hgvsp_list()
+					variant_hgvsp_list = VariantTranscript.objects.filter(variant=variant).values_list('hgvsp', flat=True)
 
 					transcript_list_vars =[]
 
