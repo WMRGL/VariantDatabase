@@ -186,15 +186,15 @@ tr.shown td.details-control {
 
 
         <td class="details-control"></td>
-        <td class='hgvsc'> {{variant.variant.get_picked_hgvsc}} </td>
+        <td class='hgvsc get_detail'> {{variant.variant.get_picked_hgvsc}} </td>
 
-        <td class='variant_desc'> {{variant.variant.chromosome}} {{variant.variant.position}} </td>
-        <td class ='reference'> {{variant.variant.ref|truncatechars:10}} </td>
-        <td class='alt'> {{variant.variant.alt|truncatechars:10}} </td>
-        <td class='worst_consequence'> {{variant.variant.worst_consequence}} </td>
-        <td class="genes"> {{variant.variant.get_genes|join:" "}} </td>
-        <td class= "max_af"> {{variant.variant.max_af}} </td>
-        <td class='exac_frequency'> 
+        <td class='variant_desc get_detail '> {{variant.variant.chromosome}} {{variant.variant.position}} </td>
+        <td class ='reference get_detail'> {{variant.variant.ref|truncatechars:10}} </td>
+        <td class='alt get_detail'> {{variant.variant.alt|truncatechars:10}} </td>
+        <td class='worst_consequence get_detail'> {{variant.variant.worst_consequence}} </td>
+        <td class="genes get_detail"> {{variant.variant.get_genes|join:" "}} </td>
+        <td class= "max_af get_detail"> {{variant.variant.max_af}} </td>
+        <td class='exac_frequency get_detail'> 
                 <a class="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-placement="top" data-container="body" data-content='<ul class="list-group">
                                                   <li class="list-group-item">ADJ AF : {{ variant.variant.exac_adj_af}}</li>
                                                   <li class="list-group-item">AFR AF : {{ variant.variant.exac_afr_af}}</li>
@@ -208,14 +208,14 @@ tr.shown td.details-control {
             </td>
 
 
-        <td class='clinsig'> {{variant.variant.clinical_sig}} </td>
-        <td class='genotype'> {{variant.genotype}} </td>
-        <td class='callers'> {{variant.caller}} </td>
-        <td class='allele_depth'> {{variant.allele_depth}} </td>
-        <td class= 'vafs'> {{variant.vafs}} </td>
-        <td class = 'tcf'> {{variant.total_count_forward}} </td>
-        <td class='tcr'> {{variant.total_count_reverse}} </td>
-        <td class='filter_status'> {{variant.filter_status}} </td>
+        <td class='clinsig get_detail'> {{variant.variant.clinical_sig}} </td>
+        <td class='genotype get_detail'> {{variant.genotype}} </td>
+        <td class='callers get_detail'> {{variant.caller}} </td>
+        <td class='allele_depth get_detail'> {{variant.allele_depth}} </td>
+        <td class= 'vafs get_detail'> {{variant.vafs}} </td>
+        <td class = 'tcf get_detail'> {{variant.total_count_forward}} </td>
+        <td class='tcr get_detail'> {{variant.total_count_reverse}} </td>
+        <td class='filter_status get_detail'> {{variant.filter_status}} </td>
 
 
       </tr>

@@ -70,21 +70,21 @@ $(document).ready(function(){
 
 
 	//Row click function
-	$(".variant").click(function(){
+	$(".get_detail").click(function(){
 
 
 		//add colour to selected row	
-		var variant_hash  = $(this).children().eq(0).text(); //get hash from row 0
+		var variant_hash  = $(this).siblings('td.variant_hash.noVis').eq(0).text(); //get hash from row 0
 		var sample_pk = $("#sample_pk").text(); //get sample_pk from div
+		console.log(variant_hash)
 
 
-
-		var selected = $(this).hasClass("success");
-		$(this).siblings().removeClass("success");
+		var selected = $(this).parent().hasClass("success");
+		$(this).parent().siblings().removeClass("success");
 
 
 		if(!selected){
-			$(this).addClass("success");
+			$(this).parent().addClass("success");
 		
 			//Now we do the ajax
 			$.ajax({
@@ -98,7 +98,7 @@ $(document).ready(function(){
 					},
 				failure: function(data) { 
 
-					alert('Got an error dude');
+					alert('Got an error');
 
 					}
 
@@ -119,17 +119,44 @@ $(document).ready(function(){
 
       // Add event listener for opening and closing details
       $('#variant_table').on('click', 'td.details-control', function () {
-          var tr = $(this).closest('tr');
-          var row = variant_table.row(tr);
 
-          if (row.child.isShown()) {
-              // This row is already open - close it
-              row.child.hide();
-              tr.removeClass('shown');
-          } else {
-              // Open this row
-              row.child(format('hi')).show();
-              tr.addClass('shown');
+
+      	var variant_hash  = $(this).siblings('td.variant_hash.noVis').eq(0).text(); //get hash from row 0
+		
+		
+		var tr = $(this).closest('tr');
+		var row = variant_table.row(tr);
+
+		if (row.child.isShown()) {
+		// This row is already open - close it
+			row.child.hide();
+			tr.removeClass('shown');
+			} else {
+			// Open this row
+
+
+			console.log(variant_hash)
+			
+			$.ajax({
+			url: '/ajax/ajax_table_expand',
+			type: 'get',
+			data: {"variant_hash" : variant_hash},
+			success: function(data) {
+
+			row.child(data).show();
+            tr.addClass('shown');
+
+			},
+			failure: function(data) { 
+
+			alert('Got an error');
+
+			}
+
+			});
+
+
+
           }
       });
 

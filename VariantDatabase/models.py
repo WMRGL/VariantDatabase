@@ -1379,6 +1379,7 @@ class UserSetting(models.Model):
 	"""
 
 	columns_to_hide= models.CharField(max_length=200, default="allele_depth,vafs,tcf,tcr,clinsig")
+	igv_view = models.BooleanField(default=True) #does the user want to see the IGV viewer
 	user = models.ForeignKey('auth.User')
 
 auditlog.register(Report)

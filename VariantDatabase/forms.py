@@ -1,6 +1,6 @@
 from django import forms
-from .models import Report, Worksheet
-
+from .models import Report, Worksheet, UserSetting
+from crispy_forms.helper import FormHelper
 
 class FilterForm(forms.Form):
 
@@ -67,6 +67,17 @@ class ReportForm(forms.ModelForm):
 
 		model = Report
 		fields = ()
+
+
+class UserSettingsForm(forms.ModelForm):
+	"""
+	Form for updating user settings.
+
+	"""
+	class Meta:
+
+		model = UserSetting
+		fields = ("igv_view", "columns_to_hide")
 
 
 

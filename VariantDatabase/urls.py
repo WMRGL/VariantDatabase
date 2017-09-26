@@ -22,6 +22,8 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/view/$', views.view_sample_report, name='view_sample_report'),
 				url(r'^ajax/ajax_detail/$', views.ajax_detail, name='ajax_detail'),
 				url(r'^ajax/ajax_comments/$', views.ajax_comments, name='ajax_comments'),
+				url(r'^ajax/ajax_table_expand/$', views.ajax_table_expand, name='ajax_table_expand'),
+				url(r'^user_settings/$', views.user_settings, name='user_settings'),
 
 
 

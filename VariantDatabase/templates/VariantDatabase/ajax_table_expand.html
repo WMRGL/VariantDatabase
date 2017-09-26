@@ -1,0 +1,43 @@
+<!--The html that the user sees when they expand a row on the summary page   -->
+
+
+
+<br>
+
+
+
+<table class="table">
+    <thead>
+      <tr>
+        <th>Transcript </th>
+        <th>Consequence </th>
+        <th>Exon </th>
+        <th>Intron </th>
+        <th>hgvsc  </th>
+        <th>hgvsp  </th>
+        <th>amino_acids</th>
+      </tr>
+    </thead>
+
+    <tbody>
+
+	{% for transcript in variant_transcripts %}
+
+	<tr>
+
+	<td> {{transcript.transcript}} </td>
+	<td> {{transcript.consequence}} </td>
+	<td> {{transcript.exon}} </td>
+	<td> {{transcript.intron}} </td>
+	<td> {{transcript.hgvsc}} </td>
+	<td> {{transcript.hgvsp}} </td>
+	<td> {{transcript.amino_acids}} </td>
+
+	</tr>
+
+
+	{% endfor %}
+
+	</tbody>
+
+</table>

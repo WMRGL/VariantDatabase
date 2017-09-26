@@ -482,3 +482,67 @@ def ajax_comments(request):
 	else:
 
 		raise Http404
+
+
+
+@login_required
+def ajax_table_expand(request):
+	"""
+	An AJAX view for the child rows in the Summary page view.
+
+	It returns the HTML data that goes in the child row.
+
+
+	"""
+
+
+	if request.is_ajax():
+
+		variant_hash = request.GET.get('variant_hash')
+
+		variant_hash = variant_hash.strip()
+
+		variant= Variant.objects.get(variant_hash=str(variant_hash))
+
+		variant_transcripts = VariantTranscript.objects.filter(variant=variant)
+
+		html = render_to_string('VariantDatabase/ajax_table_expand.html', {'variant_transcripts': variant_transcripts})
+
+		return HttpResponse(html)
+
+
+	else:
+
+		raise Http404
+
+@login_required
+def user_settings(request):
+
+
+	user_settings = UserSetting.objects.filter(user=request.user)
+
+
+	if request.method == 'POST':
+
+
+		user_settings = user_settings[0]
+
+
+		form = UserSettingsForm(request.POST, instance=user_settings)
+
+		if form.is_valid():
+
+			user_settings = form.save()
+
+			return redirect('home_page')
+
+	if user_settings.exists():
+
+		form = UserSettingsForm(instance=user_settings[0])
+
+	else:
+
+		form = UserSettingsForm(user=request.user)
+
+	
+	return render(request, 'VariantDatabase/user_settings.html' , {'form': form})

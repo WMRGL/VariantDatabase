@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'VariantDatabase',
     'auditlog',
+    'crispy_forms',
 
 
 ]
@@ -139,7 +140,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 LOGIN_REDIRECT_URL ='home_page'
 LOGIN_URL = '/login/'
 
-
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
 """
 if DEBUG:
    INTERNAL_IPS = ('127.0.0.1', 'localhost',)

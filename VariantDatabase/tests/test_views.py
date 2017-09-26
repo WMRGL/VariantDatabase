@@ -77,4 +77,11 @@ class TestViews(TestCase):
 
 		response = self.client.get('/ajax/ajax_detail/', {'variant_hash': 'fab0f49adc03c6ca36c5d8185541c73f53b7189e9cd0ce562a74d318a55848ce', 'sample_pk': '2'},HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
-		self.assertEqual(response.status_code,200)	
+		self.assertEqual(response.status_code,200)
+
+
+	def test_view_ajax_table_expand(self):
+
+		response = self.client.get('/ajax/ajax_table_expand/', {'variant_hash': 'fab0f49adc03c6ca36c5d8185541c73f53b7189e9cd0ce562a74d318a55848ce'},HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+		self.assertEqual(response.status_code,200)		
