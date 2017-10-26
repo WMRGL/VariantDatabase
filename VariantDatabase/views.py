@@ -10,11 +10,19 @@ import parsers.file_parsers as parsers
 from django.forms import modelformset_factory
 import collections
 from django.template.loader import render_to_string
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 import re
 import base64
 from django.core.files.base import ContentFile
 from django.core.files import File
+import VariantDatabase.utils.variant_utilities as variant_utilities
+
+
+from rest_framework.renderers import JSONRenderer
+from rest_framework.parsers import JSONParser
+from VariantDatabase.serializers import VariantFreqSerializer
+import myvariant
+import urllib2
 
 
 @login_required
@@ -231,44 +239,6 @@ def variant_detail(request, pk_sample, variant_hash):
 	return render(request, 'VariantDatabase/variant_detail.html', {'variant': variant, 'transcripts': transcripts, 'other_alleles': other_alleles})
 
 
-@login_required
-def search(request):
-
-	""""
-	A search page for Variants.
-	Similar to ExaC
-	User can search by Gene
-
-	"""
-	alts =[]
-	gene_name = request.GET.get('gene_name')
-
-	if gene_name is not None:
-
-		gene_name = gene_name.upper()
-
-		try:
-
-			gene = Gene.objects.get(name=gene_name)
-
-			return redirect(view_gene, gene.name)
-
-		except:
-
-			alts  =Gene.objects.filter(name__icontains=gene_name)
-			
-			if len(alts) <5:
-
-				alts = alts
-
-			else:
-
-				alts =[]
-
-			
-
-	return render(request, 'VariantDatabase/search.html', {'gene_name': gene_name, 'alts': alts})
-
 
 @login_required
 def view_gene(request, gene_pk):
@@ -277,31 +247,15 @@ def view_gene(request, gene_pk):
 
 	"""
 
-	consequence_filter = request.GET.get('filter')
-
-	if consequence_filter == 'all':
-
-		consequence_filter = 100
-
-	elif consequence_filter =='lof':
-
-		consequence_filter = 8
-
-	elif consequence_filter == 'lofplus':
-
-		consequence_filter = 13
-
-	else:
-
-		consequence_filter =100
-
 	gene_pk = gene_pk.upper()
 
 	gene = Gene.objects.get(name=gene_pk)
 
-	variants = gene.get_all_variants(consequence_filter)
+	variants = gene.get_all_variants()
 
-	return render(request,'VariantDatabase/gene.html', {'variants': variants, 'gene': gene})
+	form = SearchFilterForm()
+
+	return render(request,'VariantDatabase/gene.html', {'variants': variants, 'gene': gene, 'form': form})
 
 @login_required
 def view_detached_variant(request, variant_hash):
@@ -387,6 +341,10 @@ def view_sample_report(request, pk_sample, pk_report):
 
 @login_required
 def ajax_detail(request):
+	"""
+	Ajax View - create the top div of the summary page e.g. detial, IGV, evidence when a user clicks the row.
+
+	"""
 
 	if request.is_ajax():
 
@@ -403,7 +361,10 @@ def ajax_detail(request):
 
 		comments =Comment.objects.filter(variant_sample=variant_sample)
 
-		html = render_to_string('VariantDatabase/ajax_detail.html', {'variant': variant, 'sample': sample, 'comments': comments})
+		perms = request.user.has_perm('VariantDatabase.add_comment')
+
+
+		html = render_to_string('VariantDatabase/ajax_detail.html', {'variant': variant, 'sample': sample, 'comments': comments, 'perms': perms})
 
 		return HttpResponse(html)
 
@@ -517,6 +478,10 @@ def ajax_table_expand(request):
 
 @login_required
 def user_settings(request):
+	"""
+	View with a form for changing user settings.
+
+	"""
 
 
 	user_settings = UserSetting.objects.filter(user=request.user)
@@ -542,7 +507,132 @@ def user_settings(request):
 
 	else:
 
-		form = UserSettingsForm(user=request.user)
+		user_settings = UserSetting(user=request.user)
+		user_settings.save()
+
+		form = UserSettingsForm(instance=user_settings)
 
 	
 	return render(request, 'VariantDatabase/user_settings.html' , {'form': form})
+
+@login_required
+def search(request):
+	"""
+	Main search page for the database.
+
+	Currently allows :
+
+	1) searching by variant  e.g. 2-4634636-A-T
+	2) searching by gene
+
+	"""
+
+	form = SearchForm()
+
+	if request.GET.get('search') != "" and request.GET.get('search') != None: #if we have typed in the main search
+
+		search_query = request.GET.get('search').upper()
+
+		variant_search = re.compile("^([1-9]{1,2}|[XYxy])-\d{1,10}-[ATGCatgc]+-[ATGCatgc]+$") #matches a variant search e.g. 22-549634966-AG-TT
+
+		gene_search = re.compile("^[A-Z][A-Z1-9]+$") #matches a string which looks like a gene name
+
+
+		if variant_search.match(search_query): #we have searched for a variant
+
+			variant_list = search_query.split('-')
+
+			chromosome = 'chr'+variant_list[0]
+			position = variant_list[1]
+			ref = variant_list[2]
+			alt = variant_list[3]
+
+			variant_hash = variant_utilities.get_variant_hash(chromosome,position,ref,alt)
+
+			try:
+
+				Variant.objects.get(variant_hash=variant_hash)
+
+			except:
+
+				return render(request, 'VariantDatabase/search.html' , {'error': True, 'form': form})
+
+
+			return redirect(view_detached_variant, variant_hash)
+
+
+		elif gene_search.match(search_query): #Looks like a gene
+
+			try:
+
+				gene = Gene.objects.get(name=search_query)
+
+			except:
+
+				return render(request, 'VariantDatabase/search.html' , {'error': True, 'form': form})
+
+			return redirect(view_gene, search_query)
+
+
+		else:
+
+			return render(request, 'VariantDatabase/search.html' , {'error': True, 'form': form})
+
+
+	else:
+
+
+		return render(request, 'VariantDatabase/search.html' , {'form': form})
+
+#Under development
+def api_variants(request):
+	"""
+	API for getting all variants
+
+	"""
+
+	if request.method == 'GET':
+
+		variants = Variant.objects.all()
+
+		serializer = VariantFreqSerializer(variants, many=True)
+		return JsonResponse(serializer.data, safe=False)
+
+
+def additional_annotation(request, variant_sample_pk):
+
+	variant_sample = get_object_or_404(VariantSample, pk=variant_sample_pk)
+
+	variant = variant_sample.variant
+
+	chromosome = variant.chromosome[3:]
+	position = variant.position
+	ref = variant.ref
+	alt = variant.alt
+
+	mv = myvariant.MyVariantInfo()
+
+	q= 'chrom:'+chromosome + ' AND vcf.position:' + str(position) + ' AND vcf.ref:' + ref + ' AND vcf.alt:' + alt
+
+	#data = mv.query(q)
+
+	response = urllib2.urlopen('http://python.org/')
+	html = response.read()
+
+
+	return JsonResponse(html, safe=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

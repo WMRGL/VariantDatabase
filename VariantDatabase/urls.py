@@ -9,11 +9,7 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^worksheet/(?P<pk_worksheet>\d+)/$', views.list_worksheet_samples, name='list_worksheet_samples'),
 				url(r'^sample/(?P<pk_sample>\d+)/summary/$', views.sample_summary, name='sample_summary'),
 				url(r'^gene/(?P<gene_pk>\w+)/$', views.view_gene, name='view_gene'),
-
 				url(r'^sample/(?P<pk_sample>\d+)/variant/(?P<variant_hash>\w+)/$', views.variant_detail, name='variant_detail'),
-
-
-				
 				url(r'^variant/(?P<variant_hash>\w+)/$', views.view_detached_variant, name='view_detached_variant'),
 				url(r'^search/$', views.search, name='search'),
 				url(r'^login/$', auth_views.login, {'template_name': 'VariantDatabase/login.html'}, name='login'),
@@ -24,6 +20,9 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^ajax/ajax_comments/$', views.ajax_comments, name='ajax_comments'),
 				url(r'^ajax/ajax_table_expand/$', views.ajax_table_expand, name='ajax_table_expand'),
 				url(r'^user_settings/$', views.user_settings, name='user_settings'),
+				url(r'^api/variants/$', views.api_variants, name='api_variants'),
+
+
 
 
 

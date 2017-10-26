@@ -1,80 +1,24 @@
 {% extends 'VariantDatabase/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
 
-  {% block content %}
+{% block content %}
+<br>
+<div>
 
-  	<br>
-
-
-
-<div class="alert alert-info">
-
-
-	<p> Search using a gene name here:  </p>
-
-	<br>
-
-  	<form action="/search/" method="get">
-    <label for="gene_name">Gene Name: </label>
-    <input id="gene_name" type="text" name="gene_name">
-    <input type="submit" value="OK">
-	</form>
+{% crispy form %}
 
 
-
-
-
-
-
-
+{% if error %}
+<div class="alert alert-danger col-lg-2-8">
+   Could not find that search query.
 </div>
-
-
-{% if gene_name %}
-
-
-
-
-<div class="alert alert-danger">
-  
-
-  {% if alts|length_is:"0" %}
-
-  		<strong>Error!</strong> No gene with that name found.
-
-  {% else %}
-
-  		<strong>Error!</strong> No gene with that name found.
-  		<p> Did you mean:
-
-  		{% for gene in alts %}
-
-
-  			<a href= "{% url 'view_gene' gene.name  %}"> {{ gene.name }}   </a>
-
-
-  			
-
-
-  		{% endfor %}
-
-
-
-  {% endif %}
-
-
-</div>
-
-{% else %}
-
-
-
-
-	
-
-
 
 {% endif %}
 
+</div>
 
 
-   {% endblock %}
+
+
+{% endblock %}  

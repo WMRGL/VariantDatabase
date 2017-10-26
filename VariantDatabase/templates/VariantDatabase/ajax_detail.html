@@ -8,6 +8,8 @@
             <div class="tab-pane" id="tab_a">
 
 
+
+
             <table class = 'table table-bordered' >
 
             <thead>
@@ -147,6 +149,9 @@
                  <div id='varhash' style="display: none;" >{{variant.variant_hash}} </div>
 
                  <hr>
+                 
+                 {% if perms %}
+                 
 
                   <form enctype="multipart/form-data" class="col-lg-6"> {% csrf_token %}
                     <div class="form-group">
@@ -179,7 +184,7 @@
                   <canvas style="border:1px solid grey;" id="my_canvas" width="300" height="300"></canvas>
 
 
-
+                  {% endif %}
 
 
             </div>

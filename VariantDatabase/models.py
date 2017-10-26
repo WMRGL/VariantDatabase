@@ -135,6 +135,11 @@ class SubSection(models.Model):
 		filter_dict['freq_max_af']=self.freq_max_af
 		
 		return filter_dict
+
+
+	def get_number_samples(self):
+
+		return Sample.objects.filter(worksheet__sub_section=self).count()
 	
 
 
@@ -520,7 +525,7 @@ class Gene(models.Model):
 
 
 
-	def get_all_variants(self, consequence_filter):
+	def get_all_variants(self):
 		"""
 		Returns all variants within a Gene.
 		The consequence filter allows the function to return only variants below a certain impact e.g. loss of function
@@ -528,7 +533,7 @@ class Gene(models.Model):
 		"""
 		variants = VariantTranscript.objects.filter(transcript__gene = self).values('variant').distinct()
 
-		variants = Variant.objects.filter(variant_hash__in=variants).filter(worst_consequence__impact__lte=consequence_filter)
+		variants = Variant.objects.filter(variant_hash__in=variants)
 
 		variants = variants.order_by('-position')
 
@@ -608,7 +613,7 @@ class Variant(models.Model):
 	ref = models.TextField()
 	alt = models.TextField()
 	last_updated =  models.DateTimeField(default = timezone.now)
-	rs_number = models.CharField(max_length =50)
+	rs_number = models.TextField()
 	worst_consequence = models.ForeignKey(Consequence)
 	clinical_sig = models.TextField()
 
@@ -636,6 +641,42 @@ class Variant(models.Model):
 
 	def __str__(self):
 		return self.chromosome + " " + str(self.position) + " " +  self.ref + " " +self.alt
+
+
+
+	def get_sample_count(self):
+		"""
+		Returns the number of samples this variant has been seen in.
+
+		"""
+
+		return VariantSample.objects.filter(variant=self).count()
+
+
+	def get_worksheet_count(self):
+		"""
+		Returns the number of worksheets that a variant has occured in.
+
+		"""
+		worksheet_dict ={}
+
+		variant_samples = VariantSample.objects.filter(variant=self)
+
+
+
+		for variant_sample in variant_samples:
+
+			worksheet = variant_sample.sample.worksheet
+
+			if worksheet not in worksheet_dict:
+
+				worksheet_dict[worksheet] =1
+
+
+		return len(worksheet_dict)
+		
+
+
 
 
 	def get_samples_with_variant(self):
@@ -914,7 +955,13 @@ class Variant(models.Model):
 
 					transcripts = transcripts.exclude(hgvsc="")
 
-					return transcripts[0].hgvsc
+					if len(transcripts) == 0:
+
+						return None
+
+					else:
+
+						return transcripts[0].hgvsc
 
 
 			else:
@@ -959,9 +1006,13 @@ class Variant(models.Model):
 				else:
 
 
-					transcripts = transcripts.exclude(hgvsp="")
+					if len(transcripts) == 0:
 
-					return transcripts[0].hgvsp
+						return None
+
+					else:
+
+						return transcripts[0].hgvsp
 
 
 			else:
@@ -972,6 +1023,9 @@ class Variant(models.Model):
 		else:
 
 			return "Error"
+
+
+
 
 
 
@@ -1002,89 +1056,55 @@ class VariantSample(models.Model):
 
 	def __str__(self):
 		return str(self.variant) + str(self.sample)
-		
 
 
-"""
-class ClassificationCode(models.Model):
+	def get_subsection_count(self):
+		"""
+		Returns the count within a subsection/project. e.g. how many samples within MPN have we seen this variant in?
 
-	For the ACMG guidlines e.g PVS1
+		"""
 
+		section = self.sample.worksheet.sub_section
 
+		count = VariantSample.objects.filter(variant=self.variant,sample__worksheet__sub_section=section).count()
 
-	text = models.CharField(max_length = 25)
-
-	def __str__(self):
-		return self.text
-
-class Question(models.Model):
-
-	Question in the ACMG guidelines
+		return count
 
 
-	text = models.CharField(max_length =300)
-	description = models.TextField()
-	start = models.BooleanField()
-	end = models.BooleanField()
-	classification = models.ForeignKey(ClassificationCode, null=True)
+	def get_subsection_frequency(self):
+		"""
+		Returns the frequency within a subsection/project. e.g. how many samples within MPN have we seen this variant in / total subsection samples
 
-	def __str__(self):
-		return self.text
+		"""
 
+		subsection = self.sample.worksheet.sub_section
 
-class Interpretation(models.Model):
+		total = subsection.get_number_samples()
 
-	An interpretation from the ACMG guidlines
+		count = self.get_subsection_count()
 
+		frequency = round(float(count) /float(total),2)
 
-	author = models.ForeignKey('auth.User')
-	variant = models.ForeignKey(Variant)
-	sample = models.ForeignKey(Sample)
-	finished = models.BooleanField()
-	date = models.DateTimeField(default = timezone.now)
-	classification = models.CharField(max_length =25)
+		return frequency
 
-	def __str__(self):
+	def display_genotype(self):
 
-		return str(self.pk)
+		"""
+		Takes genotype and displays in as either Het or Hom
 
+		"""
 
-	def get_classification(self):
+		if self.genotype == '0/1':
 
-		Returns the final classification of the Interpretation e.g. likely pathogenic
+			return 'Het'
 
+		elif self.genotype == '1/1':
 
+			return 'Hom'
 
-		all_answers = UserAnswer.objects.filter(interpretation=self.pk)
+		else:
 
-		classifications =[]
-
-		for answer in all_answers:
-
-			if answer.user_answer ==  '1':
-
-				classifications.append(answer.user_question.classification.text)
-
-		final_classification =classify(classifications)
-
-		return final_classification
-
-
-class UserAnswer(models.Model):
-
-	Stores the answers to the questions of the ACMG guidelines
-
-
-	interpretation = models.ForeignKey(Interpretation)
-	user_question = models.ForeignKey(Question, null=True )
-	date = models.DateTimeField(default = timezone.now)
-	user_answer = models.CharField(max_length=30, default="")
-
-
-	def __str__(self):
-
-		return str(self.pk)
-"""
+			return self.genotype
 
 
 
@@ -1322,14 +1342,6 @@ class ExonCoverage(models.Model):
 		return map(lambda x: round((float(x)/float(self.number_of_regions)*100),1), raw_data)
 
 
-class EvidenceType(models.Model):
-	"""
-	Evidence types e.g. screenshot, paper etc
-
-	"""
-
-	evidence_type = models.CharField(max_length=50)
-
 class Comment(models.Model):
 	"""
 	Model to hold user comments on a VariantSample
@@ -1378,7 +1390,7 @@ class UserSetting(models.Model):
 
 	"""
 
-	columns_to_hide= models.CharField(max_length=200, default="allele_depth,vafs,tcf,tcr,clinsig")
+	columns_to_hide= models.CharField(max_length=200, default="allele_depth,vafs,tcf,tcr,clinsig,filter_status")
 	igv_view = models.BooleanField(default=True) #does the user want to see the IGV viewer
 	user = models.ForeignKey('auth.User')
 

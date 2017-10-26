@@ -1,14 +1,17 @@
 {% extends 'VariantDatabase/base.html' %}
 {% load static %}
- {% block content %}
+{% block content %}
+{% load crispy_forms_tags %}
 
 
 <br> 
 
-<form action="" method="POST">
-    {% csrf_token %}
+<form action="" method="POST">{% csrf_token %}
 
-    {{form}}
+
+    {{ form }}
+
+    
     <input type="submit" value="Submit">
 </form>
 

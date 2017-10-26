@@ -41,7 +41,7 @@ $(document).ready(function(){
 
 						{
 
-						targets: ['variant_hash','expand_box','variant_desc','reference','alt','worst_consequence'],
+						targets: ['variant_hash','expand_box','variant_desc','reference','alt'],
 						className: 'noVis'
 
 						},
@@ -119,6 +119,8 @@ $(document).ready(function(){
 
       // Add event listener for opening and closing details
       $('#variant_table').on('click', 'td.details-control', function () {
+
+      	console.log('hi')
 
 
       	var variant_hash  = $(this).siblings('td.variant_hash.noVis').eq(0).text(); //get hash from row 0

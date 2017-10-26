@@ -1,17 +1,7 @@
 {% extends 'VariantDatabase/base.html' %}
 
   {% block content %}
-
-
-	<style>
-	.center {
-	    height:35px; 
-	    width:130px; 
-	    margin: 0px ; 
-	    margin-left:0;
-	    float:none; display:inline-block;
-	}
-	</style>
+  {% load crispy_forms_tags %}
 
 
   	<br>
@@ -19,17 +9,49 @@
   	 <h1>{{ gene.name }} </h1>
 
 
-
-  	 <hr>
-
-
-	<a href="?filter=all" class="btn btn-primary center" role="button" >All</a>
-	<a href="?filter=lof" class="btn btn-primary center" role="button" data-toggle="tooltip" data-placement="top" title="Loss of Function Variants">LOF</a>
-	<a href="?filter=lofplus" class="btn btn-primary center" role="button" data-toggle="tooltip" data-placement="top" title="Loss of Function, Missense and inframe indels">LOF + Extra</a>
-
-
-
   	<hr>
+
+
+<div class="container-fluid">
+
+	<div class="row-fluid">
+
+		<div  class="col-lg-6"  > <div id='pie_div' style="width: 600px; height: 300px;"> </div> </div>
+
+		<div class="col-lg-6"> 
+
+		<br>
+
+		{% crispy form %}
+
+
+
+		    </div>
+
+	</div>
+
+</div>
+
+
+<hr> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	{% if variants|length_is:"0" %}
 
@@ -101,10 +123,76 @@
 
 	{% endif %}
 
-<script>
-$(document).ready(function(){
-    $('[data-toggle="tooltip"]').tooltip();   
-});
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+
+
+
+
+// Load the Visualization API and the piechart package.
+google.charts.load('current', {'packages':['corechart', 'table', 'controls']});
+
+// Set a callback to run when the Google Visualization API is loaded.
+google.charts.setOnLoadCallback(drawChart);
+
+function drawChart() {
+var jsonData = $.ajax({
+  url: "/api/variants/",
+  dataType: "json",
+  async: false
+  }).responseText;
+
+jsonData = JSON.parse(jsonData)
+
+  
+// Create our data table out of JSON data loaded from server.
+var data = new google.visualization.DataTable();
+
+data.addColumn('string', 'variant_hash');
+data.addColumn('number', 'max_af');
+data.addColumn('string', 'worst_consequence');
+
+for (i=0;i<jsonData.length; i++){
+
+	data.addRow([jsonData[i]['variant_hash'],jsonData[i]['max_af'],jsonData[i]['worst_consequence']]);
+
+	console.log([jsonData[i]['variant_hash'],jsonData[i]['max_af'],jsonData[i]['worst_consequence']]);
+
+};
+
+var options = {
+  title: 'Consequences',
+
+};  
+
+
+var grouped_data = google.visualization.data.group(data, [2], [{'column': 0, 'aggregation': google.visualization.data.count, 'type': 'number'}])
+
+
+var pie_chart = new google.visualization.PieChart(document.getElementById('pie_div'));
+
+pie_chart.draw(grouped_data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
 </script>
 
 
