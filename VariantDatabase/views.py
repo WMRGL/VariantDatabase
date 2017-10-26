@@ -599,29 +599,6 @@ def api_variants(request):
 		return JsonResponse(serializer.data, safe=False)
 
 
-def additional_annotation(request, variant_sample_pk):
-
-	variant_sample = get_object_or_404(VariantSample, pk=variant_sample_pk)
-
-	variant = variant_sample.variant
-
-	chromosome = variant.chromosome[3:]
-	position = variant.position
-	ref = variant.ref
-	alt = variant.alt
-
-	mv = myvariant.MyVariantInfo()
-
-	q= 'chrom:'+chromosome + ' AND vcf.position:' + str(position) + ' AND vcf.ref:' + ref + ' AND vcf.alt:' + alt
-
-	#data = mv.query(q)
-
-	response = urllib2.urlopen('http://python.org/')
-	html = response.read()
-
-
-	return JsonResponse(html, safe=False)
-
 
 
 
