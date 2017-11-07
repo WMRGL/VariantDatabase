@@ -1,151 +1,52 @@
 {% extends 'VariantDatabase/base.html' %}
+{% load static %}
+{% block content %}
 
-	{% block content %}
 
+<table class='table'>
+	<thead>
 
-  <br>
-    <hr>
+		<tr>
 
-      <h3> Report Information </h3>
-        <hr>
+			<th> Variant Name </th>
+			<th> HGVS </th>
+			<th> Check 1 </th>
+			<th> Check 2 </th>
 
-  <table id="variant_table" class = 'table table-hover'>
+		</tr>
 
-       <div class="tab-content">
+	</thead>
 
-    <div id="summary" class="tab-pane fade in active">
-      <div class = "row">
-        <div class = 'col-sm-4'>
+	<tbody>
 
-          <table class = 'table table-bordered' >
+	{% for variant in list %}
 
-            <thead>
+		<tr>
 
-              <tr>
-                <th colspan="2">Summary</th>
-              </tr>
 
-            </thead>
+			<td> {{variant.0.variant.chromosome}} {{variant.0.variant.positions}} {{variant.0.variant.ref}} {{variant.0.variant.alt}} </td>
+			<td> {{variant.0.variant.get_picked_hgvsc|truncatechars:50}} </td>
 
+			<td> {{variant.1.classification}} </td>
+			<td> {{variant.2}} </td>
 
+		</tr>
 
+	{% endfor %}
 
+	</tbody>
 
-            <tbody>
-
-              <tr>
-                <td> Report ID </td>
-                <td>{{ report.pk}} </td>
-
-              </tr>
-
-
-              <tr>
-                <td> Sample </td>
-                <td>{{ report.sample}} </td>
-
-              </tr>
-
-              <tr>
-                <td> Current Status </td>
-                <td>{{ report.get_status}} </td>
-
-              </tr>
-
-
-
-
-              </tbody>
-
-              </table>
-
-  <hr>
-
-
-
-<h3> Report</h3>
-
-  <hr>
-  <table id="variant_table" class = 'table table-hover'>
-    <thead>
-
-      <tr>
-        <th> Variant </th>
-        <th> Result </th>
-
-      </tr>
-
-    </thead>
-
-
-    <tbody>
-
-    {% for variant in report_variants %}
-
-
-      <tr>
-          <td>{{variant.variant}} </td>
-          <td>{{ variant.get_status}} </td>
-      </tr>
-
-   
-    {% endfor %}
-
-    </tbody>
-
-  </table>
-
-
-  <hr>
-
-<h3> History</h3>
-  <hr>
-
-
-    <table class = 'table table-hover'>
-
-    <thead>
-
-    <tr>
-      <th> Change Category </th>
-      <th> Change Description </th>
-      <th> Date </th>
-      <th> User </th> 
-
-    </tr>
-
-
-    </thead>
-
-    <tbody>
-
-
-
-
-
-
-
-  {% for change in report.get_history  %}
-
-
-      <tr>
-
-        <td> {{ change }} </td>
-        <td> {{ change.changes }} </td>
-        <td> {{ change.timestamp}} </td>
-        <td> {{ change.actor }} </td>
-
-      </tr>
-
-
-      {% endfor %}
-
-
-</tbody>
 </table>
 
 
 
 
 
-	{% endblock %}
+
+
+
+
+</table>
+
+
+{% endblock %} 

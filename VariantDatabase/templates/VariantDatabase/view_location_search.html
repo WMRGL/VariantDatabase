@@ -1,19 +1,16 @@
 {% extends 'VariantDatabase/base.html' %}
-
   {% block content %}
-  {% load crispy_forms_tags %}
-
 
   	<br>
 
-  	 <h1>{{ gene.name }} </h1>
+  	 <h1>Location : {{ location }} </h1>
 
 
   	<hr>
 
 
 
-	{% if variants|length_is:"0" %}
+{% if variants|length_is:"0" %}
 
 		<div class="alert alert-danger">
 	  		<strong> Alert! </strong> No variants found.
@@ -83,8 +80,4 @@
 
 	{% endif %}
 
-
-
-
-
-{% endblock %}}
+  {% endblock %}

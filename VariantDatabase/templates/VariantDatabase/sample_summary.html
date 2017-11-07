@@ -755,53 +755,62 @@ tr.shown td.details-control {
 	<div id="report" class="tab-pane fade">
 
 
+	<table class='table'>
 
-			<table class = 'table table-hover'>
+		<thead>
 
-	  	  	<thead>
+		<tr>
 
-				<tr>
-					<th> Report ID </th>
-					<th> Creation Date </th>
-					<th> Status </th>
-					<th> Author </th>
-					<th> View </th>
-
-
-
-				</tr>
-
-			</thead>
-
-			<tbody>
-
-				{% for report in reports %}
-
-				<tr>
-
-					<td> {{report.pk}} </td>
-					<td> {{report.get_creation_date }}</td>
-					<td> {{report.get_status }}</td>
-					<td> {{ report.get_author}}</td>
-					<td> <a href="{% url 'view_sample_report' pk_sample=sample.pk pk_report=report.pk  %}"> View  </a></td>
-
-
-				</tr>
-
-				{% endfor %}
-
-
-			</tbody>
-
-		</table>
-
-		<hr>
+			<th> Report ID </th>
+			<th> Report First Check</th>
+			<th> Report Second Check</th>
+			<th> Report Status </th>
+			<th> Report Creator </th>
 
 
 
-        <div class="panel panel-success">
-        <div class="panel-heading">Reports</div>
-        <div class="panel-body"> <form class="form-horizontal" method="post" >{% csrf_token %}
+		</tr>
+
+
+		</thead>
+
+		<tbody>
+
+			{% for report in reports %}
+
+
+			<tr>
+
+				<td> {{report.pk}} </td>
+
+				<td> <a href= "{% url 'view_sample_report' sample.pk report.pk %}"> {{ sample.name }}   </a> </td>
+
+				<td> </td>
+
+
+				<td> {{report.get_status }} </td>
+
+				<td> {{ report.user }} </td>
+
+			</tr>
+
+		   {% endfor %}
+
+		</tbody>
+
+	</table>
+
+	<hr>
+
+
+
+
+
+
+
+
+
+	<form class="form-horizontal" method="post" > {% csrf_token %}
 
             {{ report_form.as_p }}
 
@@ -812,13 +821,9 @@ tr.shown td.details-control {
             <button type="submit" class="btn btn-primary" name="reportform">Create New</button>
 
         </div>
-
-
     
         </form>
 
-        </div>
-        </div>
         
 
 

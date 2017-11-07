@@ -1,0 +1,76 @@
+{% extends 'VariantDatabase/base.html' %}
+  {% block content %}
+
+    <br>
+
+  	 <h1>Sample Query : {{ sample_query }} </h1>
+
+
+  	<hr>
+
+  {% if samples|length_is:"0" %}
+
+		<div class="alert alert-danger">
+	  		<strong> Alert! </strong> No samples found.
+
+	  	</div>
+	{% else %}
+
+		<table id="variant_table" class = 'table table-hover'>
+
+			<thead>
+
+				<tr>
+					<th> Sample ID </th>
+					<th> Sample Name </th>
+					<th> Sample Status </th>
+					<th> Sample Worksheet </th>
+					<th> Worksheet Project </th>
+					<th> Sample Creation Date </th>
+					<th> View Summary </th>
+
+
+				</tr>
+
+
+			</thead>
+
+			<tbody>
+						
+				{% for sample in samples %}
+
+					<tr>
+
+						<td> {{ sample.pk }} </td>
+
+						<td> {{ sample.name }} </td>
+
+						<td> {{ sample.get_status }} </td>
+
+						<td> {{ sample.worksheet }} </td>
+
+						<td> {{ sample.worksheet.sub_section }} </td>
+
+						<td> {{ sample.worksheet.get_creation_date }} </td>
+
+
+
+	  					<td>  <a href= "{% url 'sample_summary' sample.pk  %}"> View  </a> </td>
+
+
+
+
+					</tr>
+
+
+				{% endfor %}
+
+
+			</tbody>
+
+
+		</table>
+
+	{% endif %}
+
+  {% endblock %}

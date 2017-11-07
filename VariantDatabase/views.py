@@ -24,6 +24,9 @@ from VariantDatabase.serializers import VariantFreqSerializer
 import myvariant
 import urllib2
 
+import json
+from django.db import transaction
+
 
 @login_required
 def home_page(request):
@@ -111,10 +114,9 @@ def sample_summary(request, pk_sample):
 				report = report_form.save(commit=False)
 				report.sample = sample
 				report.status ='1'
+				report.user = request.user
 
 				report.save()
-
-				report.initialise_report()
 
 				return redirect(create_sample_report, sample.pk, report.pk)
 
@@ -162,7 +164,7 @@ def sample_summary(request, pk_sample):
 
 		user_settings = UserSetting.objects.filter(user=request.user)
 
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variant_samples, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary,
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variant_samples, 'reports': reports, 'report_form': report_form,  'summary': summary, 'total_summary': total_summary,
 					 'filter_form': filter_form, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage , 'user_settings': user_settings })
 
 
@@ -170,11 +172,11 @@ def sample_summary(request, pk_sample):
 
 		filter_dict = sample.worksheet.sub_section.create_filter_dict()
 
-		report_form = ReportForm()
-
 		filter_form = FilterForm(initial=filter_dict)
 
 		consequences_to_include =[]
+
+		report_form = ReportForm()
 
 
 		for key in filter_dict:
@@ -208,9 +210,11 @@ def sample_summary(request, pk_sample):
 
 		user_settings = UserSetting.objects.filter(user=request.user)
 
+		haem_onc_ab_data = sample.worksheet.get_allele_balance_data()
+
 		
 
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variant_samples, 'report_form': report_form, 'reports': reports,  'summary': summary, 'total_summary': total_summary,
+		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variant_samples, 'reports': reports, 'report_form': report_form,  'summary': summary, 'total_summary': total_summary,
 					 'filter_form': filter_form, 'filter_dict': filter_dict, 'cons': consequences_to_include, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage, 'user_settings': user_settings})
 
 
@@ -253,9 +257,10 @@ def view_gene(request, gene_pk):
 
 	variants = gene.get_all_variants()
 
-	form = SearchFilterForm()
 
-	return render(request,'VariantDatabase/gene.html', {'variants': variants, 'gene': gene, 'form': form})
+
+
+	return render(request,'VariantDatabase/gene.html', {'variants': variants, 'gene': gene})
 
 @login_required
 def view_detached_variant(request, variant_hash):
@@ -270,73 +275,16 @@ def view_detached_variant(request, variant_hash):
 
 	transcripts = VariantTranscript.objects.filter(variant = variant)
 
+	frequency_data = variant.get_frequency_data()
 
-	return render(request, 'VariantDatabase/variant_view.html', {'variant': variant, 'transcripts': transcripts, 'other_alleles': other_alleles} )
-
-@login_required
-def create_sample_report(request, pk_sample, pk_report):
-	"""
-	Allow the user to create a new report and select their responses.
-
-	Uses the Model Formset functionaility of Django to accommplish this.
-
-	"""
-
-	report = get_object_or_404(Report, pk=pk_report)
-
-	ReportVariantFormset = modelformset_factory(ReportVariant, fields=('status','variant'), extra=0, widgets={"variant": forms.HiddenInput()})
-
-	if request.method == 'POST': # if the user clicks submit
-
-		#create a formset factory - using the ReportVariant model. Hide the variant field.
-
-		formset = ReportVariantFormset(request.POST)
-
-		if formset.is_valid():
-
-			instances = formset.save()
-
-			report.status = '2'
-
-			report.save()
-
-			return redirect(view_sample_report, pk_sample, pk_report)
+	samples = variant.get_samples_with_variant()
 
 
-	report_variant_formset = ReportVariantFormset(queryset=ReportVariant.objects.filter(report=report)) # populate formset
+	return render(request, 'VariantDatabase/variant_view.html', {'variant': variant, 'transcripts': transcripts, 'other_alleles': other_alleles,
+	 			'frequency_data': frequency_data, 'samples':samples } )
 
-	variants = ReportVariant.objects.filter(report=report) #get the variants from the ReportVariant model.
 
 
-	#Create an ordered dict. Use this to store Variants and forms together using Variant hash as key
-	#For example: dict = {variant_hash:[Variant, Form]}
-	#This allows us to put variants and selector drop downs from form next to each other in a HTML table.
-
-	my_dict =collections.OrderedDict() 
-
-	for variant in variants:
-
-		my_dict[variant.variant.variant_hash] = [variant]
-
-	for form in report_variant_formset:
-
-		key = form.__dict__['initial']['variant']
-
-		my_dict[key].append(form)
-
-	return render(request, 'VariantDatabase/create_sample_report.html', {'formset': report_variant_formset, 'dict': my_dict} )
-
-@login_required
-def view_sample_report(request, pk_sample, pk_report):
-	"""
-	View a sample report i.e. the output of the create_sample_report view.
-	"""
-
-	report = get_object_or_404(Report, pk=pk_report)
-
-	report_variants = ReportVariant.objects.filter(report=report)
-
-	return render(request, 'VariantDatabase/view_sample_report.html' , {'report': report, 'report_variants': report_variants})
 
 
 @login_required
@@ -525,6 +473,11 @@ def search(request):
 	1) searching by variant  e.g. 2-4634636-A-T
 	2) searching by gene
 
+	Todo:
+
+	3) search by location
+	4) search by sample
+
 	"""
 
 	form = SearchForm()
@@ -533,12 +486,20 @@ def search(request):
 
 		search_query = request.GET.get('search').upper()
 
-		variant_search = re.compile("^([1-9]{1,2}|[XYxy])-\d{1,10}-[ATGCatgc]+-[ATGCatgc]+$") #matches a variant search e.g. 22-549634966-AG-TT
+		search_query = search_query.strip()
 
-		gene_search = re.compile("^[A-Z][A-Z1-9]+$") #matches a string which looks like a gene name
+		variant_search = re.compile("^([0-9]{1,2}|[XYxy])-\d{1,12}-[ATGCatgc]+-[ATGCatgc]+$") #matches a variant search e.g. 22-549634966-AG-TT
+
+		gene_search = re.compile("^[A-Z][A-Z0-9]+$") #matches a string which looks like a gene name
+
+		location_search = re.compile('^([0-9]{1,2}|[XYxy])-\d{1,12}$')
+
+		region_search = re.compile('^^([0-9]{1,2}|[XYxy]):\d{1,12}-\d{1,12}$')
+
+		sample_search = re.compile('D[0-9]{1,2}-[0-9]{1,9}')
 
 
-		if variant_search.match(search_query): #we have searched for a variant
+		if variant_search.match(search_query): # if we have searched for a variant
 
 			variant_list = search_query.split('-')
 
@@ -573,6 +534,36 @@ def search(request):
 
 			return redirect(view_gene, search_query)
 
+		elif location_search.match(search_query):
+
+
+			return redirect(view_location_search, search_query)
+
+		elif region_search.match(search_query):
+
+			search_query = search_query.replace(':', '-') #urls don't like colons
+
+			return redirect(view_region_search, search_query)
+
+		elif sample_search.search(search_query):
+
+			samples = Sample.objects.filter(name__contains=search_query)
+
+			if len(samples) == 1:
+
+				return redirect(sample_summary, samples[0].pk)
+
+			elif len(samples) ==0:
+
+				return render(request, 'VariantDatabase/search.html' , {'error': True, 'form': form})
+
+			else:
+
+				return redirect(view_sample_search, search_query)
+
+
+			return render(request, 'VariantDatabase/search.html' , {'form': form})
+
 
 		else:
 
@@ -584,7 +575,185 @@ def search(request):
 
 		return render(request, 'VariantDatabase/search.html' , {'form': form})
 
+
+
+
+
+
+
+
+ 
 #Under development
+def create_sample_report(request, pk_sample, pk_report):
+
+	report = get_object_or_404(Report, pk=pk_report)
+
+	sample = get_object_or_404(Sample, pk=pk_sample)
+
+	total_summary = sample.total_variant_summary()
+
+	variant_samples =VariantSample.objects.filter(sample=sample).order_by('variant__worst_consequence__impact', 'variant__max_af')
+
+	variants = Variant.objects.filter(variant_hash__in= variant_samples.values_list('variant_id', flat=True))
+
+	summary = sample.variant_query_set_summary(variants)
+
+	user_settings = UserSetting.objects.filter(user=request.user)
+
+	haem_onc_ab_data = sample.worksheet.get_allele_balance_data()
+
+	classifications = Classification.objects.filter(subsection=sample.worksheet.sub_section)
+
+	return render(request, 'VariantDatabase/create_sample_report.html', {'sample': sample, 'variants': variant_samples,  'summary': summary, 'total_summary': total_summary, 'user_settings': user_settings,
+					'haem_onc_ab_data': haem_onc_ab_data, 'classifications': classifications, 'report': report })
+
+
+
+
+
+def ajax_receive_first_classification_data(request):
+
+	if request.is_ajax():
+
+		sample_pk = request.POST.get('sample_pk')
+		report_pk = request.POST.get('report_pk')
+
+
+		sample = get_object_or_404(Sample, pk=sample_pk.strip())
+		report = get_object_or_404(Report, pk = report_pk.strip())
+
+
+		if report.status == '1':
+
+			classifications = request.POST.get('classifications')
+
+			classifications = json.loads(classifications)
+
+
+			with transaction.atomic(): 
+
+				for key in classifications:
+
+					variant_hash = key.strip()
+
+					variant = get_object_or_404(Variant, variant_hash=variant_hash)
+
+					classification = classifications[key]
+
+					classification = get_object_or_404(Classification, name =classification)
+
+					variant_sample = get_object_or_404(VariantSample, variant=variant, sample=sample)
+
+
+					new_report_sample_variant_classification = ReportVariantSampleClassification(
+
+						report = report, variant_sample=variant_sample,classification=classification,
+						check_number=1, user=request.user, date = timezone.now()
+
+						)
+
+
+					new_report_sample_variant_classification.save()
+
+
+				report.status ='2'
+				report.save()
+
+				return HttpResponse('Done')
+
+		else:
+
+			return HttpResponse('Already done 1st check')
+
+
+	return HttpResponse('ajax error')
+
+
+
+def view_sample_report(request, pk_sample, pk_report):
+	"""
+	Allow the viewing of reports
+
+	"""
+
+
+	sample = get_object_or_404(Sample, pk=pk_sample)
+	report = get_object_or_404(Report, pk=pk_report)
+
+	variant_samples = VariantSample.objects.filter(sample=sample)
+
+	list =[]
+
+	for variant_sample in variant_samples:
+
+		first_check = ReportVariantSampleClassification.objects.filter(variant_sample=variant_sample, report=report,check_number=1)
+
+		if len(first_check) ==1:
+
+			first_check = first_check[0]
+
+		else:
+
+			first_check= None
+
+
+		second_check = ReportVariantSampleClassification.objects.filter(variant_sample=variant_sample, report=report,check_number=2)
+
+
+		if len(second_check) ==1:
+
+			second_check = second_check[0]
+
+		else:
+
+			second_check= None
+
+
+
+		list.append((variant_sample, first_check, second_check))
+
+
+	return render(request, 'VariantDatabase/view_sample_report.html', {'list': list})
+
+
+
+def view_location_search(request,location):
+
+	location_list = location.split('-')
+
+	chromosome = 'chr'+location_list[0]
+
+	position = location_list[1]
+
+	variants = Variant.objects.filter(chromosome=chromosome, position = position)
+
+	return render(request,'VariantDatabase/view_location_search.html', {'variants': variants, 'location':location})
+
+def view_region_search(request,location):
+
+	location_list = location.split('-')
+
+	chromosome = 'chr'+location_list[0]
+
+	start_pos = location_list[1]
+
+	end_pos = location_list[2]
+
+	variants = Variant.objects.filter(chromosome=chromosome, position__gte = start_pos, position__lte=end_pos)
+
+	return render(request,'VariantDatabase/view_location_search.html', {'variants': variants, 'location':location})
+
+def view_sample_search(request,sample_query):
+
+	samples = Sample.objects.filter(name__contains=sample_query)
+
+
+	return render(request,'VariantDatabase/view_sample_search.html', {'samples': samples,'sample_query': sample_query})
+
+
+
+
+
 def api_variants(request):
 	"""
 	API for getting all variants

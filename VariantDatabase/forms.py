@@ -1,5 +1,5 @@
 from django import forms
-from .models import Report, Worksheet, UserSetting, Consequence, SubSection
+from .models import  Worksheet, UserSetting, Consequence, SubSection, Report
 
 from django.core.urlresolvers import reverse
 from crispy_forms.bootstrap import Field, InlineRadios, TabHolder, Tab
@@ -60,13 +60,12 @@ class WorksheetStatusUpdateForm(forms.ModelForm):
 		fields = ()
 
 
-
 class ReportForm(forms.ModelForm):
 	"""
-	Form for creating Sample Reports
+	Form for creating a new report
+
 
 	"""
-
 	class Meta:
 
 		model = Report
@@ -82,10 +81,6 @@ class UserSettingsForm(forms.ModelForm):
 
 		model = UserSetting
 		fields = ("igv_view", "columns_to_hide")
-
-
-
-
 
 
 
@@ -111,41 +106,7 @@ class SearchForm(forms.Form):
 			
 
 
-				Fieldset('Search',Field('search',placeholder='Search for a gene or a variant or region', title=False)))
+				Fieldset('Search',Field('search',placeholder='Search for a gene, variant, location, region or sample', title=False)))
 
-
-
-
-
-
-class SearchFilterForm(forms.Form):
-
-	consequences_list = Consequence.objects.all()
-
-	choices_consequence = [(consequence.name, consequence.name) for consequence in consequences_list]
-
-
-
-
-	max_af = forms.FloatField(required=True, max_value=1, min_value=0)
-	consequences = forms.MultipleChoiceField(choices_consequence)
-
-
-
-
-	def __init__(self, *args, **kwargs):
-		super(SearchFilterForm, self).__init__(*args, **kwargs)
-		self.helper = FormHelper()
-		self.helper.form_id = 'search-filter-form'
-		self.helper.label_class = 'col-lg-2'
-		self.helper.field_class = 'col-lg-8'
-
-		self.helper.form_method = 'post'
-		self.helper.form_action = '/'
-		self.helper.add_input(Submit('submit', 'Submit', css_class='btn-success'))
-		self.helper.form_class = 'form-horizontal'
-		self.helper.layout = Layout(
-			
-			Fieldset('Filter', Field('max_af'), Div('consequences') ))
 
 

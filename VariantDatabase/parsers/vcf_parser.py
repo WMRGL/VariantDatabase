@@ -772,6 +772,52 @@ def extract_codon_from_hgvs(hgvsp):
 	return transcript, re.findall(r'\d+', codon)[0]
 
 
+
+
+def calculate_allele_balance(vafs, callers):
+	"""
+	Calculates the allele balance. alt allele depth /total allele depth.
+
+	Note - AB also known as VAFS in vcf.
+
+	The reference allele ballance, reported as a percentage.
+	This figure is the average for the caller(s) used, with the exception for Manta.
+	Because Manta does not report allele depths, it is not appropriate to include it in the average figure.
+
+	"""
+
+
+	vafs_list =vafs.split(':')
+
+	caller_list =callers.split('|')
+
+	if 'Manta' in caller_list:
+
+		manta_index = caller_list.index('Manta')
+
+		vafs_list.pop(manta_index)
+
+	vafs_list = [float(vaf) for vaf in vafs_list]
+
+	if len(vafs_list) ==0:
+
+		return 0.0
+
+	else:
+
+		return float(sum(vafs_list))/len(vafs_list)
+
+
+
+
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
 
 

@@ -6,6 +6,7 @@ import parsers.vcf_parser as vcf_parser
 from django.contrib.contenttypes.models import ContentType
 from auditlog.models import LogEntry
 from auditlog.registry import auditlog
+import numpy as np
 
 class Section(models.Model):
 	"""
@@ -268,6 +269,38 @@ class Worksheet(models.Model):
 		else:
 
 			return False
+
+
+	def get_allele_balance_data(self):
+		"""
+		Get the mean allele balance of the run i.e. the mean value of the allele balance for all
+		variant_samples linked with this workbook
+
+		N.B - exclude negative control,
+
+		"""
+
+		variant_samples = VariantSample.objects.filter(sample__worksheet=self).exclude(sample__name__contains='D00-00000').values_list('vafs','caller')
+
+		allele_balance_list = [vcf_parser.calculate_allele_balance(vs_list[0], vs_list[1]) for vs_list in variant_samples]
+
+		allele_balance_array = np.array(allele_balance_list)
+
+
+		allele_balance_dict = {}
+
+		allele_balance_dict['mean'] = np.mean(allele_balance_array)
+
+		allele_balance_dict['std'] =np.std(allele_balance_array)
+
+		allele_balance_dict['upper_limit'] = allele_balance_dict['mean'] + (2*allele_balance_dict['std'])
+
+		allele_balance_dict['lower_limit'] = allele_balance_dict['mean'] - (2*allele_balance_dict['std'])
+
+		return allele_balance_dict
+
+
+
 
 
 
@@ -682,11 +715,12 @@ class Variant(models.Model):
 	def get_samples_with_variant(self):
 		"""
 		Returns all samples in which the Variant has been found.
-		Note that VariantSample objects are only created for variants that meat certain conditions e.g < 5% freq and not synomynous
 
 		"""
 
 		samples =VariantSample.objects.filter(variant=self)
+
+		samples =list(set([variant_sample.sample for variant_sample in samples]))
 
 		return samples
 
@@ -1026,13 +1060,72 @@ class Variant(models.Model):
 
 
 
+	def get_frequency_data(self):
+
+		"""
+		Function to get all the relevent frequency data for display.
+
+		Output:
+
+		frequency_dict = A dictionary containing:
+
+			1) Global Frequency, Sample Count
+
+			2) For each subsection/project:
+
+				a) Frequency, sample_count
+
+		"""
+
+		frequency_dict ={'global':{}, 'projects':{}}
+
+		#Global stats
+
+		global_sample_count = self.get_sample_count()
+
+		total_sample_count = Sample.objects.count()
+
+		global_frequency = float(global_sample_count) / float(total_sample_count)
+
+		#Per subsection/project count
+
+		projects = VariantSample.objects.filter(variant=self).values_list('sample__worksheet__sub_section').distinct()
+
+		variant_samples = VariantSample.objects.filter(variant=self)
+
+		for project in projects:
+
+			name = project[0]
+
+			project_obj = SubSection.objects.get(name=name)
+
+			project_count = VariantSample.objects.filter(variant=self).filter(sample__worksheet__sub_section=project_obj).count()
+
+			project_sample_count = project_obj.get_number_samples()
+
+			project_frequency = float(project_count) / float(project_sample_count)
+
+
+			frequency_dict['projects'][name] =[project_count,project_sample_count, project_frequency]
+
+
+		frequency_dict['global'] = [global_sample_count, total_sample_count, global_frequency]
+
+		return frequency_dict
+
+
+
+
+
+
+
 
 
 
 class VariantSample(models.Model):
 
 	"""
-	The VariantSample model stores whcih samples a Variant has appeared in.
+	The VariantSample model stores which sample a Variant has appears in.
 
 
 	Allows queries such as 'which other samples have we seen this variant in?'
@@ -1106,6 +1199,17 @@ class VariantSample(models.Model):
 
 			return self.genotype
 
+	def calculate_allele_balance(self):
+		"""
+		Uses the vcf_parser.calculate_allele_balance() to calculate the AB
+
+		Note: Do we calculate this on the fly or at import for performance?
+
+
+		"""
+
+		return vcf_parser.calculate_allele_balance(self.vafs, self.caller)
+
 
 
 class VariantTranscript(models.Model):
@@ -1131,96 +1235,6 @@ class VariantTranscript(models.Model):
 	def __str__(self):
 
 		return self.variant.chromosome+ " " + str(self.variant.position) + self.transcript.name
-
-class Report(models.Model):
-	"""
-	A user can create a Report for a particular Sample
-
-	"""
-	choices =(
-			('1', 'New Report'),
-			('2', 'Awaiting 1st Check'),
-			('3', 'Awaiting 2nd Check'),
-			('4', 'Complete'))
-
-	sample = models.ForeignKey(Sample)
-	status = models.CharField(max_length=1, choices = choices)
-
-
-
-	def __str__(self):
-
-		return self.sample.name+ " " + str(self.pk)
-
-
-	def get_history(self):
-
-		content_type = ContentType.objects.get(app_label ='VariantDatabase', model='report')
-
-		return LogEntry.objects.filter(object_pk = self.pk, content_type=content_type)
-
-	def get_creation_date(self):
-
-		content_type = ContentType.objects.get(app_label ='VariantDatabase', model='report')
-
-		return LogEntry.objects.filter(object_pk = self.pk, content_type=content_type, action=0).order_by('timestamp')[0].timestamp
-
-	def get_author(self):
-
-		content_type = ContentType.objects.get(app_label ='VariantDatabase', model='report')
-
-		return LogEntry.objects.filter(object_pk = self.pk, content_type=content_type, action=0).order_by('timestamp')[0].actor
-
-	def get_status(self):
-
-		choices =(
-			('1', 'New Report'),
-			('2', 'Awaiting 1st Check'),
-			('3', 'Awaiting 2nd Check'),
-			('4', 'Complete'))
-
-		return choices[int(self.status)-1][1]
-
-	def initialise_report(self):
-		"""
-		Create ReportVariant Objects for the report
-
-		"""
-		variants = self.sample.get_variants()
-
-		for variant in variants:
-
-			new_report_variant = ReportVariant(variant=variant, report=self, status='1')
-
-			new_report_variant.save()
-
-		return None
-
-class ReportVariant(models.Model):
-	"""
-	Stores what the user has decided for each Variant in a sample.
-
-	"""
-	choices =(
-			('1', 'None'),
-			('2', 'Pathogenic'),
-			('3', 'Benign'),
-			('4', 'VUS'))
-
-	variant = models.ForeignKey(Variant)
-	report = models.ForeignKey(Report)
-	status = models.CharField(max_length=1, choices = choices) #e.g pathogenic
-
-
-	def get_status(self):
-
-		choices =(
-			('1', 'None'),
-			('2', 'Pathogenic'),
-			('3', 'Benign'),
-			('4', 'VUS'))
-
-		return choices[int(self.status)-1][1]
 
 
 class ReadLaneQuality(models.Model):
@@ -1394,5 +1408,92 @@ class UserSetting(models.Model):
 	igv_view = models.BooleanField(default=True) #does the user want to see the IGV viewer
 	user = models.ForeignKey('auth.User')
 
-auditlog.register(Report)
+
+
+class Report(models.Model):
+
+	"""
+	A class for reporting a sample.
+
+	Made for the Haem-Onc team workflow - may require different ormat for different teams.
+
+	"""
+
+	choices =(
+		('1', 'Awaiting First Check'),
+		('2', 'Awaiting Second Check'),
+		('3', 'Complete'),
+		('4', 'Invalid'))
+
+
+
+	sample = models.ForeignKey(Sample)
+	user = models.ForeignKey('auth.User')
+	status = models.CharField(max_length=1, choices =choices)
+
+
+
+
+	def get_status(self):
+		"""
+		Returns current status.
+		"""
+		choices =(
+			('1', 'Awaiting First Check'),
+			('2', 'Awaiting Second Check'),
+			('3', 'Complete'),
+			('4', 'Invalid'))
+
+		try:
+
+			return choices[int(self.status)-1][1]
+
+		except:
+
+			return None
+
+
+
+
+
+
+
+
+
+
+
+class Classification(models.Model):
+	"""
+	Stores the possible classifications for variants.
+	Linked with SubSection Class in case different projects
+	have different requirements.
+
+	"""
+
+	name = models.CharField(max_length=20)
+	subsection = models.ForeignKey(SubSection)
+
+	def __str__(self):
+
+		return str(self.name)
+
+
+class ReportVariantSampleClassification(models.Model):
+	"""
+
+	Stores the classification for a VariantSample for a particular report.
+
+	e.g. Variant Chr3-39253-A-G in report x was classed as Artefact 
+	
+
+	"""
+
+	report = models.ForeignKey(Report)
+	variant_sample = models.ForeignKey(VariantSample)
+	classification = models.ForeignKey(Classification)
+	check_number = models.IntegerField()
+	user = models.ForeignKey('auth.User')
+	date = models.DateTimeField()
+
+
 auditlog.register(Worksheet)

@@ -31,10 +31,16 @@
 
   <br>
 
+
+
   <div class="tab-content">
     <div id="summary" class="tab-pane fade in active">
-      <div class = "row">
-        <div class = 'col-lg-4'>
+      <div class="container-fluid">
+
+        <div class="row-fluid">
+
+
+        <div  class="col-lg-5"  >
 
 
 
@@ -113,6 +119,116 @@
       </table>
 
     </div>
+
+    </div>
+
+    <div class="col-lg-2"> 
+
+    <table class = 'table table-bordered' >
+        <thead>
+          <tr>
+            <th colspan="2"> WMRGL Frequency</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+        
+
+          <tr>
+            <td> Total Frequency </td>
+            <td> {{ frequency_data.global.2|floatformat:3 }} ({{ frequency_data.global.0 }} / {{ frequency_data.global.1 }}) </td>
+
+          </tr>
+
+
+          {% for key, values in frequency_data.projects.items %}
+
+
+          <tr>
+            <td> {{key }}</td>
+            <td>  {{ values.2|floatformat:3 }} ({{ values.0 }} / {{ values.1 }}) </td>
+
+          </tr>
+
+          {% endfor %}
+
+
+
+
+
+
+
+          </tbody>
+
+
+
+
+    </table>
+
+
+    </div>
+
+
+
+
+    <div class="col-lg-2"> 
+
+
+    <button data-toggle="collapse" data-target="#demo">Toggle Samples</button>
+
+    <div id="demo" class="collapse">
+    
+    <table  class = 'table table-bordered' >
+        <thead>
+          <tr>
+            <th colspan="1"> Samples </th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+        
+        {% for sample in samples %}
+          <tr>
+            <td> {{sample.name}} </td>
+
+          </tr>
+
+        {% endfor %}
+
+
+
+
+
+
+
+
+
+          </tbody>
+
+
+
+
+    </table>
+
+    </div>
+
+
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   </div>
 
@@ -227,20 +343,6 @@
 
 
 
-
-
-<script>
-$(document).ready(function(){
-    $('#1000g').popover({title: "", content: "", html: true, placement: "bottom", trigger: "hover"}); 
-});
-</script>
-
-
-<script>
-$(document).ready(function(){
-    $('#exac').popover({title: "", content: "", html: true, placement: "bottom",trigger: "hover"}); 
-});
-</script>
 
 
 

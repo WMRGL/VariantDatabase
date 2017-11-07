@@ -7,7 +7,15 @@
 <div>
 
 {% crispy form %}
-
+<center>
+ <p class="text-muted">
+                        Examples - Gene: <a href="/search/?search=jak2">JAK2</a>,
+                        Variant: <a href="/search/?search=20-31024425-CT-C">20-31024425-CT-C</a>,
+                        Location: <a href="/search/?search=9-5073770"">9-5073770</a>,
+                        Region: <a href="/search/?search=9:5073720-5073780">9:5073720-5073780</a>,
+                        Sample: <a href="/search/?search=D00-00000">D00-00000</a>
+                    </p>
+</center>
 
 {% if error %}
 <div class="alert alert-danger col-lg-2-8">
