@@ -766,6 +766,7 @@ tr.shown td.details-control {
 			<th> Report Second Check</th>
 			<th> Report Status </th>
 			<th> Report Creator </th>
+			<th> Action </th>
 
 
 
@@ -783,7 +784,7 @@ tr.shown td.details-control {
 
 				<td> {{report.pk}} </td>
 
-				<td> <a href= "{% url 'view_sample_report' sample.pk report.pk %}"> {{ sample.name }}   </a> </td>
+				<td> <a href= "{% url 'view_sample_report' sample.pk report.pk %}"> {{ sample.name }}    </td>
 
 				<td> </td>
 
@@ -791,6 +792,20 @@ tr.shown td.details-control {
 				<td> {{report.get_status }} </td>
 
 				<td> {{ report.user }} </td>
+
+				{% if report.status == '2' %}
+
+				<td> <a href= "{% url 'create_sample_report' sample.pk report.pk 2 %}"> Perform Second Check  </a></td>
+
+				{% elif report.status == '3'  %}
+
+				<td> <a href= "{% url 'resolve_check_differences' sample.pk report.pk %}"> Resolve Differences  </a></td>
+
+				{% else %}
+
+				<td> None</td>
+
+				{% endif %}
 
 			</tr>
 

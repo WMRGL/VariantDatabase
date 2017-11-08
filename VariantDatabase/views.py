@@ -118,7 +118,7 @@ def sample_summary(request, pk_sample):
 
 				report.save()
 
-				return redirect(create_sample_report, sample.pk, report.pk)
+				return redirect(create_sample_report, sample.pk, report.pk, '1')
 
 
 
@@ -210,9 +210,6 @@ def sample_summary(request, pk_sample):
 
 		user_settings = UserSetting.objects.filter(user=request.user)
 
-		haem_onc_ab_data = sample.worksheet.get_allele_balance_data()
-
-		
 
 		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variant_samples, 'reports': reports, 'report_form': report_form,  'summary': summary, 'total_summary': total_summary,
 					 'filter_form': filter_form, 'filter_dict': filter_dict, 'cons': consequences_to_include, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage, 'user_settings': user_settings})
@@ -471,32 +468,35 @@ def search(request):
 	Currently allows :
 
 	1) searching by variant  e.g. 2-4634636-A-T
-	2) searching by gene
-
-	Todo:
-
-	3) search by location
-	4) search by sample
+	2) searching by gene e.g. JAK2
+	3) search by location e.g. 4-649636
+	4) search by region e.g. 9:646046:646086
+	4) search by sample e.g. D16-35395
 
 	"""
 
 	form = SearchForm()
 
-	if request.GET.get('search') != "" and request.GET.get('search') != None: #if we have typed in the main search
+	if request.GET.get('search') != "" and request.GET.get('search') != None: #if the user has searched for something
+
+		#Get the query and clean it up
 
 		search_query = request.GET.get('search').upper()
 
 		search_query = search_query.strip()
 
+		#Compile a number of regexes to match what the user might have searched for.
+		#We can direct them to different pages depending on the match.
+
 		variant_search = re.compile("^([0-9]{1,2}|[XYxy])-\d{1,12}-[ATGCatgc]+-[ATGCatgc]+$") #matches a variant search e.g. 22-549634966-AG-TT
 
-		gene_search = re.compile("^[A-Z][A-Z0-9]+$") #matches a string which looks like a gene name
+		gene_search = re.compile("^[A-Z][A-Z0-9]+$") #matches a string which looks like a gene name e.g. JAK2
 
-		location_search = re.compile('^([0-9]{1,2}|[XYxy])-\d{1,12}$')
+		location_search = re.compile('^([0-9]{1,2}|[XYxy])-\d{1,12}$') #matches a string which looks a location e.g. 9-434343
 
-		region_search = re.compile('^^([0-9]{1,2}|[XYxy]):\d{1,12}-\d{1,12}$')
+		region_search = re.compile('^([0-9]{1,2}|[XYxy]):\d{1,12}-\d{1,12}$')  #matches a string which looks a region e.g. 9:646046:646086
 
-		sample_search = re.compile('D[0-9]{1,2}-[0-9]{1,9}')
+		sample_search = re.compile('D[0-9]{1,2}-[0-9]{1,9}') #matches a string which looks a sample e.g. D16-35395
 
 
 		if variant_search.match(search_query): # if we have searched for a variant
@@ -522,7 +522,7 @@ def search(request):
 			return redirect(view_detached_variant, variant_hash)
 
 
-		elif gene_search.match(search_query): #Looks like a gene
+		elif gene_search.match(search_query): # if we have searched for a gene
 
 			try:
 
@@ -534,30 +534,30 @@ def search(request):
 
 			return redirect(view_gene, search_query)
 
-		elif location_search.match(search_query):
+		elif location_search.match(search_query): # if we have searched for a location
 
 
 			return redirect(view_location_search, search_query)
 
-		elif region_search.match(search_query):
+		elif region_search.match(search_query): # if we have searched for a region
 
 			search_query = search_query.replace(':', '-') #urls don't like colons
 
 			return redirect(view_region_search, search_query)
 
-		elif sample_search.search(search_query):
+		elif sample_search.search(search_query): # if we have searched for a sample
 
 			samples = Sample.objects.filter(name__contains=search_query)
 
-			if len(samples) == 1:
+			if len(samples) == 1: #If only one sample matches then go direct to that page
 
 				return redirect(sample_summary, samples[0].pk)
 
-			elif len(samples) ==0:
+			elif len(samples) ==0: #no samples match - query error
 
 				return render(request, 'VariantDatabase/search.html' , {'error': True, 'form': form})
 
-			else:
+			else: #>1 sample match - redirect to view_sample_search. Let user sort it out.
 
 				return redirect(view_sample_search, search_query)
 
@@ -584,7 +584,10 @@ def search(request):
 
  
 #Under development
-def create_sample_report(request, pk_sample, pk_report):
+def create_sample_report(request, pk_sample, pk_report, check_number):
+
+
+
 
 	report = get_object_or_404(Report, pk=pk_report)
 
@@ -600,12 +603,10 @@ def create_sample_report(request, pk_sample, pk_report):
 
 	user_settings = UserSetting.objects.filter(user=request.user)
 
-	haem_onc_ab_data = sample.worksheet.get_allele_balance_data()
-
 	classifications = Classification.objects.filter(subsection=sample.worksheet.sub_section)
 
 	return render(request, 'VariantDatabase/create_sample_report.html', {'sample': sample, 'variants': variant_samples,  'summary': summary, 'total_summary': total_summary, 'user_settings': user_settings,
-					'haem_onc_ab_data': haem_onc_ab_data, 'classifications': classifications, 'report': report })
+					 		'classifications': classifications, 'report': report, 'check_number': check_number })
 
 
 
@@ -617,13 +618,16 @@ def ajax_receive_first_classification_data(request):
 
 		sample_pk = request.POST.get('sample_pk')
 		report_pk = request.POST.get('report_pk')
+		check_number = request.POST.get('check_number')
+
+		print check_number
 
 
 		sample = get_object_or_404(Sample, pk=sample_pk.strip())
 		report = get_object_or_404(Report, pk = report_pk.strip())
 
 
-		if report.status == '1':
+		if report.status == '1' and check_number.strip() =='1' :
 
 			classifications = request.POST.get('classifications')
 
@@ -638,17 +642,19 @@ def ajax_receive_first_classification_data(request):
 
 					variant = get_object_or_404(Variant, variant_hash=variant_hash)
 
-					classification = classifications[key]
+					data = classifications[key]
+
+					classification = data[0].strip()
+
+					user_hgvs = data[1].strip()
 
 					classification = get_object_or_404(Classification, name =classification)
-
-					variant_sample = get_object_or_404(VariantSample, variant=variant, sample=sample)
 
 
 					new_report_sample_variant_classification = ReportVariantSampleClassification(
 
-						report = report, variant_sample=variant_sample,classification=classification,
-						check_number=1, user=request.user, date = timezone.now()
+						report = report, variant=variant,classification1=classification,
+						user1=request.user, date1 = timezone.now(), user_hgvs1 =user_hgvs
 
 						)
 
@@ -661,12 +667,162 @@ def ajax_receive_first_classification_data(request):
 
 				return HttpResponse('Done')
 
+		elif report.status == '2' and check_number.strip() =='2' :
+
+			classifications = request.POST.get('classifications')
+
+			classifications = json.loads(classifications)
+
+
+			with transaction.atomic(): 
+
+				for key in classifications:
+
+					variant_hash = key.strip()
+
+					variant = get_object_or_404(Variant, variant_hash=variant_hash)
+
+					data = classifications[key]
+
+					classification = data[0].strip()
+
+					user_hgvs = data[1].strip()
+
+					classification = get_object_or_404(Classification, name =classification)
+
+					report_sample_variant_classification = ReportVariantSampleClassification.objects.filter(report=report, variant=variant)
+
+
+					if len(report_sample_variant_classification) ==1:
+
+						report_sample_variant_classification =report_sample_variant_classification[0]
+
+						report_sample_variant_classification.classification2 = classification
+						report_sample_variant_classification.user2 = request.user
+						report_sample_variant_classification.date2 = timezone.now()
+						report_sample_variant_classification.user_hgvs2 = user_hgvs
+
+						report_sample_variant_classification.save()
+
+					else:
+
+						return HttpResponse('An error occured: Either >1 or no existing report_sample_variant_classification')
+
+
+
+				report.status ='3'
+				report.save()
+
+				return HttpResponse('Done')
+
+		elif report.status == '3' and check_number.strip() =='3' :
+
+			classifications = request.POST.get('classifications')
+
+			classifications = json.loads(classifications)
+
+
+			with transaction.atomic(): 
+
+				for key in classifications:
+
+					variant_hash = key.strip()
+
+					variant = get_object_or_404(Variant, variant_hash=variant_hash)
+
+					data = classifications[key]
+
+					classification = data[0].strip()
+
+					user_hgvs = data[1].strip()
+
+					classification = get_object_or_404(Classification, name =classification)
+
+					report_sample_variant_classification = ReportVariantSampleClassification.objects.filter(report=report, variant=variant)
+
+
+					if len(report_sample_variant_classification) ==1:
+
+						report_sample_variant_classification =report_sample_variant_classification[0]
+
+						report_sample_variant_classification.final_classification = classification
+						report_sample_variant_classification.final_user = request.user
+						report_sample_variant_classification.final_date = timezone.now()
+						report_sample_variant_classification.final_hgvs = user_hgvs
+
+						report_sample_variant_classification.save()
+
+					else:
+
+						return HttpResponse('An error occured: Either >1 or no existing report_sample_variant_classification')
+
+
+
+				report.status ='4'
+				report.save()
+
+				return HttpResponse('Done')
+
+
+
+
+
+
+
 		else:
 
 			return HttpResponse('Already done 1st check')
 
 
 	return HttpResponse('ajax error')
+
+def resolve_check_differences(request, pk_sample, pk_report):
+
+
+	sample = get_object_or_404(Sample, pk=pk_sample)
+
+	report = get_object_or_404(Report, pk=pk_report)
+
+	user_settings = UserSetting.objects.filter(user=request.user)
+
+	classifications = Classification.objects.filter(subsection=sample.worksheet.sub_section)
+
+	report_sample_variant_classifications = ReportVariantSampleClassification.objects.filter(report=report)
+
+	variant_classification_list =[]
+
+	for variant_classification in report_sample_variant_classifications:
+
+		variant_sample = get_object_or_404(VariantSample, variant=variant_classification.variant, sample=sample)
+
+		variant_classification_list.append((variant_sample, variant_classification))
+
+
+	matches =[]
+
+	discrepencies =[]
+
+
+	for variant_classification in variant_classification_list:
+
+		if variant_classification[1].classification_match() == True:
+
+			matches.append(variant_classification)
+
+		else:
+
+			discrepencies.append(variant_classification)
+
+
+	return render(request, 'VariantDatabase/resolve_check_differences.html', {'matches': matches, 'discrepencies': discrepencies,'sample': sample,
+	  			'user_settings': user_settings,'classifications': classifications, 'report': report, })
+
+
+
+
+
+
+
 
 
 
@@ -680,37 +836,14 @@ def view_sample_report(request, pk_sample, pk_report):
 	sample = get_object_or_404(Sample, pk=pk_sample)
 	report = get_object_or_404(Report, pk=pk_report)
 
-	variant_samples = VariantSample.objects.filter(sample=sample)
 
 	list =[]
 
-	for variant_sample in variant_samples:
+	report_sample_variant_classifications = ReportVariantSampleClassification.objects.filter(report=report)
 
-		first_check = ReportVariantSampleClassification.objects.filter(variant_sample=variant_sample, report=report,check_number=1)
-
-		if len(first_check) ==1:
-
-			first_check = first_check[0]
-
-		else:
-
-			first_check= None
+	list.append(report_sample_variant_classifications)
 
 
-		second_check = ReportVariantSampleClassification.objects.filter(variant_sample=variant_sample, report=report,check_number=2)
-
-
-		if len(second_check) ==1:
-
-			second_check = second_check[0]
-
-		else:
-
-			second_check= None
-
-
-
-		list.append((variant_sample, first_check, second_check))
 
 
 	return render(request, 'VariantDatabase/view_sample_report.html', {'list': list})

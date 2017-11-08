@@ -1,0 +1,324 @@
+{% extends 'VariantDatabase/base.html' %}
+{% load static %}
+
+
+  {% block js-head %}
+
+
+    {{block.super}}
+  
+
+  <link rel="stylesheet" href= "{% static 'css/qc_display.css' %}">
+
+
+    <!-- IGV JS-->
+    <script type="text/javascript" src="{% static 'js/igv.js' %}"></script>
+
+
+    <!-- IGV CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/igv.css' %}">
+
+    <!-- Datatables -->
+
+    <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+
+    <link rel="stylesheet" href= "https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+
+
+    <!-- Datatables -colreorder extension -->
+
+    <script type="text/javascript" src="https://cdn.datatables.net/colreorder/1.4.0/js/dataTables.colReorder.min.js"></script>
+
+    <link rel="stylesheet" href= "https://cdn.datatables.net/colreorder/1.4.0/css/colReorder.dataTables.min.css">
+
+ 
+    <!-- Datatables -buttons extension -->
+
+
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.colVis.min.js"></script>
+
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+
+  <link rel="stylesheet" href= "https://cdn.datatables.net/buttons/1.4.1/css/buttons.dataTables.min.css">
+
+
+  <style> 
+
+
+
+
+   td.details-control {
+      background: url('http://www.datatables.net/examples/resources/details_open.png') no-repeat center center;
+      cursor: pointer;
+  }
+  tr.shown td.details-control {
+      background: url('http://www.datatables.net/examples/resources/details_close.png') no-repeat center center;
+  }
+
+
+  </style>
+
+
+
+
+
+
+
+
+
+
+
+  {% endblock js-head %}
+
+
+
+
+ {% block content %}
+
+
+
+
+
+
+
+  <div id='sample_pk' style="display: none;" >{{sample.pk}} </div>
+  <div id='user_settings' style="display: none;" >{{user_settings.0.columns_to_hide}}  </div>
+  <div id='report_pk' style="display: none;" >{{report.pk}}  </div>
+  <div id='check_number' style="display: none;" >3  </div>
+
+    <br>
+
+ 
+   <ul class="nav nav-tabs">
+
+
+      <li class="active"><a data-toggle="tab" href="#variants">Variants</a></li>
+       <li><a data-toggle="tab" href="#matches">Matches</a></li>
+
+
+
+    </ul>
+
+    <br>
+
+    <div class="tab-content" >
+
+
+    <!--Variants Tab displays filtered variants -->
+    <div id="variants" class="tab-pane active"> <!--detail div replaced using -->
+
+     <div class ="container-fluid" id='detail'> 
+        
+
+
+    
+    </div><!-- end of container -->
+
+
+  <hr>
+
+  <div id ="button_group" style='float:right; margin-right:25px' > </div>
+
+  <button type="button" class="btn btn-primary" id='submit_check' style='float:right; margin-right:25px'>Submit Report</button>
+
+
+
+        
+
+    <strong>{{ sample.name }}</strong> 
+
+
+    
+
+<hr>
+
+
+
+
+
+  <table id="variant_table" class = "table table-hover" data-role="table" data-mode="columntoggle">
+
+          <thead>
+
+        <tr>
+          <th style="display:none;" class='variant_hash'> Variant Hash </th>
+          <th class='expand_box'></th>
+          <th class='hgvsc'> HGVSc </th>
+          <th class='variant_desc'> Variant </th>
+          <th class='reference'> Ref </th>
+          <th class='alt'> Alt </th>
+          <th class='worst_consequence'> Worst Consequence </th>
+          <th class="genes"> Genes </th>
+          <th class="max_af"> Max AF </th>
+          <th class='exac_frequency'> ExAC </th>
+          <th class='project_count'> Project Frequency </th>
+          <th class='worksheet_count'> Worksheet Count </th>
+          <th class='ab_std'> AB > 2xSTD </th>
+
+
+
+          <th class='clinsig'> Clin Sig </th>
+          <th class='genotype'> Genotype </th>
+          <th class='callers'> Callers </th>
+          <th class='allele_depth'> AD </th>
+          <th class='vafs'> VAFS </th>
+
+          <th class='check1'> Check1 </th>
+
+          <th class='check2'> Check2 </th>
+
+          <th class='hgvs1'> HGVS1 </th>
+          <th class='hgvs1'> HGVS2 </th>
+
+          <th class='check'> Final </th>
+
+          <th class='hgvs_check'> Final HGVS Check </th>
+
+
+
+
+
+
+          <th class='tcf'> TCF </th>
+          <th class='tcr'> TCR </th>
+          <th class='filter_status'> Filter </th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+
+      {% for variant in discrepencies %}
+
+      <tr class='variant'>
+
+        <td class='variant_hash' style="display:none;"> {{variant.0.variant.variant_hash}}</td>
+
+
+        <td class="details-control"></td>
+        <td class='hgvsc get_detail'> {{variant.0.variant.get_picked_hgvsc|truncatechars:50}} </td>
+
+        <td class='variant_desc get_detail '> {{variant.0.variant.chromosome}} {{variant.variant.position}} </td>
+        <td class ='reference get_detail'> {{variant.0.variant.ref|truncatechars:10}} </td>
+        <td class='alt get_detail'> {{variant.0.variant.alt|truncatechars:10}} </td>
+        <td class='worst_consequence get_detail'> {{variant.0.variant.worst_consequence}} </td>
+        <td class="genes get_detail"> {{variant.0.variant.get_genes|join:" "}} </td>
+        <td class= "max_af get_detail"> {{variant.0.variant.max_af}} </td>
+        <td class='exac_frequency get_detail'> 
+                <a class="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-placement="top" data-container="body" data-content='<ul class="list-group">
+                                                  <li class="list-group-item">ADJ AF : {{ variant.0.variant.exac_adj_af}}</li>
+                                                  <li class="list-group-item">AFR AF : {{ variant.0.variant.exac_afr_af}}</li>
+                                                  <li class="list-group-item">AMR AF : {{ variant.0.variant.exac_amr_af}}</li>
+                                                  <li class="list-group-item">EAS AF : {{ variant.0.variant.exac_eas_af}}</li>
+                                                  <li class="list-group-item">FIN AF : {{ variant.0.variant.exac_fin_af}}</li>
+                                                  <li class="list-group-item">NFE AF : {{ variant.0.variant.exac_nfe_af}}</li>
+                                                  <li class="list-group-item">OTH AF : {{ variant.0.variant.exac_oth_af}}</li>
+                                                  <li class="list-group-item">SAS AF : {{ variant.0.variant.exac_sas_af}}</li></ul>' >{{variant.0.variant.exac_af}}</a>
+
+            </td>
+
+        <td class='project_count get_detail'>  {{variant.0.get_subsection_frequency}}</td>
+        <td class='worksheet_count get_detail'> {{variant.0.variant.get_worksheet_count}}</td>
+
+
+
+
+
+        <td class='ab_std get_detail'> {{variant.0.allele_balance_out_of_range}} </td>
+
+        
+
+
+        <td class='clinsig get_detail'> {{variant.0.variant.clinical_sig}} </td>
+        <td class='genotype get_detail'> {{variant.0.display_genotype}} </td>
+        <td class='callers get_detail'> {{variant.0.caller}} </td>
+        <td class='allele_depth get_detail'> {{variant.0.allele_depth}} </td>
+        <td class='vafs get_detail'> {{variant.0.vafs}} </td>
+
+        <td class='check1 get_detail'> {{variant.1.classification1}} </td>
+        <td class='check2 get_detail'> {{variant.1.classification2}} </td>
+
+        <td class='user_hgvs1 get_detail'> {{variant.1.user_hgvs1}} </td>
+        <td class='user_hgvs2 get_detail'> {{variant.1.user_hgvs2}} </td>
+
+    <td class='check'>  
+
+       <select size="1" id="{{variant.variant.variant_hash}}" name="{{variant.variant.variant_hash}}">
+
+        {% for classification in classifications %}
+
+
+
+              <option value={{classification.name}}>
+
+
+                              {{classification.name}}
+              </option>
+
+
+          {% endfor %}
+
+         </select>
+
+    </td>
+
+    <td class='hgvs_check'>  <input type="text" class="form-control" value={{variant.0.variant.get_picked_hgvsc}}> </td>
+
+
+
+
+
+        <td class ='tcf get_detail'> {{variant.0.total_count_forward}} </td>
+        <td class='tcr get_detail'> {{variant.0.total_count_reverse}} </td>
+        <td class='filter_status get_detail'> {{variant.0.filter_status}} </td>
+
+
+      </tr>
+
+      {% endfor %}
+
+
+
+
+
+      </tbody>
+      </table>
+
+
+                
+                  
+
+                    
+
+      </div>
+
+        <div id="matches" class="tab-pane">
+
+        {{matches}}
+
+
+  </div>
+
+
+
+
+
+  </div>
+
+
+
+</div>
+
+
+<script type="text/javascript" src="{% static 'js/create_report.js' %}"></script>
+
+
+{% csrf_token %}
+
+
+
+
+ 
+{% endblock %}  

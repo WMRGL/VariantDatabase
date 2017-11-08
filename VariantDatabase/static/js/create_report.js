@@ -13,11 +13,6 @@ Sample Summary Javascript - For the page sample_summary.html
 */
 
 
-
-
-
-
-
 $(document).ready(function(){
 
 
@@ -240,10 +235,13 @@ $(document).ready(function(){
 
 
 			var variant_hash  = $(rows[i]).children('td.variant_hash.noVis').text();
-			var variant_class = $(rows[i]).children('td.check1').children().val();
+			var variant_class = $(rows[i]).children('td.check').children().val();
+			var user_hgvs = $(rows[i]).children('td.hgvs_check').children().val();
 
 
-			variant_classification_dict[variant_hash] = variant_class;
+			variant_classification_dict[variant_hash] = [variant_class, user_hgvs];
+
+
 
 
 
@@ -254,6 +252,7 @@ $(document).ready(function(){
 
 		var sample_pk = $("#sample_pk").text();
 		var report_pk = $("#report_pk").text();
+		var check_number = $("#check_number").text();
 
 		var formData = new FormData();
 
@@ -261,6 +260,7 @@ $(document).ready(function(){
 		formData.append('classifications', JSON.stringify(variant_classification_dict));
 		formData.append('sample_pk', sample_pk);
 		formData.append('report_pk', report_pk);
+		formData.append('check_number', check_number);
 
 
 
@@ -277,6 +277,8 @@ $(document).ready(function(){
 			success: function(data) {
 
 			alert(data)
+
+			window.location.replace('/sample/'+$.trim(sample_pk)+'/summary/');
 
 			},
 			failure: function(data) { 

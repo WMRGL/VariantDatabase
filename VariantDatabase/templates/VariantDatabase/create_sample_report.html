@@ -78,7 +78,7 @@
  {% block content %}
 
 
- <button type="button" class="btn btn-primary" id='submit_check'>Primary</button>
+
 
 
 
@@ -86,6 +86,7 @@
 	<div id='sample_pk' style="display: none;" >{{sample.pk}} </div>
 	<div id='user_settings' style="display: none;" >{{user_settings.0.columns_to_hide}}  </div>
 	<div id='report_pk' style="display: none;" >{{report.pk}}  </div>
+  <div id='check_number' style="display: none;" >{{check_number}}  </div>
 
     <br>
 
@@ -119,11 +120,13 @@
 
 	<div id ="button_group" style='float:right; margin-right:25px' > </div>
 
+  <button type="button" class="btn btn-primary" id='submit_check' style='float:right; margin-right:25px'>Submit Report</button>
+
 
 
         
 
-		<strong>{{ sample.name }}</strong> |<strong>               Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} | 
+		<strong>{{ sample.name }}</strong> |<strong> Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} | 
 	    <strong> Indels </strong> {{summary.indel_count}} / {{total_summary.indel_count}} | <strong> LOF : </strong> {{summary.lof_count}} / {{total_summary.lof_count}} |
 	    <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}}  
 
@@ -165,7 +168,9 @@
           <th class='allele_depth'> AD </th>
           <th class='vafs'> VAFS </th>
 
-          <th class='check1'> Check 1 </th>
+          <th class='check'> Check </th>
+
+          <th class='hgvs_check'> HGVS Check </th>
 
 
 
@@ -217,16 +222,12 @@
 
 
 
-        {% if variant.calculate_allele_balance > haem_onc_ab_data.upper_limit or variant.calculate_allele_balance < haem_onc_ab_data.lower_limit %}
-
-        <td class='ab_std get_detail'> Yes </td>
-
-        {% else %}
-
-        <td class='ab_std get_detail'> No </td>
 
 
-       	{% endif %}
+        <td class='ab_std get_detail'> {{variant.allele_balance_out_of_range}} </td>
+
+        
+
 
         <td class='clinsig get_detail'> {{variant.variant.clinical_sig}} </td>
         <td class='genotype get_detail'> {{variant.display_genotype}} </td>
@@ -234,7 +235,7 @@
         <td class='allele_depth get_detail'> {{variant.allele_depth}} </td>
         <td class='vafs get_detail'> {{variant.vafs}} </td>
 
-		<td class='check1'>  
+		<td class='check'>  
 
 			 <select size="1" id="{{variant.variant.variant_hash}}" name="{{variant.variant.variant_hash}}">
 
@@ -254,6 +255,8 @@
 			   </select>
 
 		</td>
+
+    <td class='hgvs_check'>  <input type="text" class="form-control" value={{variant.variant.get_picked_hgvsc}}> </td>
 
 
 
@@ -285,9 +288,13 @@
 
 
 
+
+
 	</div>
 
 </div>
+
+
 
 
 <script type="text/javascript" src="{% static 'js/create_report.js' %}"></script>

@@ -271,40 +271,6 @@ class Worksheet(models.Model):
 			return False
 
 
-	def get_allele_balance_data(self):
-		"""
-		Get the mean allele balance of the run i.e. the mean value of the allele balance for all
-		variant_samples linked with this workbook
-
-		N.B - exclude negative control,
-
-		"""
-
-		variant_samples = VariantSample.objects.filter(sample__worksheet=self).exclude(sample__name__contains='D00-00000').values_list('vafs','caller')
-
-		allele_balance_list = [vcf_parser.calculate_allele_balance(vs_list[0], vs_list[1]) for vs_list in variant_samples]
-
-		allele_balance_array = np.array(allele_balance_list)
-
-
-		allele_balance_dict = {}
-
-		allele_balance_dict['mean'] = np.mean(allele_balance_array)
-
-		allele_balance_dict['std'] =np.std(allele_balance_array)
-
-		allele_balance_dict['upper_limit'] = allele_balance_dict['mean'] + (2*allele_balance_dict['std'])
-
-		allele_balance_dict['lower_limit'] = allele_balance_dict['mean'] - (2*allele_balance_dict['std'])
-
-		return allele_balance_dict
-
-
-
-
-
-
-
 
 class Sample(models.Model):
 	"""
@@ -1180,6 +1146,15 @@ class VariantSample(models.Model):
 
 		return frequency
 
+
+	def get_worksheet_count(self):
+		"""
+		Number of patients that a variant appears in within the worksheet.
+
+		"""
+
+		return VariantSample.objects.filter(variant=self).count()
+
 	def display_genotype(self):
 
 		"""
@@ -1209,6 +1184,47 @@ class VariantSample(models.Model):
 		"""
 
 		return vcf_parser.calculate_allele_balance(self.vafs, self.caller)
+
+	def allele_balance_out_of_range(self):
+		"""
+		Look at other instances of the variant in the same run (worksheet).
+
+		If the allele balance for this variant is > 2std away from the mean
+		allele balance then return True, Otherwise return False
+
+
+
+		"""
+
+		#get all instances of this variant in this worksheet. 
+
+		variant_samples = VariantSample.objects.filter(sample__worksheet=self.sample.worksheet, variant=self.variant).exclude(sample__name__contains='D00-00000').values_list('vafs','caller')
+
+		allele_balance_list = [vcf_parser.calculate_allele_balance(vs_list[0], vs_list[1]) for vs_list in variant_samples]
+
+		allele_balance_array = np.array(allele_balance_list)
+
+		allele_balance_dict = {}
+
+		allele_balance_dict['mean'] = np.mean(allele_balance_array)
+
+		allele_balance_dict['std'] =np.std(allele_balance_array)
+
+		allele_balance_dict['upper_limit'] = allele_balance_dict['mean'] + (2*allele_balance_dict['std'])
+
+		allele_balance_dict['lower_limit'] = allele_balance_dict['mean'] - (2*allele_balance_dict['std'])
+
+		variant_ab = self.calculate_allele_balance()
+
+		if variant_ab > allele_balance_dict['upper_limit'] or variant_ab < allele_balance_dict['lower_limit']:
+
+			return True
+
+		else:
+
+			return False
+
+
 
 
 
@@ -1441,8 +1457,10 @@ class Report(models.Model):
 		choices =(
 			('1', 'Awaiting First Check'),
 			('2', 'Awaiting Second Check'),
-			('3', 'Complete'),
-			('4', 'Invalid'))
+			('3', 'Awaiting Resolution'),
+			('4', 'Complete'),
+			('5', 'Invalid'),
+			)
 
 		try:
 
@@ -1451,13 +1469,6 @@ class Report(models.Model):
 		except:
 
 			return None
-
-
-
-
-
-
-
 
 
 
@@ -1489,11 +1500,37 @@ class ReportVariantSampleClassification(models.Model):
 	"""
 
 	report = models.ForeignKey(Report)
-	variant_sample = models.ForeignKey(VariantSample)
-	classification = models.ForeignKey(Classification)
-	check_number = models.IntegerField()
-	user = models.ForeignKey('auth.User')
-	date = models.DateTimeField()
+	variant = models.ForeignKey(Variant)
+	
+	
+	user1 = models.ForeignKey('auth.User')
+	date1 = models.DateTimeField()
+	user_hgvs1 = models.TextField()
+	classification1 = models.ForeignKey(Classification, related_name='classification1')
+
+	user2 = models.ForeignKey('auth.User', blank=True, null=True, related_name='user2')
+	date2 = models.DateTimeField(blank=True, null=True)
+	user_hgvs2 = models.TextField(blank=True, null=True)
+	classification2 = models.ForeignKey(Classification, related_name='classification2', blank=True, null=True)
+
+	final_classification = models.ForeignKey(Classification, related_name='final_classification', blank=True, null=True)
+	final_hgvs = models.TextField(blank=True, null=True)
+	final_user = models.ForeignKey('auth.User', blank=True, null=True, related_name='final_user')
+	final_date = models.DateTimeField(blank=True, null=True)
+
+	def classification_match(self):
+		"""
+		Do classification1 and classification2 match?
+
+		"""
+
+		if self.classification1 == self.classification2:
+
+			return True
+
+		else:
+
+			return False
 
 
 auditlog.register(Worksheet)
