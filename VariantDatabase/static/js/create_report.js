@@ -160,70 +160,13 @@ $(document).ready(function(){
 
 
 
-
-
-
-
-
-
-	$("#togglecovdata").click(function(){ //toggle coverage columns with only raw data i.e. not percentages
-
-		$(".hidecol").toggle();
-
-	});
-
-	$("#selectall").click(function(){ //This function selects everything in the filter_form form
-
-
-		$("#id_upstream_gene_variant").prop("checked", true);
-		$("#id_transcript_amplification").prop("checked", true);
-		$("#id_transcript_ablation").prop("checked", true);
-		$("#id_synonymous_variant").prop("checked", true);
-		$("#id_stop_retained_variant").prop("checked", true);
-		$("#id_stop_lost").prop("checked", true);
-		$("#id_stop_gained").prop("checked", true);
-		$("#id_start_lost").prop("checked", true);
-		$("#id_splice_region_variant").prop("checked", true);
-		$("#id_splice_donor_variant").prop("checked", true);
-		$("#id_splice_acceptor_variant").prop("checked", true);
-		$("#id_regulatory_region_variant").prop("checked", true);
-		$("#id_regulatory_region_amplification").prop("checked", true);
-		$("#id_regulatory_region_ablation").prop("checked", true);
-		$("#id_protein_altering_variant").prop("checked", true);
-		$("#id_non_coding_transcript_variant").prop("checked", true);
-		$("#id_non_coding_transcript_exon_variant").prop("checked", true);
-		$("#id_missense_variant").prop("checked", true);
-		$("#id_mature_miRNA_variant").prop("checked", true);
-		$("#id_intron_variant").prop("checked", true);
-		$("#id_intergenic_variant").prop("checked", true);
-		$("#id_inframe_insertion").prop("checked", true);
-		$("#id_inframe_deletion").prop("checked", true);
-		$("#id_incomplete_terminal_codon_variant").prop("checked", true);
-		$("#id_frameshift_variant").prop("checked", true);
-		$("#id_feature_truncation").prop("checked", true);
-		$("#id_feature_elongation").prop("checked", true);
-		$("#id_downstream_gene_variant").prop("checked", true);
-		$("#id_coding_sequence_variant").prop("checked", true);
-		$("#id_TF_binding_site_variant").prop("checked", true);
-		$("#id_TFBS_amplification").prop("checked", true);
-		$("#id_TFBS_ablation").prop("checked", true);
-		$("#id_NMD_transcript_variant").prop("checked", true);
-		$("#id_five_prime_UTR_variant").prop("checked", true);
-		$("#id_three_prime_UTR_variant").prop("checked", true);
-
-		$("#id_freq_max_af").val(1);
-
-
-	});
-
-
 	//popover for ExaC frequencies
 	$('.exac').popover({title: "", content: "", html: true, placement: "top",trigger: "hover"});  
 
 
 
 
-	$("#submit_check").click(function(){ //toggle coverage columns with only raw data i.e. not percentages
+	$("#submit_check").click(function(){ //submit check data e.g. classifications and hgvs
 
 
 		var variant_classification_dict = {}
@@ -266,7 +209,7 @@ $(document).ready(function(){
 
 
 		$.ajax({
-			url: '/ajax/ajax_receive_first_classification_data/',
+			url: '/ajax/ajax_receive_classification_data/',
 			type: 'POST',
 			data: formData,
 

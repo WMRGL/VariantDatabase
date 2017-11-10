@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from crispy_forms.bootstrap import Field, InlineRadios, TabHolder, Tab
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div, Fieldset
-
+"""
 class FilterForm(forms.Form):
 
 	upstream_gene_variant = forms.BooleanField(required=False)
@@ -46,7 +46,7 @@ class FilterForm(forms.Form):
 
 	freq_max_af = forms.FloatField(initial=1.0)
 
-
+"""
 
 class WorksheetStatusUpdateForm(forms.ModelForm):
 	"""
@@ -107,6 +107,44 @@ class SearchForm(forms.Form):
 
 
 				Fieldset('Search',Field('search',placeholder='Search for a gene, variant, location, region or sample', title=False)))
+
+
+
+class FilterForm(forms.Form):
+
+
+
+	
+	consequences_list = Consequence.objects.all()
+
+	choices_consequence = [(consequence.name, consequence.name) for consequence in consequences_list]
+
+
+	consequences = forms.MultipleChoiceField(choices_consequence)
+	max_af = forms.FloatField(required=True, max_value=1, min_value=0)
+
+	
+	def __init__(self, *args, **kwargs):
+
+
+		super(FilterForm, self).__init__(*args, **kwargs)
+
+		
+
+		self.helper = FormHelper()
+		self.helper.form_id = 'search-filter-form'
+		self.helper.label_class = 'col-lg-2'
+		self.helper.field_class = 'col-lg-8'
+
+
+
+		self.helper.form_method = 'get'
+		self.helper.form_action = ''
+		self.helper.add_input(Submit('submit_filter_form', 'Submit', css_class='btn-success'))
+		self.helper.form_class = 'form-horizontal'
+		self.helper.layout = Layout(
+			
+			Field('max_af'), Div('consequences') )
 
 
 

@@ -112,7 +112,7 @@ def upload_sample_sheet(sample_sheet_data):
 		sample_well = sample[3]
 		sample_i7_index = sample[4]
 		sample_index = sample[5]
-		sample_project = sample[6]
+		sample_gene_filter = sample[6]
 
 
 		new_sample = Sample.objects.filter(name=sample_name)
@@ -126,9 +126,21 @@ def upload_sample_sheet(sample_sheet_data):
 	
 			#get or create worksheet object - based on Sample_Plate column
 
+			if sample_gene_filter == "":
+
+				sample_gene_filter = "None"
+
+			try:
+
+				sample_gene_filter = SampleGeneFilter.objects.get(name= sample_gene_filter)
+
+			except:
+
+				raise CommandError("Could not find sample gene filter.")
+
 
 			new_sample = Sample(name= sample_name, worksheet=worksheet, visible=True,status='1',
-									sample_well=sample_well, i7_index_id=sample_i7_index, index=sample_index, sample_project=sample_project )
+									sample_well=sample_well, i7_index_id=sample_i7_index, index=sample_index, sample_gene_filter=sample_gene_filter )
 
 			new_sample.save()
 

@@ -165,11 +165,6 @@ $(document).ready(function(){
 
 
 
-
-
-
-
-
 	$("#togglecovdata").click(function(){ //toggle coverage columns with only raw data i.e. not percentages
 
 		$(".hidecol").toggle();
@@ -179,43 +174,20 @@ $(document).ready(function(){
 	$("#selectall").click(function(){ //This function selects everything in the filter_form form
 
 
-		$("#id_upstream_gene_variant").prop("checked", true);
-		$("#id_transcript_amplification").prop("checked", true);
-		$("#id_transcript_ablation").prop("checked", true);
-		$("#id_synonymous_variant").prop("checked", true);
-		$("#id_stop_retained_variant").prop("checked", true);
-		$("#id_stop_lost").prop("checked", true);
-		$("#id_stop_gained").prop("checked", true);
-		$("#id_start_lost").prop("checked", true);
-		$("#id_splice_region_variant").prop("checked", true);
-		$("#id_splice_donor_variant").prop("checked", true);
-		$("#id_splice_acceptor_variant").prop("checked", true);
-		$("#id_regulatory_region_variant").prop("checked", true);
-		$("#id_regulatory_region_amplification").prop("checked", true);
-		$("#id_regulatory_region_ablation").prop("checked", true);
-		$("#id_protein_altering_variant").prop("checked", true);
-		$("#id_non_coding_transcript_variant").prop("checked", true);
-		$("#id_non_coding_transcript_exon_variant").prop("checked", true);
-		$("#id_missense_variant").prop("checked", true);
-		$("#id_mature_miRNA_variant").prop("checked", true);
-		$("#id_intron_variant").prop("checked", true);
-		$("#id_intergenic_variant").prop("checked", true);
-		$("#id_inframe_insertion").prop("checked", true);
-		$("#id_inframe_deletion").prop("checked", true);
-		$("#id_incomplete_terminal_codon_variant").prop("checked", true);
-		$("#id_frameshift_variant").prop("checked", true);
-		$("#id_feature_truncation").prop("checked", true);
-		$("#id_feature_elongation").prop("checked", true);
-		$("#id_downstream_gene_variant").prop("checked", true);
-		$("#id_coding_sequence_variant").prop("checked", true);
-		$("#id_TF_binding_site_variant").prop("checked", true);
-		$("#id_TFBS_amplification").prop("checked", true);
-		$("#id_TFBS_ablation").prop("checked", true);
-		$("#id_NMD_transcript_variant").prop("checked", true);
-		$("#id_five_prime_UTR_variant").prop("checked", true);
-		$("#id_three_prime_UTR_variant").prop("checked", true);
+		var check_box = $("#id_consequences.selectmultiple.form-control").children();
 
-		$("#id_freq_max_af").val(1);
+		for (i=0; i <check_box.length; i++){
+
+
+			check_box[i].selected =true;
+
+
+		}
+
+		var frequency_box = $("#id_max_af");
+
+		frequency_box.val(1.0);
+
 
 
 	});

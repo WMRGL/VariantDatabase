@@ -2,6 +2,7 @@
 
 {% extends 'VariantDatabase/base.html' %}
 {% load static %}
+{% load crispy_forms_tags %}
 
 
 	{% block js-head %}
@@ -68,6 +69,7 @@
 
 	{% endif %}
 
+{{gene_filter}}
  
    <ul class="nav nav-tabs">
 
@@ -253,26 +255,17 @@ tr.shown td.details-control {
 
 
 
-		<div class="alert alert-info">
-
-  	<form class="form-horizontal" method="get" >
-
-            {{ filter_form.as_p }}
-
-        <br>
-
-        <div class="form-actions">
-
-            <button type="submit" class="btn btn-primary" name="filterform">Filter</button>
-
-        </div>
-    
-        </form>
 
 
 
+        {% crispy filter_form %}
 
-	</div>
+
+        <hr>
+
+        <h2> Gene Filter: {{sample.sample_gene_filter}} </h2> 
+
+	
 
 
 
@@ -767,6 +760,7 @@ tr.shown td.details-control {
 			<th> Report Status </th>
 			<th> Report Creator </th>
 			<th> Action </th>
+			<th> View </th>
 
 
 
@@ -784,9 +778,9 @@ tr.shown td.details-control {
 
 				<td> {{report.pk}} </td>
 
-				<td> <a href= "{% url 'view_sample_report' sample.pk report.pk %}"> {{ sample.name }}    </td>
+				<td> name on date    </td>
 
-				<td> </td>
+				<td> name on date   </td>
 
 
 				<td> {{report.get_status }} </td>
@@ -806,6 +800,8 @@ tr.shown td.details-control {
 				<td> None</td>
 
 				{% endif %}
+
+				<td> <a href= "{% url 'view_sample_report' sample.pk report.pk %}"> View</td>
 
 			</tr>
 

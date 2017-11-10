@@ -5,50 +5,7 @@
 {{list}}
 
 
-<table class='table'>
-	<thead>
 
-		<tr>
-
-			<th> Variant Name </th>
-			<th> HGVS </th>
-			<th> Check 1 </th>
-			<th> Check 2 </th>
-
-		</tr>
-
-	</thead>
-
-	<tbody>
-
-	{% for variant in list %}
-
-		<tr>
-
-
-			<td> {{variant.0.variant.chromosome}} {{variant.0.variant.positions}} {{variant.0.variant.ref}} {{variant.0.variant.alt}} </td>
-			<td> {{variant.0.variant.get_picked_hgvsc|truncatechars:50}} </td>
-
-			<td> {{variant.1.classification}} </td>
-			<td> {{variant.2}} </td>
-
-		</tr>
-
-	{% endfor %}
-
-	</tbody>
-
-</table>
-
-
-
-
-
-
-
-
-
-</table>
 
 
 {% endblock %} 

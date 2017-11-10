@@ -84,7 +84,9 @@ def list_worksheet_samples(request, pk_worksheet):
 
 	samples_in_worksheet = Sample.objects.filter(worksheet = worksheet, visible=True)
 
-	return render(request, 'VariantDatabase/list_worksheet_samples.html', {'samples_in_worksheet': samples_in_worksheet, 'form': form, 'worksheet': worksheet, 'quality_data': quality_data})
+	return render(request,
+				'VariantDatabase/list_worksheet_samples.html',
+				{'samples_in_worksheet': samples_in_worksheet, 'form': form, 'worksheet': worksheet, 'quality_data': quality_data})
 
 
 
@@ -96,12 +98,13 @@ def sample_summary(request, pk_sample):
 
 	"""
 
+	#print request.GET.get('consequences'), 'hi'
+
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
 	total_summary = sample.total_variant_summary()
 
 	reports = Report.objects.filter(sample=sample)
-
 
 	if request.method == "POST": #if the user clicked create a new report 
 
@@ -120,64 +123,71 @@ def sample_summary(request, pk_sample):
 
 				return redirect(create_sample_report, sample.pk, report.pk, '1')
 
-
-
-
-	elif 'filterform' in request.GET: #if the user clicked filter
+	elif 'submit_filter_form' in request.GET: #if the user clicked filter
 
 		filter_form = FilterForm(request.GET)
 
-		report_form = ReportForm()
+		if filter_form.is_valid():
 
-		consequences_to_include =[]
+			consequences =  filter_form.cleaned_data['consequences']
 
-		for key in request.GET:
+			consequences_to_include =[]
 
-			if key != 'csrfmiddlewaretoken' and key != 'filterform' and 'freq' not in key:
+			for consequence in consequences:
 
-
-				if key == 'five_prime_UTR_variant': #can't start python variables with a number so have to change key from 5_prime_UTR_variant to five_prime_UTR_variant
+				if consequence == 'five_prime_UTR_variant': #can't start python variables with a number so have to change key from 5_prime_UTR_variant to five_prime_UTR_variant
 
 					consequences_to_include.append('5_prime_UTR_variant')
 
-				elif key == 'three_prime_UTR_variant':
+				elif consequence == 'three_prime_UTR_variant':
 
 					consequences_to_include.append('3_prime_UTR_variant')
 
 				else:
 
-					consequences_to_include.append(key)
+					consequences_to_include.append(consequence)
 
-		max_af = request.GET.get('freq_max_af')
+			max_af = request.GET.get('max_af')
 
-		consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
+			consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
 
-		variant_samples =VariantSample.objects.filter(sample=sample, variant__worst_consequence__in=consequences_query_set).filter(variant__max_af__lte=max_af).order_by('variant__worst_consequence__impact', 'variant__max_af') #performance?
 
-		variants = Variant.objects.filter(variant_hash__in= variant_samples.values_list('variant_id', flat=True))
+			if sample.sample_gene_filter.name == 'None':
 
-		summary = sample.variant_query_set_summary(variants)
+				apply_gene_filter = False
 
-		gene_coverage = GeneCoverage.objects.filter(sample=sample)
+			else:
 
-		exon_coverage = ExonCoverage.objects.filter(sample=sample)
+				apply_gene_filter = True 
 
-		user_settings = UserSetting.objects.filter(user=request.user)
+			variant_samples = sample.get_filtered_variants(consequences_query_set,max_af, apply_gene_filter)
 
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variant_samples, 'reports': reports, 'report_form': report_form,  'summary': summary, 'total_summary': total_summary,
-					 'filter_form': filter_form, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage , 'user_settings': user_settings })
+			variants = Variant.objects.filter(variant_hash__in= variant_samples.values_list('variant_id', flat=True))
 
+			summary = sample.variant_query_set_summary(variants)
+
+			gene_coverage = GeneCoverage.objects.filter(sample=sample)
+
+			exon_coverage = ExonCoverage.objects.filter(sample=sample)
+
+			user_settings = UserSetting.objects.filter(user=request.user)
+
+			report_form = ReportForm()
+
+
+			return render(request,
+						 'VariantDatabase/sample_summary.html',
+						  {'sample': sample, 'variants': variant_samples,
+							'reports': reports, 'report_form': report_form,
+							'summary': summary, 'total_summary': total_summary,
+						 	'gene_coverage': gene_coverage,
+						 	'exon_coverage': exon_coverage , 'user_settings': user_settings, 'filter_form': filter_form })
 
 	else:
 
 		filter_dict = sample.worksheet.sub_section.create_filter_dict()
 
-		filter_form = FilterForm(initial=filter_dict)
-
 		consequences_to_include =[]
-
-		report_form = ReportForm()
-
 
 		for key in filter_dict:
 
@@ -198,8 +208,16 @@ def sample_summary(request, pk_sample):
 
 		consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
 
-		variant_samples =VariantSample.objects.filter(sample=sample, variant__worst_consequence__in=consequences_query_set).filter(variant__max_af__lte=filter_dict['freq_max_af']).order_by('variant__worst_consequence__impact', 'variant__max_af')
+		if sample.sample_gene_filter.name == 'None':
 
+			apply_gene_filter = False
+
+		else:
+
+			apply_gene_filter = True 
+
+		variant_samples = sample.get_filtered_variants(consequences_query_set,filter_dict['freq_max_af'], apply_gene_filter)
+														 
 		variants = Variant.objects.filter(variant_hash__in= variant_samples.values_list('variant_id', flat=True))
 
 		summary = sample.variant_query_set_summary(variants)
@@ -210,10 +228,19 @@ def sample_summary(request, pk_sample):
 
 		user_settings = UserSetting.objects.filter(user=request.user)
 
+		report_form = ReportForm()
 
-		return render(request, 'VariantDatabase/sample_summary.html', {'sample': sample, 'variants': variant_samples, 'reports': reports, 'report_form': report_form,  'summary': summary, 'total_summary': total_summary,
-					 'filter_form': filter_form, 'filter_dict': filter_dict, 'cons': consequences_to_include, 'gene_coverage': gene_coverage,'exon_coverage': exon_coverage, 'user_settings': user_settings})
+		filter_form = FilterForm()
 
+		filter_form.fields['consequences'].initial = filter_dict
+		filter_form.fields['max_af'].initial = filter_dict['freq_max_af']
+
+		return render(request,
+					 'VariantDatabase/sample_summary.html',
+					  {'sample': sample, 'variants': variant_samples,
+						'reports': reports, 'report_form': report_form,  'summary': summary,
+						'total_summary': total_summary, 'gene_coverage': gene_coverage,
+						'exon_coverage': exon_coverage, 'user_settings': user_settings, 'filter_form': filter_form})
 
 
 @login_required
@@ -235,11 +262,7 @@ def variant_detail(request, pk_sample, variant_hash):
 
 	transcripts = VariantTranscript.objects.filter(variant = variant)
 
-
-
 	return render(request, 'VariantDatabase/variant_detail.html', {'variant': variant, 'transcripts': transcripts, 'other_alleles': other_alleles})
-
-
 
 @login_required
 def view_gene(request, gene_pk):
@@ -253,9 +276,6 @@ def view_gene(request, gene_pk):
 	gene = Gene.objects.get(name=gene_pk)
 
 	variants = gene.get_all_variants()
-
-
-
 
 	return render(request,'VariantDatabase/gene.html', {'variants': variants, 'gene': gene})
 
@@ -279,9 +299,6 @@ def view_detached_variant(request, variant_hash):
 
 	return render(request, 'VariantDatabase/variant_view.html', {'variant': variant, 'transcripts': transcripts, 'other_alleles': other_alleles,
 	 			'frequency_data': frequency_data, 'samples':samples } )
-
-
-
 
 
 @login_required
@@ -400,7 +417,6 @@ def ajax_table_expand(request):
 
 
 	"""
-
 
 	if request.is_ajax():
 
@@ -576,26 +592,56 @@ def search(request):
 		return render(request, 'VariantDatabase/search.html' , {'form': form})
 
 
-
-
-
-
-
-
- 
-#Under development
 def create_sample_report(request, pk_sample, pk_report, check_number):
+	"""
+	A view for creating and checking sample reports.
+
+	Sample Reports can be created from the Summary View.
 
 
 
 
+	"""
 	report = get_object_or_404(Report, pk=pk_report)
 
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
 	total_summary = sample.total_variant_summary()
 
-	variant_samples =VariantSample.objects.filter(sample=sample).order_by('variant__worst_consequence__impact', 'variant__max_af')
+	filter_dict = sample.worksheet.sub_section.create_filter_dict()
+
+	filter_form = FilterForm(initial=filter_dict)
+
+	consequences_to_include =[]
+
+	for key in filter_dict:
+
+		if 'freq' not in key and filter_dict[key] ==True:
+
+			if key == 'five_prime_UTR_variant':
+
+				consequences_to_include.append('5_prime_UTR_variant')
+
+			elif key == 'three_prime_UTR_variant':
+
+				consequences_to_include.append('3_prime_UTR_variant')
+
+			else:
+
+				consequences_to_include.append(key)
+
+
+	consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
+
+	if sample.sample_gene_filter.name == 'None':
+
+		apply_gene_filter = False
+
+	else:
+
+		apply_gene_filter = True 
+
+	variant_samples =sample.get_filtered_variants(consequences_query_set, filter_dict['freq_max_af'], apply_gene_filter)
 
 	variants = Variant.objects.filter(variant_hash__in= variant_samples.values_list('variant_id', flat=True))
 
@@ -605,22 +651,20 @@ def create_sample_report(request, pk_sample, pk_report, check_number):
 
 	classifications = Classification.objects.filter(subsection=sample.worksheet.sub_section)
 
-	return render(request, 'VariantDatabase/create_sample_report.html', {'sample': sample, 'variants': variant_samples,  'summary': summary, 'total_summary': total_summary, 'user_settings': user_settings,
-					 		'classifications': classifications, 'report': report, 'check_number': check_number })
+	return render(request,
+				'VariantDatabase/create_sample_report.html',
+				{'sample': sample, 'variants': variant_samples,  'summary': summary,
+				'total_summary': total_summary, 'user_settings': user_settings,
+				'classifications': classifications, 'report': report, 'check_number': check_number })
 
 
-
-
-
-def ajax_receive_first_classification_data(request):
+def ajax_receive_classification_data(request):
 
 	if request.is_ajax():
 
 		sample_pk = request.POST.get('sample_pk')
 		report_pk = request.POST.get('report_pk')
 		check_number = request.POST.get('check_number')
-
-		print check_number
 
 
 		sample = get_object_or_404(Sample, pk=sample_pk.strip())
@@ -710,8 +754,33 @@ def ajax_receive_first_classification_data(request):
 
 
 
-				report.status ='3'
+				if report.number_of_mismatches() == 0:
+
+
+					report_sample_variant_classifications = ReportVariantSampleClassification.objects.filter(report=report)
+
+					for variant_classification in report_sample_variant_classifications:
+
+						variant_classification.final_classification = variant_classification.classification2
+						variant_classification.final_user = request.user
+						variant_classification.final_date = timezone.now()
+						variant_classification.final_hgvs = variant_classification.user_hgvs2
+
+						variant_classification.save()
+
+
+					report.status ='4'
+
+
+
+
+
+				else:
+					
+					report.status ='3'
+
 				report.save()
+
 
 				return HttpResponse('Done')
 
@@ -720,7 +789,6 @@ def ajax_receive_first_classification_data(request):
 			classifications = request.POST.get('classifications')
 
 			classifications = json.loads(classifications)
-
 
 			with transaction.atomic(): 
 
@@ -758,20 +826,28 @@ def ajax_receive_first_classification_data(request):
 
 
 
+				report_sample_variant_classifications = ReportVariantSampleClassification.objects.filter(report=report)
+
+				for variant_classification in report_sample_variant_classifications:
+
+					if variant_classification.final_classification == None:
+
+						variant_classification.final_classification = variant_classification.classification2
+						variant_classification.final_user = request.user
+						variant_classification.final_date = timezone.now()
+						variant_classification.final_hgvs = variant_classification.user_hgvs2
+
+						variant_classification.save()
+
+
 				report.status ='4'
 				report.save()
 
 				return HttpResponse('Done')
 
-
-
-
-
-
-
 		else:
 
-			return HttpResponse('Already done 1st check')
+			return HttpResponse('Already done the check')
 
 
 	return HttpResponse('ajax error')
@@ -816,12 +892,6 @@ def resolve_check_differences(request, pk_sample, pk_report):
 
 	return render(request, 'VariantDatabase/resolve_check_differences.html', {'matches': matches, 'discrepencies': discrepencies,'sample': sample,
 	  			'user_settings': user_settings,'classifications': classifications, 'report': report, })
-
-
-
-
-
-
 
 
 

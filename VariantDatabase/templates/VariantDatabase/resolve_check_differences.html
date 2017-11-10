@@ -200,7 +200,7 @@
         <td class="details-control"></td>
         <td class='hgvsc get_detail'> {{variant.0.variant.get_picked_hgvsc|truncatechars:50}} </td>
 
-        <td class='variant_desc get_detail '> {{variant.0.variant.chromosome}} {{variant.variant.position}} </td>
+        <td class='variant_desc get_detail '> {{variant.0.variant.chromosome}} {{variant.0.variant.position}} </td>
         <td class ='reference get_detail'> {{variant.0.variant.ref|truncatechars:10}} </td>
         <td class='alt get_detail'> {{variant.0.variant.alt|truncatechars:10}} </td>
         <td class='worst_consequence get_detail'> {{variant.0.variant.worst_consequence}} </td>
@@ -296,7 +296,61 @@
 
         <div id="matches" class="tab-pane">
 
-        {{matches}}
+         <table class = "table table-hover">
+
+
+         <thead> 
+
+        <tr>
+          <th style="display:none;" class='variant_hash'> Variant Hash </th>
+          <th class='hgvsc'> HGVSc </th>
+          <th class='variant_desc'> Variant </th>
+          <th class='reference'> Ref </th>
+          <th class='alt'> Alt </th>
+          <th class='worst_consequence'> Worst Consequence </th>
+          <th class="genes"> Genes </th>
+          <th class='genotype'> Genotype </th>
+          <th class='final'> Final Classification </th>
+          <th class='final2'> Final HGVS </th>
+
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+      {% for variant in matches %}
+
+        <tr>
+
+        <td style="display:none;"> {{variant.0.variant.variant_hash}}></td>
+        <td> {{variant.0.variant.get_picked_hgvsc|truncatechars:50}}</td>
+        <td>{{variant.0.variant.chromosome}} {{variant.0.variant.position}} </td>
+        <td>{{variant.0.variant.ref|truncatechars:10}} </td>
+        <td> {{variant.0.variant.alt|truncatechars:10}}</td>
+        <td>{{variant.0.variant.worst_consequence}} </td>
+        <td> {{variant.0.variant.get_genes|join:" "}}</td>
+        <td> {{variant.0.display_genotype}}</td>
+        <td> {{variant.1.final_classification}} </td>
+        <td>{{variant.1.final_hgvs}} </td>
+
+
+        </tr>
+
+      {% endfor %}
+
+    </tbody>
+
+    </table>
+
+
+
+
+
+         
+
+        
 
 
   </div>

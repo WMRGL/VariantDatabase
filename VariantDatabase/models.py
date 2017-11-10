@@ -58,6 +58,12 @@ class SubSection(models.Model):
 
 	#filter settings
 
+	upstream_gene_variant = models.BooleanField()
+	transcript_amplification = models.BooleanField()
+	transcript_ablation = models.BooleanField()
+	synonymous_variant = models.BooleanField()
+	stop_retained_variant = models.BooleanField()
+
 	stop_lost = models.BooleanField()
 	stop_gained = models.BooleanField()
 	start_lost = models.BooleanField()
@@ -103,6 +109,12 @@ class SubSection(models.Model):
 
 		filter_dict ={}
 
+
+		filter_dict['upstream_gene_variant'] = self.upstream_gene_variant
+		filter_dict['transcript_amplification'] = self.transcript_amplification
+		filter_dict['transcript_ablation'] = self.transcript_ablation
+		filter_dict['synonymous_variant'] = self.synonymous_variant
+		filter_dict['stop_retained_variant'] = self.stop_retained_variant
 		filter_dict['stop_lost']=self.stop_lost
 		filter_dict['stop_gained']=self.stop_gained
 		filter_dict['start_lost']=self.start_lost
@@ -131,8 +143,8 @@ class SubSection(models.Model):
 		filter_dict['TFBS_amplification']=self.TFBS_amplification
 		filter_dict['TFBS_ablation']=self.TFBS_ablation
 		filter_dict['NMD_transcript_variant']=self.NMD_transcript_variant
-		filter_dict['five_prime_UTR_variant']=self.five_prime_UTR_variant
-		filter_dict['three_prime_UTR_variant']=self.three_prime_UTR_variant
+		filter_dict['5_prime_UTR_variant']=self.five_prime_UTR_variant
+		filter_dict['3_prime_UTR_variant']=self.three_prime_UTR_variant
 		filter_dict['freq_max_af']=self.freq_max_af
 		
 		return filter_dict
@@ -270,6 +282,22 @@ class Worksheet(models.Model):
 
 			return False
 
+class SampleGeneFilter(models.Model):
+	"""
+	A model for storing gene lists that the variants in sample to be filtered by.
+
+	For example: D-MPD-001 has JAK2,CALR, MPL, CBL
+
+	Therefore for samples with project set as D-MPD-001 we will only see variants in that gene.
+
+
+	"""
+
+	name = models.CharField(max_length=20)
+	subsection = models.ForeignKey(SubSection)
+
+	def __str__(self):
+		return self.name
 
 
 class Sample(models.Model):
@@ -282,9 +310,8 @@ class Sample(models.Model):
 	"""
 	choices =(
 			('1', 'New Sample'),
-			('2', 'Awaiting 1st Check'),
-			('3', 'Awaiting 2nd Check'),
-			('4', 'Complete'))
+			('2', 'Report Complete'),
+			('3', 'Invalid'))
 
 
 	name = models.CharField(max_length=50, unique=True)
@@ -298,7 +325,7 @@ class Sample(models.Model):
 	sample_well = models.CharField(max_length =10)
 	i7_index_id = models.IntegerField()
 	index = models.CharField(max_length =50)
-	sample_project = models.CharField(max_length =50, null=True, blank=True)
+	sample_gene_filter = models.ForeignKey(SampleGeneFilter)
 
 	#QC data from SamStats
 
@@ -386,9 +413,9 @@ class Sample(models.Model):
 		"""
 		choices =(
 				('1', 'New Sample'),
-				('2', 'Awaiting 1st Check'),
-				('3', 'Awaiting 2nd Check'),
-				('4', 'Complete'))
+				('2', 'Report Complete'),
+				('3', 'Invalid'))
+
 
 		try:
 
@@ -491,6 +518,61 @@ class Sample(models.Model):
 				return 'PASS'
 
 
+	def get_filtered_variants(self, consequences_query_set, max_frequency, apply_gene_filter):
+		"""
+		Gets all the variants for a sample and applies the following filters:
+
+		1) Consequences
+		2) Frequency (ExAC)
+		3) Gene
+
+		Input :
+
+		consequences_query_set = A query set containing the consequences to include
+		max_frequency = The maximum frequency i.e. exclude variants with max_af > this.
+		apply_gene_filter = Boolean - whether to apply gene filter
+
+		Output:
+
+		variant_samples = A queryset containing the filtered VariantSample Objects.
+
+
+		"""
+
+
+		variant_samples =(VariantSample
+				.objects
+				.filter(sample=self, variant__worst_consequence__in=consequences_query_set)
+				.filter(variant__max_af__lte=max_frequency)
+				.order_by('variant__worst_consequence__impact', 'variant__max_af')
+				.select_related('variant'))
+
+		if apply_gene_filter ==True:
+
+			sample_gene_filter = (SampleGeneFilterGene
+								.objects
+								.filter(sample_gene_filter=self.sample_gene_filter)
+								.select_related('gene'))
+
+			sample_gene_filter =[sample_gene.gene for sample_gene in sample_gene_filter]
+
+			sample_gene_filter = Gene.objects.filter(name__in = sample_gene_filter)
+
+			variants = [variant_sample.variant for variant_sample in variant_samples]
+
+			variant_transcripts = VariantTranscript.objects.filter(variant__in=variants).filter(transcript__gene__in=sample_gene_filter).select_related('variant')
+
+			variants = [variant_transcript.variant.variant_hash for variant_transcript in variant_transcripts]
+
+			variant_samples = variant_samples.filter(variant__variant_hash__in=variants)
+
+			return variant_samples
+
+		else:
+
+			return variant_samples
+
+
 
 class Consequence(models.Model):
 	"""
@@ -558,8 +640,15 @@ class Gene(models.Model):
 
 		return Transcript.objects.filter(gene=self)
 
+class SampleGeneFilterGene(models.Model):
 
+	"""
+	The genes which are in a specific SampleGeneFilter
 
+	"""
+
+	sample_gene_filter = models.ForeignKey(SampleGeneFilter)
+	gene = models.ForeignKey(Gene)
 
 class Transcript(models.Model):
 	"""
@@ -1471,6 +1560,35 @@ class Report(models.Model):
 			return None
 
 
+	def number_of_mismatches(self):
+		"""
+		Returns the number of mismatches between in the 
+		ReportVariantSampleClassification model i.e.
+
+		- The number of ReportVariantSampleClassification where the classifications made by
+		  users in the 1st check does not macth that by the user doing the second check.
+
+		 -Also where the hgvs does not match
+
+
+		"""
+
+		report_sample_variant_classifications = ReportVariantSampleClassification.objects.filter(report=self)
+
+		count =0
+
+		for variant_classification in report_sample_variant_classifications:
+
+			if variant_classification.classification_match() != True:
+
+				count = count+1
+
+
+		return count
+
+
+
+
 
 
 class Classification(models.Model):
@@ -1524,7 +1642,7 @@ class ReportVariantSampleClassification(models.Model):
 
 		"""
 
-		if self.classification1 == self.classification2:
+		if self.classification1 == self.classification2 and self.user_hgvs1 == self.user_hgvs2:
 
 			return True
 
