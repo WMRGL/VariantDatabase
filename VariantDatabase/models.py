@@ -293,11 +293,21 @@ class SampleGeneFilter(models.Model):
 
 	"""
 
-	name = models.CharField(max_length=20)
-	subsection = models.ForeignKey(SubSection)
+	name = models.CharField(max_length=20, unique=True)
+	description = models.TextField()
+	subsection = models.ForeignKey(SubSection, null=True, blank=True)
 
 	def __str__(self):
 		return self.name
+
+
+	def number_of_genes(self):
+		"""
+		Number of genes in the SampleGeneFilter
+
+		"""
+
+		return SampleGeneFilterGene.objects.filter(sample_gene_filter=self).count()
 
 
 class Sample(models.Model):

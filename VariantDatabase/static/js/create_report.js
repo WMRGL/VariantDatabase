@@ -72,7 +72,6 @@ $(document).ready(function(){
 		//add colour to selected row	
 		var variant_hash  = $(this).siblings('td.variant_hash.noVis').eq(0).text(); //get hash from row 0
 		var sample_pk = $("#sample_pk").text(); //get sample_pk from div
-		console.log(variant_hash)
 
 
 		var selected = $(this).parent().hasClass("success");
@@ -116,7 +115,6 @@ $(document).ready(function(){
       // Add event listener for opening and closing details
       $('#variant_table').on('click', 'td.details-control', function () {
 
-      	console.log('hi')
 
 
       	var variant_hash  = $(this).siblings('td.variant_hash.noVis').eq(0).text(); //get hash from row 0

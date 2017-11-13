@@ -17,7 +17,17 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^ajax/ajax_detail/$', views.ajax_detail, name='ajax_detail'),
 				url(r'^ajax/ajax_comments/$', views.ajax_comments, name='ajax_comments'),
 				url(r'^ajax/ajax_table_expand/$', views.ajax_table_expand, name='ajax_table_expand'),
+
+
 				url(r'^ajax/ajax_receive_classification_data/$', views.ajax_receive_classification_data, name='ajax_receive_classification_data'),
+
+
+				
+				url(r'^ajax/update_sample_gene_filter/$', views.ajax_submit_sample_gene_filter, name='ajax_submit_sample_gene_filter'),
+
+
+
+
 				url(r'^user_settings/$', views.user_settings, name='user_settings'),
 
 				url(r'^api/variants/$', views.api_variants, name='api_variants'),
@@ -25,6 +35,9 @@ urlpatterns = [ url(r'^$', views.home_page, name='home_page'),
 				url(r'^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/(?P<check_number>(1|2))/$', views.create_sample_report, name='create_sample_report'),
 				url(r'^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/view/$', views.view_sample_report, name='view_sample_report'),
 				url(r'^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/resolve/$', views.resolve_check_differences, name='resolve_check_differences'),
+
+				url(r'^sample_gene_filters_list/$', views.sample_gene_filters_list, name='sample_gene_filters_list'),
+				url(r'^sample_gene_filters/(?P<pk_sample_gene_filter>\w+)/$', views.sample_gene_filter_edit_create, name='sample_gene_filter_edit_create'),
 
 
 

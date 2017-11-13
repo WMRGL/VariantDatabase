@@ -120,8 +120,6 @@ $(document).ready(function(){
       // Add event listener for opening and closing details
       $('#variant_table').on('click', 'td.details-control', function () {
 
-      	console.log('hi')
-
 
       	var variant_hash  = $(this).siblings('td.variant_hash.noVis').eq(0).text(); //get hash from row 0
 		

@@ -1,0 +1,154 @@
+{% extends 'VariantDatabase/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<link rel="stylesheet" href= "{% static 'css/parts-selector.css' %}">
+
+
+<h2 id='sample_gene_filter_name'> {{sample_gene_filter.name}} </h2> 
+
+<hr>
+
+<button type="button" class="btn btn-success" id='submit_save'>Save</button>
+<hr>
+
+
+<h4> Description: </h4>
+
+<textarea class="form-control" rows="5" id="comment_box">{{sample_gene_filter.description|linebreaksbr}}</textarea>
+
+
+<hr>
+<main>
+
+
+      <div class="parts-selector" id="parts-selector-1">
+        <div class="parts list">
+          <h3 class="list-heading">Available Genes</h3>
+          <ul>
+
+          {% for gene2 in all_genes %}
+
+            <li>
+              {{gene2.name}}
+            </li>
+
+            {% endfor %}
+
+          </ul>
+        </div>
+        <div class="controls">
+          <a class="moveto selected"><span class="icon"></span><span class="text">Add</span></a>
+          <a class="moveto parts"><span class="icon"></span><span class="text">Remove</span></a>
+        </div>
+        <div class="selected list">
+          <h3 class="list-heading">Panel Genes</h3>
+          <ul id='genes_to_include'>
+
+
+
+            {% for gene in sample_gene_filter_genes %}
+
+            <li>
+              {{gene.gene.name}}
+            </li>
+            {% endfor %}
+
+
+          </ul>
+        </div>
+      </div>
+
+
+    </main>
+
+{% csrf_token %}
+<script type="text/javascript" src="{% static 'js/parts-selector.js' %}"></script>
+
+
+
+<script>
+  $(function() {
+    $( "#parts-selector-1" ).partsSelector({itemButtons:true});
+  });
+</script>
+
+<script>
+$(document).ready(function(){
+
+
+  $("#submit_save").click(function(){ //toggle coverage columns with only raw data i.e. not percentages
+
+    var sample_gene_filter_name = $.trim($('#sample_gene_filter_name').text())
+
+    var genes_to_submit = $('#genes_to_include').children('li');
+
+    var gene_list =[]
+
+    var comment_box = $('#comment_box').val()
+
+    console.log(comment_box)
+
+    for (var i =0; i<genes_to_submit.length; i++){
+
+      gene = $.trim(genes_to_submit[i].childNodes[0].data);
+
+      gene_list.push(gene)
+
+
+    };
+
+    var formData = new FormData();
+    formData.append('csrfmiddlewaretoken',document.getElementsByName('csrfmiddlewaretoken')[0].value );
+    formData.append('genes_to_include', JSON.stringify(gene_list));
+    formData.append('sample_gene_filter_name', sample_gene_filter_name);
+    formData.append('comment_box', comment_box);
+
+
+    $.ajax({
+      url: '/ajax/update_sample_gene_filter/',
+      type: 'POST',
+      data: formData,
+
+
+      contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+      processData: false, // NEEDED, DON'T OMIT THIS
+
+      success: function(data) {
+
+      alert(data)
+
+      },
+      failure: function(data) { 
+
+      alert('Got an error');
+
+      }
+
+      });
+    
+
+
+
+  });
+
+
+
+
+
+  });
+
+
+
+</script>
+
+
+
+
+
+
+
+
+
+ {% endblock %}

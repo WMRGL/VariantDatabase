@@ -954,6 +954,108 @@ def view_sample_search(request,sample_query):
 	return render(request,'VariantDatabase/view_sample_search.html', {'samples': samples,'sample_query': sample_query})
 
 
+def sample_gene_filters_list(request):
+
+	sample_gene_filters = SampleGeneFilter.objects.all().exclude(name='None')
+
+	requested_sample_gene_filters =  request.POST.getlist('inherit_select')
+
+
+	if request.method == 'POST':
+
+		form = CreateSampleGeneFilterForm(request.POST)
+
+		if form.is_valid():
+
+			new_sample_gene_filter = form.save(commit=False)
+
+			new_sample_gene_filter.description = 'None'
+
+			new_sample_gene_filter.save()
+
+			set_of_genes = set()
+
+			for sample_gene_filter in requested_sample_gene_filters:
+
+
+				sample_gene_filter = get_object_or_404(SampleGeneFilter, name = sample_gene_filter)
+
+				genes = SampleGeneFilterGene.objects.filter(sample_gene_filter=sample_gene_filter)
+
+				genes =[gene.gene for gene in genes]
+
+				set_of_genes.update(genes)
+
+			set_of_genes = list(set_of_genes)
+
+			print set_of_genes
+			
+
+			for gene in set_of_genes:
+
+				new_sample_gene_filter_gene = SampleGeneFilterGene(gene=gene, sample_gene_filter=new_sample_gene_filter)
+
+				new_sample_gene_filter_gene.save()
+
+
+			return redirect(sample_gene_filter_edit_create, new_sample_gene_filter.pk)
+
+
+			
+
+
+
+
+
+
+
+	form = CreateSampleGeneFilterForm()
+
+	return render(request,'VariantDatabase/sample_gene_filters_list.html', {'sample_gene_filters': sample_gene_filters, 'form': form})
+
+def sample_gene_filter_edit_create(request, pk_sample_gene_filter):
+
+	sample_gene_filter = get_object_or_404(SampleGeneFilter, pk=pk_sample_gene_filter)
+
+	sample_gene_filter_genes = SampleGeneFilterGene.objects.filter(sample_gene_filter=sample_gene_filter)
+
+	already_in_genes = [sample_gene_filter_gene.gene for sample_gene_filter_gene in sample_gene_filter_genes]
+
+	all_genes = list(set(Gene.objects.all()) - set(already_in_genes))
+
+	return render(request,'VariantDatabase/sample_gene_filter_edit_create.html', {'sample_gene_filter_genes': sample_gene_filter_genes, 'all_genes': all_genes, 'sample_gene_filter': sample_gene_filter})  
+
+
+def ajax_submit_sample_gene_filter(request):
+
+	if request.is_ajax():
+
+		list_of_genes = request.POST.get('genes_to_include')
+		list_of_genes = json.loads(list_of_genes)
+		sample_gene_filter = request.POST.get('sample_gene_filter_name')
+		comment = request.POST.get('comment_box')
+
+		sample_gene_filter = get_object_or_404(SampleGeneFilter, name=sample_gene_filter)
+
+		sample_gene_filter.description = comment
+		sample_gene_filter.save()
+
+
+		sample_gene_filter_genes = SampleGeneFilterGene.objects.filter(sample_gene_filter= sample_gene_filter)
+
+		sample_gene_filter_genes.delete()
+
+		for gene in list_of_genes:
+
+			gene = get_object_or_404(Gene,name=gene)
+
+			new_sample_gene_filter_gene = SampleGeneFilterGene(sample_gene_filter= sample_gene_filter, gene=gene)
+
+			new_sample_gene_filter_gene.save()
+
+		return HttpResponse('Panel has been updated!')
+
+
 
 
 

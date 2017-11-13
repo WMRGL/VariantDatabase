@@ -1,0 +1,86 @@
+{% extends 'VariantDatabase/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+
+ {% block content %}
+
+ <h2> Gene Panels </h2>
+
+ <hr> 
+
+
+ <ul class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="#gene_panels">Gene Panels</a></li>
+    <li><a data-toggle="tab" href="#create_new">Create New</a></li>
+ </ul>
+
+ <div class="tab-content">
+
+ 	 <div id="gene_panels" class="tab-pane fade in active">
+
+		 <table class='table'>
+
+		 	<thead>
+
+		 		<tr>
+
+		 			<th> Name </th>
+		 			<th> Description </th>
+		 			<th> Subsection </th>
+		 			<th> Gene Count </th>
+
+		 			<th> View </th>
+		 			<th> Edit </th>
+
+
+		 		</tr>
+
+		 	</thead>
+
+		 	<tbody>
+
+		 		{% for gene_filter in sample_gene_filters %}
+
+		 			<tr>
+
+		 				<td> {{gene_filter.name}} </td>
+		 				<td> {{gene_filter.description}} </td>
+		 				<td> {{gene_filter.subsection}} </td>
+		 				<td> {{gene_filter.number_of_genes}} </td>
+
+		 				<td> <a href= "{% url 'sample_gene_filter_edit_create' gene_filter.pk  %}"> View   </a> </td>
+		 				<td> Edit </td>
+
+		 			</tr>
+
+		 		{% endfor %}
+
+
+		 	</tbody>
+
+
+		 </table>
+
+
+	</div>
+
+
+	<div id="create_new" class="tab-pane fade">
+
+	<br>
+
+	{% crispy form %}
+
+
+
+
+    </div>
+
+   </div>
+
+
+
+
+ {% endblock %}
