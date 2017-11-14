@@ -1,0 +1,34 @@
+{% extends 'VariantDatabase/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<link rel="stylesheet" href= "{% static 'css/parts-selector.css' %}">
+
+
+<h2> {{panel.name}} </h2> 
+
+<hr>
+
+<p><strong> Sub-Section: </strong> {{panel.subsection}} </p> 
+
+<hr>
+
+<p> {{panel.description}}
+
+<hr>
+
+  <ul class="list-group">
+          {% for gene in panel_genes %}
+
+            <li class="list-group-item">
+              {{gene.gene.name}}
+            </li>
+
+            {% endfor %}
+
+          </ul>
+
+
+
+ {% endblock %}

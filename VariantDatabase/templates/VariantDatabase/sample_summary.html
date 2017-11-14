@@ -68,8 +68,6 @@
 	</div>
 
 	{% endif %}
-
-{{gene_filter}}
  
    <ul class="nav nav-tabs">
 
@@ -109,7 +107,7 @@
 
 		<strong>{{ sample.name }}</strong> |<strong>               Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} | 
 	    <strong> Indels </strong> {{summary.indel_count}} / {{total_summary.indel_count}} | <strong> LOF : </strong> {{summary.lof_count}} / {{total_summary.lof_count}} |
-	    <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}}  
+	    <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}} | <strong> Panel : </strong> {{sample.panel}}
 
 
 
@@ -164,9 +162,6 @@ tr.shown td.details-control {
           <th class='exac_frequency'> ExAC </th>
           <th class='project_count'> Project Frequency </th>
           <th class='worksheet_count'> Worksheet Count </th>
-
-
-
           <th class='clinsig'> Clin Sig </th>
           <th class='genotype'> Genotype </th>
           <th class='callers'> Callers </th>
@@ -188,11 +183,8 @@ tr.shown td.details-control {
       <tr class='variant'>
 
         <td class='variant_hash' style="display:none;"> {{variant.variant.variant_hash}}</td>
-
-
         <td class="details-control"></td>
         <td class='hgvsc get_detail'> {{variant.variant.get_picked_hgvsc|truncatechars:50}} </td>
-
         <td class='variant_desc get_detail '> {{variant.variant.chromosome}} {{variant.variant.position}} </td>
         <td class ='reference get_detail'> {{variant.variant.ref|truncatechars:10}} </td>
         <td class='alt get_detail'> {{variant.variant.alt|truncatechars:10}} </td>
@@ -211,10 +203,8 @@ tr.shown td.details-control {
                                                   <li class="list-group-item">SAS AF : {{ variant.variant.exac_sas_af}}</li></ul>' >{{variant.variant.exac_af}}</a>
 
             </td>
-
         <td class='project_count get_detail'>  {{variant.get_subsection_frequency}}</td>
         <td class='worksheet_count get_detail'> {{variant.variant.get_worksheet_count}}</td>
-
         <td class='clinsig get_detail'> {{variant.variant.clinical_sig}} </td>
         <td class='genotype get_detail'> {{variant.display_genotype}} </td>
         <td class='callers get_detail'> {{variant.caller}} </td>
@@ -263,7 +253,7 @@ tr.shown td.details-control {
 
         <hr>
 
-        <h2> Gene Filter: {{sample.sample_gene_filter}} </h2> 
+        <h2> Gene Filter: {{sample.panel}} </h2> 
 
 	
 

@@ -30,9 +30,7 @@
 		 			<th> Description </th>
 		 			<th> Subsection </th>
 		 			<th> Gene Count </th>
-
 		 			<th> View </th>
-		 			<th> Edit </th>
 
 
 		 		</tr>
@@ -41,17 +39,15 @@
 
 		 	<tbody>
 
-		 		{% for gene_filter in sample_gene_filters %}
+		 		{% for panel in panels %}
 
 		 			<tr>
 
-		 				<td> {{gene_filter.name}} </td>
-		 				<td> {{gene_filter.description}} </td>
-		 				<td> {{gene_filter.subsection}} </td>
-		 				<td> {{gene_filter.number_of_genes}} </td>
-
-		 				<td> <a href= "{% url 'sample_gene_filter_edit_create' gene_filter.pk  %}"> View   </a> </td>
-		 				<td> Edit </td>
+		 				<td> {{panel.name}} </td>
+		 				<td> {{panel.description}} </td>
+		 				<td> {{panel.subsection}} </td>
+		 				<td> {{panel.number_of_genes}} </td>
+		 				<td> <a href= "{% url 'panel_view' panel.pk  %}"> View   </a> </td>
 
 		 			</tr>
 

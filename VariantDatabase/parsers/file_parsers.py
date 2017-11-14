@@ -49,23 +49,23 @@ def get_read_lane_data(read, lane, summary):
 	error_rate_75 = summary.at(read).at(lane).error_rate_75().mean()
 	error_rate_100 = summary.at(read).at(lane).error_rate_100().mean()
 
-	qc_data['read'] = read
-	qc_data['lane'] = lane
-	qc_data['yield_g'] = yield_g
-	qc_data['density'] = density
-	qc_data['cluster_count_pf'] = cluster_count_pf
-	qc_data['cluster_count'] = cluster_count
-	qc_data['phasing'] = phasing
-	qc_data['prephasing'] = prephasing
-	qc_data['read_count'] = read_count
-	qc_data['reads_pf'] = reads_pf
-	qc_data['percent_gt_q30'] = percent_gt_q30
-	qc_data['percent_aligned'] = percent_aligned
-	qc_data['error_rate'] = error_rate
-	qc_data['error_rate_35'] = error_rate_35
-	qc_data['error_rate_50'] = error_rate_50  
-	qc_data['error_rate_75'] = error_rate_75
-	qc_data['error_rate_100'] = error_rate_100
+	qc_data["read"] = read
+	qc_data["lane"] = lane
+	qc_data["yield_g"] = yield_g
+	qc_data["density"] = density
+	qc_data["cluster_count_pf"] = cluster_count_pf
+	qc_data["cluster_count"] = cluster_count
+	qc_data["phasing"] = phasing
+	qc_data["prephasing"] = prephasing
+	qc_data["read_count"] = read_count
+	qc_data["reads_pf"] = reads_pf
+	qc_data["percent_gt_q30"] = percent_gt_q30
+	qc_data["percent_aligned"] = percent_aligned
+	qc_data["error_rate"] = error_rate
+	qc_data["error_rate_35"] = error_rate_35
+	qc_data["error_rate_50"] = error_rate_50  
+	qc_data["error_rate_75"] = error_rate_75
+	qc_data["error_rate_100"] = error_rate_100
 
 
 	return qc_data
@@ -176,7 +176,7 @@ def parse_sample_sheet(file):
 	"""
 
 	#The expected columns.
-	expected = ['Sample_ID', 'Sample_Name', 'Sample_Plate','Sample_Well', 'I7_Index_ID',  'index', 'Sample_Project']
+	expected = ["Sample_ID", "Sample_Name", "Sample_Plate","Sample_Well", "I7_Index_ID",  "index", "Sample_Project"]
 
 	flag =0
 
@@ -186,10 +186,10 @@ def parse_sample_sheet(file):
 	try:
 
 
-		with open(file, 'rb') as csvfile:
+		with open(file, "rb") as csvfile:
 
 
-			reader = csv.reader(csvfile, delimiter=',')
+			reader = csv.reader(csvfile, delimiter=",")
 
 
 			subsection = ""
@@ -198,7 +198,7 @@ def parse_sample_sheet(file):
 
 			for row in reader:
 
-				if row[0] == 'Project Name' or row[0] == 'Project':
+				if row[0] == "Project Name" or row[0] == "Project":
 
 					#If the row is Project_name or Project we set the subsection variable.
 
@@ -206,11 +206,11 @@ def parse_sample_sheet(file):
 
 					if subsection =="":
 
-						return [False, 'No subsection.']
+						return [False, "No subsection."]
 
 
 
-				if row[0] == 'Experiment Name':
+				if row[0] == "Experiment Name":
 
 					#If the row is Experiment Name  we set the worksheet variable.
 
@@ -218,12 +218,12 @@ def parse_sample_sheet(file):
 
 					if worksheet =="":
 
-						return [False, 'No worksheet name.']
+						return [False, "No worksheet name."]
 
 
 
 
-				if row[0] == 'Sample_ID':
+				if row[0] == "Sample_ID":
 
 					flag =1 #Set the plag to say we have now got to the samples.
 
@@ -231,7 +231,7 @@ def parse_sample_sheet(file):
 
 						if title != row[index]:
 
-							return [False, 'Columns are incorrect.']
+							return [False, "Columns are incorrect."]
 
 				if flag ==1:
 
@@ -240,7 +240,7 @@ def parse_sample_sheet(file):
 
 						if len(sample_list[1:]) == 0: # empty SampleSheet.csv
 
-							return [False, 'There are no samples in the SampleSheet.']
+							return [False, "There are no samples in the SampleSheet."]
 
 						else:
 
@@ -254,7 +254,7 @@ def parse_sample_sheet(file):
 			if len(sample_list[1:]) == 0: # empty SampleSheet.csv
 
 				
-				return [False, 'There are no samples in the SampleSheet.']
+				return [False, "There are no samples in the SampleSheet."]
 
 			else:
 
@@ -262,7 +262,7 @@ def parse_sample_sheet(file):
 
 	except:
 
-		return [False, 'Could no parse file.']
+		return [False, "Could no parse file."]
 
 
 def get_sample_names(sample_list):
@@ -312,11 +312,11 @@ def parse_gene_coverage(file_path):
 
 	master_list =[]
 
-	with gzip.open(file_path, 'rb') as f:
+	with gzip.open(file_path, "rb") as f:
 
-		reader = csv.DictReader(f, delimiter='\t')
+		reader = csv.DictReader(f, delimiter="\t")
 
-		if  reader.fieldnames == ['Worksheet', 'Sample', 'Gene', '100x', '200x', '300x', '400x', '500x', '600x', 'Min', 'Max', 'Mean', 'region', 'pct>100x', 'pct>200x', 'pct>300x', 'pct>400x', 'pct>500x', 'pct>600x']:
+		if  reader.fieldnames == ["Worksheet", "Sample", "Gene", "100x", "200x", "300x", "400x", "500x", "600x", "Min", "Max", "Mean", "region", "pct>100x", "pct>200x", "pct>300x", "pct>400x", "pct>500x", "pct>600x"]:
 
 			for row in reader:
 
@@ -350,11 +350,11 @@ def parse_exon_coverage(file_path):
 
 	master_list =[]
 
-	with gzip.open(file_path, 'rb') as f:
+	with gzip.open(file_path, "rb") as f:
 
-		reader = csv.DictReader(f, delimiter='\t')
+		reader = csv.DictReader(f, delimiter="\t")
 
-		if reader.fieldnames == ['Worksheet', 'Sample', 'Gene', 'Exon', 'Gene_Exon', '100x', '200x', '300x', '400x', '500x', '600x', 'Min', 'Max', 'Mean', 'region', 'pct>100x', 'pct>200x', 'pct>300x', 'pct>400x', 'pct>500x', 'pct>600x']:
+		if reader.fieldnames == ["Worksheet", "Sample", "Gene", "Exon", "Gene_Exon", "100x", "200x", "300x", "400x", "500x", "600x", "Min", "Max", "Mean", "region", "pct>100x", "pct>200x", "pct>300x", "pct>400x", "pct>500x", "pct>600x"]:
 
 			for row in reader:
 

@@ -25,24 +25,24 @@ def get_fields(csq_info_string):
 
 	csq_info_string = A string representing the CSQ field from the VCF header e.g. 
 
-	"##INFO=<ID=CSQ,Number=.,Type=String,Description='Consequence annotations from Ensembl VEP. Format: Allele|Consequence|IMPACT|SYMBOL'>"
+	"##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence annotations from Ensembl VEP. Format: Allele|Consequence|IMPACT|SYMBOL">"
 
 
 	Output:
 
 	csq_info_list = A list containing the annoatation titles from the Format : part of the csq_info_string e.g.
 
-	['Allele', 'Consequence', 'IMPACT', 'SYMBOL']
+	["Allele", "Consequence", "IMPACT", "SYMBOL"]
 
 
 	"""
 
 	csq_info_string = csq_info_string.strip()
 
-	index =  csq_info_string.index('Format:') +8
+	index =  csq_info_string.index("Format:") +8
 
 
-	csq_info_list = csq_info_string[index:len(csq_info_string)-2].split('|')
+	csq_info_list = csq_info_string[index:len(csq_info_string)-2].split("|")
 
 	return csq_info_list
 
@@ -65,7 +65,7 @@ def get_variant_csq(variant_csq_string):
 
 	"""
 
-	return variant_csq_string.split('|')
+	return variant_csq_string.split("|")
 
 
 def create_csq_dict(field_list, variant_csq_list):
@@ -114,12 +114,12 @@ def validate_input(file_path, sample):
 
 	"""
 
-	##is it a '.vcf.gz' file
+	##is it a ".vcf.gz" file
 	ending = file_path[-7:]
 
-	if ending != '.vcf.gz':
+	if ending != ".vcf.gz":
 
-		return [False, 'Not a .vcf.gz file']
+		return [False, "Not a .vcf.gz file"]
 
 	#now check chromosomes are in right format and that sample is in file
 	try:
@@ -134,17 +134,17 @@ def validate_input(file_path, sample):
 			chrom = rec.chrom
 			alt = rec.alts
 
-			if chrom[:3] != 'chr':
+			if chrom[:3] != "chr":
 
-				return [False, 'Incorrect chromosome']
+				return [False, "Incorrect chromosome"]
 
 			elif len(alt) >1:
 
-				return [False, 'Too many alts']
+				return [False, "Too many alts"]
 
 	except:
 
-		return [False, 'Could not open file']
+		return [False, "Could not open file"]
 
 
 	try:
@@ -153,10 +153,10 @@ def validate_input(file_path, sample):
 
 	except:
 
-		return [False, 'Sample name does not match file']
+		return [False, "Sample name does not match file"]
 
 
-	return [True, 'Success']
+	return [True, "Success"]
 
 
 
@@ -194,14 +194,14 @@ def create_master_list(file,sample):
 
 	try:
 
-		csq_fields = str(bcf_in.header.info['CSQ'].record)
+		csq_fields = str(bcf_in.header.info["CSQ"].record)
 
 		csq_fields = get_fields(csq_fields)
 
 
 	except:
 
-		raise ValueError('Problem parsing CSQ header in vcf.')
+		raise ValueError("Problem parsing CSQ header in vcf.")
 
 	master_list =[]
 
@@ -212,59 +212,59 @@ def create_master_list(file,sample):
 
 		sample_vcf = rec.samples[sample]
 
-		genotype = sample_vcf['GT']
+		genotype = sample_vcf["GT"]
 
 
 		if sample_vcf.phased == True:
 
-			variant_data_dict['genotype'] = "|".join(str(x) for x in genotype )
+			variant_data_dict["genotype"] = "|".join(str(x) for x in genotype )
 
 		else:
 
-			variant_data_dict['genotype'] = "/".join(str(x) for x in genotype )
+			variant_data_dict["genotype"] = "/".join(str(x) for x in genotype )
 
 
-		variant_data_dict['pos'] = rec.pos
+		variant_data_dict["pos"] = rec.pos
 
-		variant_data_dict['chrom'] = rec.chrom
+		variant_data_dict["chrom"] = rec.chrom
 
-		variant_data_dict['reference'] = rec.ref
+		variant_data_dict["reference"] = rec.ref
 
-		variant_data_dict['format'] = rec.format.keys()
+		variant_data_dict["format"] = rec.format.keys()
 
-		variant_data_dict['alt_alleles'] = rec.alts
+		variant_data_dict["alt_alleles"] = rec.alts
 
-		variant_data_dict['quality'] = rec.qual
+		variant_data_dict["quality"] = rec.qual
 
 		filter_status = rec.filter
 
 		if len(filter_status.keys()) == 0:
 
-			variant_data_dict['filter_status'] = "."
+			variant_data_dict["filter_status"] = "."
 
 		else:
-			variant_data_dict['filter_status'] =  ";".join(filter_status.keys())
+			variant_data_dict["filter_status"] =  ";".join(filter_status.keys())
 
 
-		variant_data_dict['allele_depth'] = ":".join(str(x) for x in sample_vcf['AD'])
+		variant_data_dict["allele_depth"] = ":".join(str(x) for x in sample_vcf["AD"])
 
-		chromosome = variant_data_dict['chrom']
-		pos = str(variant_data_dict['pos'])
-		ref = variant_data_dict['reference']
-		alt = variant_data_dict['alt_alleles'][0]
+		chromosome = variant_data_dict["chrom"]
+		pos = str(variant_data_dict["pos"])
+		ref = variant_data_dict["reference"]
+		alt = variant_data_dict["alt_alleles"][0]
 
 		hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
 
-		variant_data_dict['hash_id'] = hash_id
+		variant_data_dict["hash_id"] = hash_id
 
 		
 		for key in rec.info.keys():
 
-			new_key = key.replace('.', '_')
+			new_key = key.replace(".", "_")
 
-			if key == 'CSQ':
+			if key == "CSQ":
 
-				csq_data = rec.info['CSQ']
+				csq_data = rec.info["CSQ"]
 
 				#print csq_data
 
@@ -276,11 +276,11 @@ def create_master_list(file,sample):
 
 					transcript_dict =  create_csq_dict(csq_fields, transcript_data)
 					
-					transcript_name = transcript_dict['Feature']
+					transcript_name = transcript_dict["Feature"]
 
 					all_transcript__dict[transcript_name] = transcript_dict
 
-				variant_data_dict['transcript_data'] = all_transcript__dict
+				variant_data_dict["transcript_data"] = all_transcript__dict
 
 
 			else:
@@ -295,7 +295,7 @@ def create_master_list(file,sample):
 
 def get_canonical_transcript(transcript_data):
 	"""
-	Returns the transcript with where the 'PICK' flag is set to 1
+	Returns the transcript with where the "PICK" flag is set to 1
 
 	Note - Used by create_master_list_canonical()
 
@@ -303,7 +303,7 @@ def get_canonical_transcript(transcript_data):
 
 	for transcript in transcript_data:
 
-		if transcript_data[transcript]['PICK'] == '1':
+		if transcript_data[transcript]["PICK"] == "1":
 
 			return transcript_data[transcript]
 
@@ -331,7 +331,7 @@ def get_variant_genes(transcript_data):
 
 	for transcript in transcript_data:
 
-		gene_name = transcript_data[transcript]['SYMBOL']
+		gene_name = transcript_data[transcript]["SYMBOL"]
 
 		if gene_name != "":
 
@@ -362,8 +362,8 @@ def get_variant_genes_list(transcript_data):
 
 	for transcript in transcript_data:
 
-		gene_name = transcript_data[transcript]['SYMBOL']
-		strand = transcript_data[transcript]['STRAND']
+		gene_name = transcript_data[transcript]["SYMBOL"]
+		strand = transcript_data[transcript]["STRAND"]
 
 		if gene_name != "":
 
@@ -384,7 +384,7 @@ def create_master_list_canonical(file,sample):
 
 	try:
 
-		csq_fields = str(bcf_in.header.info['CSQ'].record)
+		csq_fields = str(bcf_in.header.info["CSQ"].record)
 
 		csq_fields = get_fields(csq_fields)
 
@@ -401,37 +401,37 @@ def create_master_list_canonical(file,sample):
 
 		sample_vcf = rec.samples[sample]
 
-		variant_data_dict['genotype'] = sample_vcf['GT']
+		variant_data_dict["genotype"] = sample_vcf["GT"]
 
-		variant_data_dict['pos'] = rec.pos
+		variant_data_dict["pos"] = rec.pos
 
-		variant_data_dict['chrom'] = rec.chrom
+		variant_data_dict["chrom"] = rec.chrom
 
-		variant_data_dict['reference'] = rec.ref
+		variant_data_dict["reference"] = rec.ref
 
-		variant_data_dict['format'] = rec.format.keys()
+		variant_data_dict["format"] = rec.format.keys()
 
-		variant_data_dict['alt_alleles'] = rec.alts
+		variant_data_dict["alt_alleles"] = rec.alts
 
-		variant_data_dict['quality'] = rec.qual
+		variant_data_dict["quality"] = rec.qual
 
-		chromosome = variant_data_dict['chrom']
-		pos = str(variant_data_dict['pos'])
-		ref = variant_data_dict['reference']
-		alt = variant_data_dict['alt_alleles'][0]
+		chromosome = variant_data_dict["chrom"]
+		pos = str(variant_data_dict["pos"])
+		ref = variant_data_dict["reference"]
+		alt = variant_data_dict["alt_alleles"][0]
 
 		hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
 
-		variant_data_dict['hash_id'] = hash_id
+		variant_data_dict["hash_id"] = hash_id
 
 		
 		for key in rec.info.keys():
 
-			new_key = key.replace('.', '_')
+			new_key = key.replace(".", "_")
 
-			if key == 'CSQ':
+			if key == "CSQ":
 
-				csq_data = rec.info['CSQ']
+				csq_data = rec.info["CSQ"]
 
 				all_transcript__dict ={}
 
@@ -445,23 +445,23 @@ def create_master_list_canonical(file,sample):
 
 					
 					
-					transcript_name = transcript_dict['Feature']
+					transcript_name = transcript_dict["Feature"]
 
 					all_transcript__dict[transcript_name] = transcript_dict
 
 
-				variant_data_dict['transcript_data'] = all_transcript__dict
+				variant_data_dict["transcript_data"] = all_transcript__dict
 
-				variant_data_dict['all_genes'] = get_variant_genes(variant_data_dict['transcript_data'])
+				variant_data_dict["all_genes"] = get_variant_genes(variant_data_dict["transcript_data"])
 
 
-				variant_data_dict['transcript_data'] = get_canonical_transcript(   variant_data_dict['transcript_data'])
+				variant_data_dict["transcript_data"] = get_canonical_transcript(   variant_data_dict["transcript_data"])
 
-				for k in variant_data_dict['transcript_data']:
+				for k in variant_data_dict["transcript_data"]:
 
-					variant_data_dict[k] = variant_data_dict['transcript_data'][k]
+					variant_data_dict[k] = variant_data_dict["transcript_data"][k]
 
-				variant_data_dict['transcript_data'] =""
+				variant_data_dict["transcript_data"] =""
 
 
 			else:
@@ -492,7 +492,7 @@ def vep_annotated(file):
 
 	try:
 
-		bcf_in.header.info['CSQ'].record
+		bcf_in.header.info["CSQ"].record
 
 		return True
 
@@ -521,7 +521,7 @@ def get_rs_number(transcript_data):
 
 		try:
 
-			rs_number = transcript_data[transcript]['Existing_variation']
+			rs_number = transcript_data[transcript]["Existing_variation"]
 
 		except:
 
@@ -558,7 +558,7 @@ def get_max_af(transcript_data):
 
 	for transcript in transcript_data:
 
-		max_af = transcript_data[transcript]['MAX_AF']
+		max_af = transcript_data[transcript]["MAX_AF"]
 
 		break
 
@@ -588,7 +588,7 @@ def get_clin_sig(transcript_data):
 
 	for transcript in transcript_data:
 
-		clin_sig = transcript_data[transcript]['CLIN_SIG']
+		clin_sig = transcript_data[transcript]["CLIN_SIG"]
 
 		break
 
@@ -613,7 +613,7 @@ def get_allele_frequencies(transcript_data):
 	List containing all the allele frequencies as floats.
 
 
-	Note: If the AF freq is listed as '' i.e. blank we put 0.0 is this correct?
+	Note: If the AF freq is listed as "" i.e. blank we put 0.0 is this correct?
 
 
 	"""
@@ -621,23 +621,23 @@ def get_allele_frequencies(transcript_data):
 
 	for transcript in transcript_data:
 
-		af = transcript_data[transcript]['AF']
-		afr_af = transcript_data[transcript]['AFR_AF']
-		amr_af = transcript_data[transcript]['AMR_AF']
-		eur_af = transcript_data[transcript]['EUR_AF']
-		eas_af = transcript_data[transcript]['EAS_AF']
-		sas_af = transcript_data[transcript]['SAS_AF']
-		exac_af = transcript_data[transcript]['ExAC_AF']
-		exac_adj_af = transcript_data[transcript]['ExAC_Adj_AF']
-		exac_afr_af = transcript_data[transcript]['ExAC_AFR_AF']
-		exac_amr_af = transcript_data[transcript]['ExAC_AMR_AF']
-		exac_eas_af = transcript_data[transcript]['ExAC_EAS_AF']
-		exac_fin_af = transcript_data[transcript]['ExAC_FIN_AF']
-		exac_nfe_af = transcript_data[transcript]['ExAC_NFE_AF']
-		exac_oth_af = transcript_data[transcript]['ExAC_OTH_AF']
-		exac_sas_af = transcript_data[transcript]['ExAC_SAS_AF']
-		esp_aa_af = transcript_data[transcript]['AA_AF']
-		esp_ea_af = transcript_data[transcript]['EA_AF']
+		af = transcript_data[transcript]["AF"]
+		afr_af = transcript_data[transcript]["AFR_AF"]
+		amr_af = transcript_data[transcript]["AMR_AF"]
+		eur_af = transcript_data[transcript]["EUR_AF"]
+		eas_af = transcript_data[transcript]["EAS_AF"]
+		sas_af = transcript_data[transcript]["SAS_AF"]
+		exac_af = transcript_data[transcript]["ExAC_AF"]
+		exac_adj_af = transcript_data[transcript]["ExAC_Adj_AF"]
+		exac_afr_af = transcript_data[transcript]["ExAC_AFR_AF"]
+		exac_amr_af = transcript_data[transcript]["ExAC_AMR_AF"]
+		exac_eas_af = transcript_data[transcript]["ExAC_EAS_AF"]
+		exac_fin_af = transcript_data[transcript]["ExAC_FIN_AF"]
+		exac_nfe_af = transcript_data[transcript]["ExAC_NFE_AF"]
+		exac_oth_af = transcript_data[transcript]["ExAC_OTH_AF"]
+		exac_sas_af = transcript_data[transcript]["ExAC_SAS_AF"]
+		esp_aa_af = transcript_data[transcript]["AA_AF"]
+		esp_ea_af = transcript_data[transcript]["EA_AF"]
 
 		break
 
@@ -650,9 +650,9 @@ def get_allele_frequencies(transcript_data):
 	for allele_freq in allele_freqs: # covert to floats - in addition some AFs are formatted 0.1&0.1 for some reason so split them up
 
 
-		if '&' in allele_freq:
+		if "&" in allele_freq:
 
-			allele_freq = allele_freq.split('&')
+			allele_freq = allele_freq.split("&")
 
 			new_allele_freqs.append(float(max(allele_freq)))
 
@@ -708,7 +708,7 @@ def worst_consequence(transcript_data):
 
 		try:
 
-			consequence = transcript_data[transcript]['Consequence']
+			consequence = transcript_data[transcript]["Consequence"]
 
 		except:
 
@@ -717,7 +717,7 @@ def worst_consequence(transcript_data):
 
 		if consequence != "":
 
-			consequence = consequence.split('&') #split when formatted like regulatory_region_amplification&feature_elongation
+			consequence = consequence.split("&") #split when formatted like regulatory_region_amplification&feature_elongation
 
 			for x in consequence:
 
@@ -763,13 +763,13 @@ def extract_codon_from_hgvs(hgvsp):
 
 	try:
 
-		transcript, codon= hgvsp.split(':p.')[0], hgvsp.split(':p.')[1]
+		transcript, codon= hgvsp.split(":p.")[0], hgvsp.split(":p.")[1]
 
 	except:
 
 		return False, False
 
-	return transcript, re.findall(r'\d+', codon)[0]
+	return transcript, re.findall(r"\d+", codon)[0]
 
 
 
@@ -787,13 +787,13 @@ def calculate_allele_balance(vafs, callers):
 	"""
 
 
-	vafs_list =vafs.split(':')
+	vafs_list =vafs.split(":")
 
-	caller_list =callers.split('|')
+	caller_list =callers.split("|")
 
-	if 'Manta' in caller_list:
+	if "Manta" in caller_list:
 
-		manta_index = caller_list.index('Manta')
+		manta_index = caller_list.index("Manta")
 
 		vafs_list.pop(manta_index)
 
@@ -818,8 +818,8 @@ def calculate_allele_balance(vafs, callers):
 
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
 
-	x = create_master_list("/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf",'WS61594_14000835' )
+	x = create_master_list("/home/cuser/Documents/Project/VariantDatabase/VariantDatabase/tests/test_files/vep_annotated_test_vcf.vcf","WS61594_14000835" )
 
