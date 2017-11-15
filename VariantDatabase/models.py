@@ -288,11 +288,11 @@ class Worksheet(models.Model):
 
 class Panel(models.Model):
 	"""
-	A model for storing gene lists that the variants in sample to be filtered by.
+	A model for storing gene lists that the variants in a sample to be filtered by.
 
 	For example: D-MPD-001 has JAK2,CALR, MPL, CBL
 
-	Therefore for samples with project set as D-MPD-001 we will only see variants in that gene.
+	Therefore for samples with project set as D-MPD-001 we will only see variants in those genes.
 
 
 	"""
@@ -1129,6 +1129,63 @@ class Variant(models.Model):
 		return frequency_dict
 
 
+
+	def previous_classifications(self):
+		"""
+		For getting all classifications for a variant.
+		No organisation by subsection etc.
+
+		Output:
+
+		classifications = queryset, all classifications for a variant
+
+		"""
+
+		classifications = (ReportVariantSampleClassification
+					.objects
+					.filter(variant=self)
+					.exclude(final_classification=None)
+					.order_by('-final_date'))
+
+
+		return classifications
+
+
+
+
+	def previous_classifications_tuple_list(self):
+		"""
+		Returns a list of tuples containing information on previous \
+		classifications. This is intended to be used by futher functions \
+		that will display the information e.g list by sebsection.
+
+		Output:
+
+		classifications = list, list of tuples (final_class, subsection, date, sample)
+
+		"""
+
+		classifications_dict = {}
+
+
+		classifications = (ReportVariantSampleClassification
+							.objects
+							.filter(variant=self)
+							.exclude(final_classification=None)
+							.select_related('final_classification'))
+
+		classifications = [(x.final_classification,
+							x.report.sample.worksheet.sub_section,
+							x.final_date,
+							x.report.sample) for x in classifications]
+
+		return classifications
+
+
+
+
+
+
 class VariantSample(models.Model):
 
 	"""
@@ -1243,32 +1300,32 @@ class VariantSample(models.Model):
 							.objects
 							.filter(sample__worksheet=self.sample.worksheet, variant=self.variant)
 							.exclude(sample__name__contains="D00-00000")
-							.values_list("vafs","caller"))
+							.values_list("vafs","caller", "pk"))
+
+		#If it is a singleton then we can ignore
+		if len(variant_samples) ==1:
+
+			return 0.0
 
 		allele_balance_list = [vcf_parser.calculate_allele_balance(vs_list[0], vs_list[1]) for vs_list in variant_samples]
 
 		allele_balance_array = np.array(allele_balance_list)
 
-		allele_balance_dict = {}
+		#z_scores = stats.zscore(allele_balance_array)
 
-		allele_balance_dict["mean"] = np.mean(allele_balance_array)
+		mean = allele_balance_array.mean()
 
-		allele_balance_dict["std"] =np.std(allele_balance_array)
-
-		allele_balance_dict["upper_limit"] = allele_balance_dict["mean"] + (2*allele_balance_dict["std"])
-
-		allele_balance_dict["lower_limit"] = allele_balance_dict["mean"] - (2*allele_balance_dict["std"])
+		std = allele_balance_array.std()
 
 		variant_ab = self.calculate_allele_balance()
 
-		if variant_ab > allele_balance_dict["upper_limit"] or variant_ab < allele_balance_dict["lower_limit"]:
+		zscore = (variant_ab - mean) / std
 
-			return True
+		return zscore
 
-		else:
 
-			return False
 
+		
 
 
 

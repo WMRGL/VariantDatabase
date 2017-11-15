@@ -153,32 +153,18 @@
           <th class='exac_frequency'> ExAC </th>
           <th class='project_count'> Project Frequency </th>
           <th class='worksheet_count'> Worksheet Count </th>
-          <th class='ab_std'> AB > 2xSTD </th>
-
-
-
+          <th class='ab_std'> AB Z-Score </th>
           <th class='clinsig'> Clin Sig </th>
           <th class='genotype'> Genotype </th>
           <th class='callers'> Callers </th>
           <th class='allele_depth'> AD </th>
           <th class='vafs'> VAFS </th>
-
           <th class='check1'> Check1 </th>
-
           <th class='check2'> Check2 </th>
-
           <th class='hgvs1'> HGVS1 </th>
           <th class='hgvs1'> HGVS2 </th>
-
           <th class='check'> Final </th>
-
           <th class='hgvs_check'> Final HGVS Check </th>
-
-
-
-
-
-
           <th class='tcf'> TCF </th>
           <th class='tcr'> TCR </th>
           <th class='filter_status'> Filter </th>
@@ -195,11 +181,8 @@
       <tr class='variant'>
 
         <td class='variant_hash' style="display:none;"> {{variant.0.variant.variant_hash}}</td>
-
-
         <td class="details-control"></td>
         <td class='hgvsc get_detail'> {{variant.0.variant.get_picked_hgvsc|truncatechars:50}} </td>
-
         <td class='variant_desc get_detail '> {{variant.0.variant.chromosome}} {{variant.0.variant.position}} </td>
         <td class ='reference get_detail'> {{variant.0.variant.ref|truncatechars:10}} </td>
         <td class='alt get_detail'> {{variant.0.variant.alt|truncatechars:10}} </td>
@@ -217,59 +200,42 @@
                                                   <li class="list-group-item">OTH AF : {{ variant.0.variant.exac_oth_af}}</li>
                                                   <li class="list-group-item">SAS AF : {{ variant.0.variant.exac_sas_af}}</li></ul>' >{{variant.0.variant.exac_af}}</a>
 
-            </td>
-
+        </td>
         <td class='project_count get_detail'>  {{variant.0.get_subsection_frequency}}</td>
         <td class='worksheet_count get_detail'> {{variant.0.variant.get_worksheet_count}}</td>
-
-
-
-
-
         <td class='ab_std get_detail'> {{variant.0.allele_balance_out_of_range}} </td>
-
-        
-
-
         <td class='clinsig get_detail'> {{variant.0.variant.clinical_sig}} </td>
         <td class='genotype get_detail'> {{variant.0.display_genotype}} </td>
         <td class='callers get_detail'> {{variant.0.caller}} </td>
         <td class='allele_depth get_detail'> {{variant.0.allele_depth}} </td>
         <td class='vafs get_detail'> {{variant.0.vafs}} </td>
-
         <td class='check1 get_detail'> {{variant.1.classification1}} </td>
         <td class='check2 get_detail'> {{variant.1.classification2}} </td>
-
         <td class='user_hgvs1 get_detail'> {{variant.1.user_hgvs1}} </td>
         <td class='user_hgvs2 get_detail'> {{variant.1.user_hgvs2}} </td>
 
-    <td class='check'>  
+        <td class='check'>  
 
-       <select size="1" id="{{variant.variant.variant_hash}}" name="{{variant.variant.variant_hash}}">
+           <select size="1" id="{{variant.variant.variant_hash}}" name="{{variant.variant.variant_hash}}">
 
-        {% for classification in classifications %}
-
-
-
-              <option value={{classification.name}}>
-
-
-                              {{classification.name}}
-              </option>
-
-
-          {% endfor %}
-
-         </select>
-
-    </td>
-
-    <td class='hgvs_check'>  <input type="text" class="form-control" value={{variant.0.variant.get_picked_hgvsc}}> </td>
+            {% for classification in classifications %}
 
 
 
+                  <option value={{classification.name}}>
 
 
+                                  {{classification.name}}
+                  </option>
+
+
+              {% endfor %}
+
+             </select>
+
+        </td>
+
+        <td class='hgvs_check'>  <input type="text" class="form-control" value={{variant.0.variant.get_picked_hgvsc}}> </td>
         <td class ='tcf get_detail'> {{variant.0.total_count_forward}} </td>
         <td class='tcr get_detail'> {{variant.0.total_count_reverse}} </td>
         <td class='filter_status get_detail'> {{variant.0.filter_status}} </td>

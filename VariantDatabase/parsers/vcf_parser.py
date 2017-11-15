@@ -791,6 +791,8 @@ def calculate_allele_balance(vafs, callers):
 
 	caller_list =callers.split("|")
 
+	caller_list = [x.strip() for x in caller_list]
+
 	if "Manta" in caller_list:
 
 		manta_index = caller_list.index("Manta")

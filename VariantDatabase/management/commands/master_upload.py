@@ -989,9 +989,9 @@ def upload_sample_vcf(output_dir, sample_name):
 
 				variant_transcript = VariantTranscript(variant = new_variant,
 														transcript=transcript_model,
-													  	consequence=consequence,
-													   	exon=exon,
-													    intron = intron,
+														consequence=consequence,
+														exon=exon,
+														intron = intron,
 														hgvsc =hgvsc_t,
 														hgvsp = hgvsp_t,
 														codons=codons,

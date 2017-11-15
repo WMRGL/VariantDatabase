@@ -36,12 +36,17 @@ def ajax_detail(request):
 
 		perms = request.user.has_perm("VariantDatabase.add_comment")
 
+		samples = variant.get_samples_with_variant()
+
+		frequency_data = variant.get_frequency_data()
 
 		html = render_to_string("VariantDatabase/ajax_detail.html",
 								{"variant": variant,
 								"sample": sample,
 								"comments": comments,
-								"perms": perms})
+								"perms": perms,
+								"samples": samples,
+								"frequency_data": frequency_data})
 
 		return HttpResponse(html)
 
@@ -209,7 +214,9 @@ def ajax_receive_classification_data(request):
 
 					user_hgvs = data[1].strip()
 
-					classification = get_object_or_404(Classification, name =classification)
+					classification = get_object_or_404(Classification,
+														name =classification,
+														subsection = report.sample.worksheet.sub_section)
 
 					new_report_sample_variant_classification = ReportVariantSampleClassification(
 
@@ -248,7 +255,9 @@ def ajax_receive_classification_data(request):
 
 					user_hgvs = data[1].strip()
 
-					classification = get_object_or_404(Classification, name =classification)
+					classification = get_object_or_404(Classification,
+									name =classification,
+									subsection = report.sample.worksheet.sub_section)
 
 					report_sample_variant_classification = (ReportVariantSampleClassification
 															.objects
@@ -322,7 +331,9 @@ def ajax_receive_classification_data(request):
 
 					user_hgvs = data[1].strip()
 
-					classification = get_object_or_404(Classification, name =classification)
+					classification = get_object_or_404(Classification,
+									name =classification,
+									subsection = report.sample.worksheet.sub_section)
 
 					report_sample_variant_classification = (ReportVariantSampleClassification
 															.objects

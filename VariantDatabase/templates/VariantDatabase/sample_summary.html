@@ -162,6 +162,7 @@ tr.shown td.details-control {
           <th class='exac_frequency'> ExAC </th>
           <th class='project_count'> Project Frequency </th>
           <th class='worksheet_count'> Worksheet Count </th>
+          <th class='ab_std'> AB Z-Score </th>
           <th class='clinsig'> Clin Sig </th>
           <th class='genotype'> Genotype </th>
           <th class='callers'> Callers </th>
@@ -205,6 +206,7 @@ tr.shown td.details-control {
             </td>
         <td class='project_count get_detail'>  {{variant.get_subsection_frequency}}</td>
         <td class='worksheet_count get_detail'> {{variant.variant.get_worksheet_count}}</td>
+        <td class='ab_std get_detail'> {{variant.allele_balance_out_of_range|floatformat:2}}</td>
         <td class='clinsig get_detail'> {{variant.variant.clinical_sig}} </td>
         <td class='genotype get_detail'> {{variant.display_genotype}} </td>
         <td class='callers get_detail'> {{variant.caller}} </td>

@@ -1,3 +1,6 @@
+<!--The detached variant page - not linked to any sample   -->
+
+
 {% extends 'VariantDatabase/base.html' %}
   {% block content %}
 
@@ -23,26 +26,8 @@
 
   {% endif %}
 
-   <ul class="nav nav-tabs">
 
-    <li class="active"><a data-toggle="tab" href="#summary">Summary</a></li>
-
-  </ul>
-
-  <br>
-
-
-
-  <div class="tab-content">
-    <div id="summary" class="tab-pane fade in active">
-      <div class="container-fluid">
-
-        <div class="row-fluid">
-
-
-        <div  class="col-lg-3"  >
-
-
+  <div  class="col-lg-6" >
 
         <table class = 'table table-bordered' >
         <thead>
@@ -103,11 +88,6 @@
 
           </tr>
 
-          <tr>
-            <td> Rated as Pathogenic </td>
-            <td> {{ variant.rated_as_pathogenic}} </td>
-
-          </tr>
 
           <tr>
             <td> ClinVar Clin Sig </td>
@@ -118,11 +98,9 @@
         </tbody>
       </table>
 
-    </div>
 
-    </div>
 
-    <div class="col-lg-3"> 
+        <hr>
 
     <table class = 'table table-bordered' >
         <thead>
@@ -167,12 +145,93 @@
     </table>
 
 
-    </div>
+    <hr>
+
+    <table  class = 'table table-bordered' >
+        <thead>
+          <tr>
+            <th> Final Classification </th>
+            <th> Report ID </th>
+            <th> Sample </th>
+            <th> Subsection </th>
+            <th> Date </th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+        
+        {% for classification in variant.previous_classifications %}
+          <tr>
+            <td> {{classification.final_classification}} </td>
+            <td> {{classification.report.pk}} </td>
+            <td> {{classification.report.sample.name}} </td>
+            <td> {{classification.report.sample.worksheet.sub_section}} </td>
+            <td> {{classification.final_date}} </td>
+
+          </tr>
+
+        {% endfor %}
 
 
 
 
-    <div class="col-lg-2"> 
+
+
+
+
+
+          </tbody>
+
+
+
+
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <hr>
+
 
 
     
@@ -208,27 +267,6 @@
 
 
     </table>
-
-
-
-
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
     <hr>
 
     <h3> Transcripts </h3>
@@ -334,10 +372,9 @@
 
   {% endfor %}
 
-  </div>
 
 </div>
-
+</div>
 
 
 

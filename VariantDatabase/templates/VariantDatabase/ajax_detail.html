@@ -8,90 +8,250 @@
             <div class="tab-pane" id="tab_a">
 
 
+                      <table class = 'table table-bordered' >
+        <thead>
+          <tr>
+            <th colspan="2">Summary</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <tr>
+            <td> Chromsome </td>
+            <td> {{ variant.chromosome }} </td>
+
+          </tr>
+
+          <tr>
+            <td> Position </td>
+            <td> {{ variant.position }} </td>
+
+          </tr>
+
+          <tr>
+            <td> Ref </td>
+            <td> {{ variant.ref }} </td>
+
+          </tr>
+
+          <tr>
+            <td> Alt </td>
+            <td> {{ variant.alt }} </td>
+
+          </tr>
+
+          <tr>
+            <td> ID </td>
+            <td> {{ variant.display_ids|join:", " }} </td>
+
+          </tr>
+
+          <tr>
+            <td> Genes </td>
+            <td>
+
+              {% for gene in variant.get_genes %}
+
+                {{ gene }} 
+
+              {% endfor %}
+
+            </td>
+
+          </tr>
+
+          <tr>
+            <td> Worst Consequence </td>
+            <td> {{ variant.worst_consequence }} </td>
+
+          </tr>
 
 
-            <table class = 'table table-bordered' >
+          <tr>
+            <td> ClinVar Clin Sig </td>
+            <td> {{ variant.clinical_sig }} </td>
 
-            <thead>
+          </tr>
 
-              <tr>
-                <th colspan="2">Summary</th>
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              <tr>
-                <td> Variant </td>
-                <td> {{ variant.chromosome }}  {{ variant.position }} </td>
-
-              </tr>
-
-              <tr>
-                <td> Ref </td>
-                <td> {{ variant.ref }} </td>
-
-              </tr>
-
-              <tr>
-                <td> Alt </td>
-                <td> {{ variant.alt }} </td>
-
-              </tr>
-
-              <tr>
-                <td> ID </td>
-                <td> {{ variant.display_ids|join:", " }} </td>
-
-              </tr>
+        </tbody>
+      </table>
 
 
-              <tr>
-                <td> Genes </td>
-                <td>
 
-                {% for gene in variant.get_genes %}
+        <hr>
 
+    <table class = 'table table-bordered' >
+        <thead>
+          <tr>
+            <th colspan="2"> WMRGL Frequency</th>
+          </tr>
+        </thead>
 
-                  {{ gene }} 
+        <tbody>
 
+        
 
-                {% endfor %}
+          <tr>
+            <td> Total Frequency </td>
+            <td> {{ frequency_data.global.2|floatformat:3 }} ({{ frequency_data.global.0 }} / {{ frequency_data.global.1 }}) </td>
 
-
-                </td>
-
-              </tr>
-
-
-              <tr>
-                <td> Worst Consequence </td>
-                <td> {{ variant.worst_consequence }} </td>
-
-              </tr>
+          </tr>
 
 
-              <tr>
-                <td> ClinVar Clin Sig </td>
-                <td> {{ variant.clinical_sig }} </td>
+          {% for key, values in frequency_data.projects.items %}
 
-              </tr>
 
-              <tr>
-                <td> Picked Transcript </td>
-                <td> {{ variant.get_picked_transcript.0.transcript }} </td>
+          <tr>
+            <td> {{key }}</td>
+            <td>  {{ values.2|floatformat:3 }} ({{ values.0 }} / {{ values.1 }}) </td>
 
-              </tr>
+          </tr>
 
-              <tr>
-                <td> HGVSc </td>
-                <td> {{ variant.get_picked_hgvsc }} </td>
+          {% endfor %}
 
-              </tr>
 
-            </tbody>
-          </table>
+
+
+
+
+
+          </tbody>
+
+
+
+
+    </table>
+
+
+    <hr>
+
+    <table  class = 'table table-bordered' >
+        <thead>
+          <tr>
+            <th> Final Classification </th>
+            <th> Report ID </th>
+            <th> Sample </th>
+            <th> Subsection </th>
+            <th> Date </th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+        
+        {% for classification in variant.previous_classifications %}
+          <tr>
+            <td> {{classification.final_classification}} </td>
+            <td> {{classification.report.pk}} </td>
+            <td> {{classification.report.sample.name}} </td>
+            <td> {{classification.report.sample.worksheet.sub_section}} </td>
+            <td> {{classification.final_date}} </td>
+
+          </tr>
+
+        {% endfor %}
+
+
+
+
+
+
+
+
+
+          </tbody>
+
+
+
+
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <hr>
+
+      <button data-toggle="collapse" data-target="#demo">View Samples</button>
+
+    <div id="demo" class="collapse">
+
+
+
+    
+    <table  class = 'table table-bordered' >
+        <thead>
+          <tr>
+            <th colspan="1"> Samples </th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+        
+        {% for sample in samples %}
+          <tr>
+            <td> {{sample.name}} </td>
+
+          </tr>
+
+        {% endfor %}
+
+
+
+
+
+
+
+
+
+          </tbody>
+
+
+
+
+    </table>
+
+           </div>
 
 
             </div>
