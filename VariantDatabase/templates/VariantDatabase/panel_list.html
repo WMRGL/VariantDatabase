@@ -1,7 +1,7 @@
 {% extends 'VariantDatabase/base.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
-
+{% load permission_tags %}
 
 
  {% block content %}
@@ -67,9 +67,17 @@
 
 	<br>
 
+	{% if user|can:'create_panel' %}
+
 	{% crispy form %}
 
+	{% else %}
 
+	<div class="alert alert-warning">
+  		<strong>Warning!</strong> You do not have permission to create panels.
+	</div>
+
+	{% endif %}
 
 
     </div>

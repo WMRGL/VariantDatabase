@@ -3,7 +3,7 @@
 {% extends 'VariantDatabase/base.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
-
+{% load permission_tags %}
 
 	{% block js-head %}
 
@@ -255,7 +255,7 @@ tr.shown td.details-control {
 
         <hr>
 
-        <h2> Gene Filter: {{sample.panel}} </h2> 
+        <h3> Gene Filter: <a href= "{% url 'panel_view' sample.panel.pk  %}">  {{sample.panel}}   </a> </h3> 
 
 	
 
@@ -779,13 +779,17 @@ tr.shown td.details-control {
 
 				<td> {{ report.user }} </td>
 
-				{% if report.status == '2' %}
+				{% if report.status == '2'  and user|can:'complete_check' %}
 
 				<td> <a href= "{% url 'create_sample_report' sample.pk report.pk 2 %}"> Perform Second Check  </a></td>
 
-				{% elif report.status == '3'  %}
+				{% elif report.status == '3' and user|can:'resolve_differences'  %}
 
 				<td> <a href= "{% url 'resolve_check_differences' sample.pk report.pk %}"> Resolve Differences  </a></td>
+
+				{% elif report.status == '1' and user|can:'complete_check'  %}
+
+				<td> <a href= "{% url 'create_sample_report' sample.pk report.pk 1 %}"> Perform First Check  </a></td>
 
 				{% else %}
 
@@ -810,7 +814,7 @@ tr.shown td.details-control {
 
 
 
-
+	{% if user|can:'create_report' %}
 
 
 	<form class="form-horizontal" method="post" > {% csrf_token %}
@@ -828,7 +832,7 @@ tr.shown td.details-control {
         </form>
 
         
-
+       {% endif %}
 
 
 	</div>

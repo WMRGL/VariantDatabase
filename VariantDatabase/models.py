@@ -35,35 +35,18 @@ class Section(models.Model):
 
 		return all_worksheets
 
-
-
-class SubSection(models.Model):
+class SampleFilter(models.Model):
 	"""
-	A Model to represent a subsection.
-	This is similar to the concept of a project e.g. MPN
-	Can also represent a panel or chemisry for example.
+	Holds the filter settings for either a subsection or a report.
+
 
 	"""
-	name = models.CharField(max_length=25, primary_key=True)
-	section = models.ForeignKey(Section)
-	
-
-	#QC sample pass info - the levels needed for a sample to pass
-
-	min_read_count = models.IntegerField()
-	min_average_read_length = models.IntegerField()
-	max_average_read_length = models.IntegerField()
-	min_mapped_rate = models.FloatField()
-	max_error_rate = models.FloatField()
-
-	#filter settings
-
+	name = models.CharField(max_length=15)
 	upstream_gene_variant = models.BooleanField()
 	transcript_amplification = models.BooleanField()
 	transcript_ablation = models.BooleanField()
 	synonymous_variant = models.BooleanField()
 	stop_retained_variant = models.BooleanField()
-
 	stop_lost = models.BooleanField()
 	stop_gained = models.BooleanField()
 	start_lost = models.BooleanField()
@@ -95,7 +78,6 @@ class SubSection(models.Model):
 	five_prime_UTR_variant = models.BooleanField()
 	three_prime_UTR_variant = models.BooleanField()
 	freq_max_af = models.FloatField()
-
 
 	def __str__(self):
 		return self.name
@@ -149,6 +131,29 @@ class SubSection(models.Model):
 		
 		return filter_dict
 
+class SubSection(models.Model):
+	"""
+	A Model to represent a subsection.
+	This is similar to the concept of a project e.g. MPN
+	Can also represent a panel or chemisry for example.
+
+	"""
+	name = models.CharField(max_length=25, primary_key=True)
+	section = models.ForeignKey(Section)
+	
+
+	#QC sample pass info - the levels needed for a sample to pass
+
+	min_read_count = models.IntegerField()
+	min_average_read_length = models.IntegerField()
+	max_average_read_length = models.IntegerField()
+	min_mapped_rate = models.FloatField()
+	max_error_rate = models.FloatField()
+	default_filter = models.ForeignKey(SampleFilter)
+
+
+	def __str__(self):
+		return self.name
 
 	def get_number_samples(self):
 
@@ -567,7 +572,7 @@ class Sample(models.Model):
 				return "PASS"
 
 
-	def get_filtered_variants(self, consequences_query_set, max_frequency, apply_panel):
+	def get_filtered_variants(self, consequences_query_set, max_frequency, panel=None):
 		"""
 		Gets all the variants for a sample and applies the following filters:
 
@@ -596,11 +601,11 @@ class Sample(models.Model):
 				.order_by("variant__worst_consequence__impact", "variant__max_af")
 				.select_related("variant"))
 
-		if apply_panel ==True:
+		if panel != None:
 
 			panel_genes = (PanelGene
 								.objects
-								.filter(panel=self.panel)
+								.filter(panel=panel)
 								.select_related("gene"))
 
 			panel_genes =[panel_gene.gene for panel_gene in panel_genes]
@@ -639,6 +644,7 @@ class Consequence(models.Model):
 
 	def __str__(self):
 		return self.name
+
 
 class Gene(models.Model):
 
@@ -1550,8 +1556,8 @@ class Report(models.Model):
 	sample = models.ForeignKey(Sample)
 	user = models.ForeignKey("auth.User")
 	status = models.CharField(max_length=1, choices =choices)
-
-
+	panel = models.ForeignKey(Panel)
+	default_filter = models.ForeignKey(SampleFilter)
 
 
 	def get_status(self):

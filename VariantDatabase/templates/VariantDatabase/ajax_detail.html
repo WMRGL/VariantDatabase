@@ -1,4 +1,4 @@
-
+{% load permission_tags %}
     <ul class="nav nav-pills nav-stacked col-lg-1" >
       <li ><a href="#tab_a" data-toggle="pill">Detail</a></li>
       <li class="active"><a href="#tab_b" data-toggle="pill">IGV</a></li>
@@ -6,7 +6,6 @@
     </ul>
     <div class="tab-content col-lg-11">
             <div class="tab-pane" id="tab_a">
-
 
                       <table class = 'table table-bordered' >
         <thead>
@@ -168,47 +167,6 @@
     </table>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <hr>
 
       <button data-toggle="collapse" data-target="#demo">View Samples</button>
@@ -309,8 +267,9 @@
                  <div id='varhash' style="display: none;" >{{variant.variant_hash}} </div>
 
                  <hr>
-                 
-                 {% if perms %}
+
+                 {% if user|can:'add_comment' %}
+
                  
 
                   <form enctype="multipart/form-data" class="col-lg-6"> {% csrf_token %}
@@ -343,8 +302,8 @@
 
                   <canvas style="border:1px solid grey;" id="my_canvas" width="300" height="300"></canvas>
 
-
                   {% endif %}
+
 
 
             </div>

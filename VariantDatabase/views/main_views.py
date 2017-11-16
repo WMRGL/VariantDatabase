@@ -8,6 +8,9 @@ import VariantDatabase.parsers.file_parsers as parsers
 import re
 import VariantDatabase.utils.variant_utilities as variant_utilities
 from django.db import transaction
+from rolepermissions.checkers import has_permission
+from django.core.exceptions import PermissionDenied
+from rolepermissions.decorators import has_permission_decorator
 
 
 @login_required
@@ -86,15 +89,18 @@ def sample_summary(request, pk_sample):
 
 	"""
 
-	#print request.GET.get("consequences"), "hi"
-
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
 	total_summary = sample.total_variant_summary()
 
 	reports = Report.objects.filter(sample=sample)
 
-	if request.method == "POST": #if the user clicked create a new report 
+	if request.method == "POST": #if the user clicked create a new report
+
+
+		if has_permission(request.user, 'create_report') == False:
+
+			raise PermissionDenied
 
 		if "reportform" in request.POST:
 
@@ -106,6 +112,8 @@ def sample_summary(request, pk_sample):
 				report.sample = sample
 				report.status ="1"
 				report.user = request.user
+				report.panel = sample.panel
+				report.default_filter = sample.worksheet.sub_section.default_filter
 
 				report.save()
 
@@ -144,13 +152,13 @@ def sample_summary(request, pk_sample):
 
 			if sample.panel.name == "None":
 
-				apply_panel = False
+				panel = None
 
 			else:
 
-				apply_panel = True 
+				panel = sample.panel
 
-			variant_samples = sample.get_filtered_variants(consequences_query_set,max_af, apply_panel)
+			variant_samples = sample.get_filtered_variants(consequences_query_set,max_af, panel)
 
 			variants = (Variant
 						.objects
@@ -181,7 +189,7 @@ def sample_summary(request, pk_sample):
 
 	else:
 
-		filter_dict = sample.worksheet.sub_section.create_filter_dict()
+		filter_dict = sample.worksheet.sub_section.default_filter.create_filter_dict()
 
 		consequences_to_include =[]
 
@@ -206,13 +214,13 @@ def sample_summary(request, pk_sample):
 
 		if sample.panel.name == "None":
 
-			apply_panel = False
+			panel = None
 
 		else:
 
-			apply_panel = True 
+			panel = sample.panel
 
-		variant_samples = sample.get_filtered_variants(consequences_query_set,filter_dict["freq_max_af"], apply_panel)
+		variant_samples = sample.get_filtered_variants(consequences_query_set,filter_dict["freq_max_af"], panel)
 														 
 		variants = Variant.objects.filter(variant_hash__in= variant_samples.values_list("variant_id",flat=True))
 
@@ -478,6 +486,8 @@ def search(request):
 
 		return render(request, "VariantDatabase/search.html" , {"form": form})
 
+
+@has_permission_decorator('create_report')
 @login_required
 def create_sample_report(request, pk_sample, pk_report, check_number):
 	"""
@@ -492,9 +502,7 @@ def create_sample_report(request, pk_sample, pk_report, check_number):
 
 	total_summary = sample.total_variant_summary()
 
-	filter_dict = sample.worksheet.sub_section.create_filter_dict()
-
-	filter_form = FilterForm(initial=filter_dict)
+	filter_dict = report.default_filter.create_filter_dict()
 
 	consequences_to_include =[]
 
@@ -517,15 +525,15 @@ def create_sample_report(request, pk_sample, pk_report, check_number):
 
 	consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
 
-	if sample.panel.name == "None":
+	if report.panel.name == "None":
 
-		apply_gene_panel = False
+		panel = None
 
 	else:
 
-		apply_gene_panel = True 
+		panel = report.panel 
 
-	variant_samples = (sample.get_filtered_variants(consequences_query_set, filter_dict["freq_max_af"], apply_gene_panel))
+	variant_samples = (sample.get_filtered_variants(consequences_query_set, filter_dict["freq_max_af"], panel))
 
 	variants = (Variant
 				.objects
@@ -550,7 +558,7 @@ def create_sample_report(request, pk_sample, pk_report, check_number):
 				"check_number": check_number })
 
 
-
+@has_permission_decorator('resolve_differences')
 @login_required
 def resolve_check_differences(request, pk_sample, pk_report):
 	"""
@@ -724,6 +732,10 @@ def panel_list(request):
 
 	if request.method == "POST":
 
+		if has_permission(request.user, 'create_panel') == False:
+
+			raise PermissionDenied
+
 		form = CreatePanelForm(request.POST)
 
 		if form.is_valid():
@@ -765,6 +777,9 @@ def panel_list(request):
 
 	return render(request,"VariantDatabase/panel_list.html", {"panels": panels, "form": form})
 	
+
+
+@has_permission_decorator('create_panel')
 @login_required
 def panel_edit_create(request, pk_panel):
 	"""

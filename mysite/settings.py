@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'auditlog',
     'crispy_forms',
     'rest_framework',
+    'rolepermissions',
 
 
 
@@ -72,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+
             ],
         },
     },
@@ -145,4 +147,4 @@ LOGIN_URL = '/login/'
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 
-
+ROLEPERMISSIONS_MODULE = 'mysite.roles'

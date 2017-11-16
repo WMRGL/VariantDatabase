@@ -9,7 +9,8 @@ import base64
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.files.base import ContentFile
 import json
-
+from rolepermissions.decorators import has_permission_decorator
+from rolepermissions.checkers import has_permission
 
 @login_required
 def ajax_detail(request):
@@ -34,18 +35,18 @@ def ajax_detail(request):
 
 		comments =Comment.objects.filter(variant_sample=variant_sample)
 
-		perms = request.user.has_perm("VariantDatabase.add_comment")
-
 		samples = variant.get_samples_with_variant()
 
 		frequency_data = variant.get_frequency_data()
+
+		user = request.user
 
 		html = render_to_string("VariantDatabase/ajax_detail.html",
 								{"variant": variant,
 								"sample": sample,
 								"comments": comments,
-								"perms": perms,
 								"samples": samples,
+								'user': user,
 								"frequency_data": frequency_data})
 
 		return HttpResponse(html)
@@ -56,6 +57,7 @@ def ajax_detail(request):
 
 
 @login_required
+@has_permission_decorator('add_comment')
 def ajax_comments(request):
 	"""
 	Ajax View - when the user clicks the upload comment/file button \
@@ -166,6 +168,8 @@ def ajax_table_expand(request):
 
 		raise Http404
 
+
+@has_permission_decorator('complete_check')
 @login_required
 def ajax_receive_classification_data(request):
 	"""
@@ -313,6 +317,11 @@ def ajax_receive_classification_data(request):
 		#If we have recieved the resolve differences data
 		elif report.status == "3" and check_number.strip() =="3" :
 
+
+			if has_permission(user, 'resolve_differences') == False:
+
+				raise PermissionDenied
+
 			classifications = request.POST.get("classifications")
 
 			classifications = json.loads(classifications)
@@ -388,6 +397,7 @@ def ajax_receive_classification_data(request):
 
 	return HttpResponse("ajax error")
 
+@has_permission_decorator('create_panel')
 @login_required
 def ajax_update_panel(request):
 	"""

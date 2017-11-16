@@ -203,7 +203,7 @@
         </td>
         <td class='project_count get_detail'>  {{variant.0.get_subsection_frequency}}</td>
         <td class='worksheet_count get_detail'> {{variant.0.variant.get_worksheet_count}}</td>
-        <td class='ab_std get_detail'> {{variant.0.allele_balance_out_of_range}} </td>
+        <td class='ab_std get_detail'> {{variant.0.allele_balance_out_of_range|floatformat:2}} </td>
         <td class='clinsig get_detail'> {{variant.0.variant.clinical_sig}} </td>
         <td class='genotype get_detail'> {{variant.0.display_genotype}} </td>
         <td class='callers get_detail'> {{variant.0.caller}} </td>
