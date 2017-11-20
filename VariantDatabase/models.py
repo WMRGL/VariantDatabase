@@ -435,24 +435,6 @@ class Sample(models.Model):
 			return False
 
 
-	def get_variants(self):
-		"""
-		Look in all VariantSample objects.
-		Return all variants linked with this sample.
-		"""
-		variant_samples = (VariantSample
-							.objects
-							.filter(sample=self)
-							.values_list("variant_id", flat=True))
-
-		variants = (Variant
-					.objects
-					.filter(variant_hash__in= variant_samples)
-					.order_by("worst_consequence__impact", "max_af"))
-
-		return variants
-
-
 	def get_status(self):
 		"""
 		Returns current status.
@@ -470,44 +452,6 @@ class Sample(models.Model):
 		except:
 
 			return None
-
-
-	def variant_query_set_summary(self, variant_query_set):
-		"""
-		Summerises the data in a variant queryset e.g. how many variants.
-
-		"""
-
-		summary_dict = {}
-
-		summary_dict["total"] = variant_query_set.count()
-
-		summary_dict["missense_count"] = (variant_query_set
-											.filter(worst_consequence__name="missense_variant")
-											.count())
-
-		summary_dict["indel_count"] = (variant_query_set
-			.filter(Q(worst_consequence__name="inframe_deletion") | Q(worst_consequence__name="inframe_insertion") | Q(worst_consequence__name="frameshift_variant"))
-			.count())
-
-		summary_dict["lof_count"] = (variant_query_set.
-										filter(worst_consequence__impact__lte=8)
-										.count())
-		summary_dict["synonymous"] = (variant_query_set
-										.filter(worst_consequence__name="synonymous_variant")
-										.count())
-
-		return summary_dict
-
-	def total_variant_summary(self):
-		"""
-		Get the summary information for all variants in the sample.
-
-		"""
-
-		variants = self.get_variants()
-
-		return self.variant_query_set_summary(variants)
 
 
 	def get_error_rate(self):
@@ -572,62 +516,7 @@ class Sample(models.Model):
 				return "PASS"
 
 
-	def get_filtered_variants(self, consequences_query_set, max_frequency, panel=None):
-		"""
-		Gets all the variants for a sample and applies the following filters:
 
-		1) Consequences
-		2) Frequency (ExAC)
-		3) Gene
-
-		Input :
-
-		consequences_query_set = A query set containing the consequences to include
-		max_frequency = The maximum frequency i.e. exclude variants with max_af > this.
-		apply_gene_filter = Boolean - whether to apply gene filter
-
-		Output:
-
-		variant_samples = A queryset containing the filtered VariantSample Objects.
-
-
-		"""
-
-
-		variant_samples =(VariantSample
-				.objects
-				.filter(sample=self, variant__worst_consequence__in=consequences_query_set)
-				.filter(variant__max_af__lte=max_frequency)
-				.order_by("variant__worst_consequence__impact", "variant__max_af")
-				.select_related("variant"))
-
-		if panel != None:
-
-			panel_genes = (PanelGene
-								.objects
-								.filter(panel=panel)
-								.select_related("gene"))
-
-			panel_genes =[panel_gene.gene for panel_gene in panel_genes]
-
-			variants = [variant_sample.variant for variant_sample in variant_samples]
-
-			variant_transcripts = (VariantTranscript
-							.objects
-							.filter(variant__in=variants)
-							.filter(transcript__gene__in=panel_genes)
-							.select_related("variant"))
-
-			variants = [variant_transcript.variant.variant_hash for variant_transcript
-						 in variant_transcripts]
-
-			variant_samples = variant_samples.filter(variant__variant_hash__in=variants)
-
-			return variant_samples
-
-		else:
-
-			return variant_samples
 
 
 
@@ -1151,7 +1040,7 @@ class Variant(models.Model):
 					.objects
 					.filter(variant=self)
 					.exclude(final_classification=None)
-					.order_by('-final_date'))
+					.order_by("-report__resolver_date"))
 
 
 		return classifications
@@ -1317,8 +1206,6 @@ class VariantSample(models.Model):
 
 		allele_balance_array = np.array(allele_balance_list)
 
-		#z_scores = stats.zscore(allele_balance_array)
-
 		mean = allele_balance_array.mean()
 
 		std = allele_balance_array.std()
@@ -1332,6 +1219,30 @@ class VariantSample(models.Model):
 
 
 		
+	def get_previous_classification(self):
+		"""
+		returns classifications done in the same section.
+
+		"""
+
+		classifications = ReportVariantSampleClassification.objects.filter(variant=self.variant)
+
+		classifications = classifications.exclude(final_classification=None)
+
+		same_section = classifications.filter(report__sample__worksheet__sub_section__section =self.sample.worksheet.sub_section.section)
+
+		same_section = same_section.order_by("-report__resolver_date")
+
+		if same_section.exists():
+
+			return same_section[0].final_classification
+
+		else:
+
+			return None
+
+
+
 
 
 
@@ -1554,10 +1465,21 @@ class Report(models.Model):
 
 
 	sample = models.ForeignKey(Sample)
-	user = models.ForeignKey("auth.User")
 	status = models.CharField(max_length=1, choices =choices)
 	panel = models.ForeignKey(Panel)
 	default_filter = models.ForeignKey(SampleFilter)
+
+
+	report_creator = models.ForeignKey("auth.User", related_name="report_creator")
+	first_checker = models.ForeignKey("auth.User", related_name="first_checker", null=True, blank=True)
+	second_checker = models.ForeignKey("auth.User", related_name="second_checker", null=True, blank=True)
+	resolver = models.ForeignKey("auth.User", related_name="resolver", null=True, blank=True)
+
+	creation_date = models.DateTimeField()
+	first_check_date = models.DateTimeField(null=True, blank=True)
+	second_check_date = models.DateTimeField(null=True, blank=True)
+	resolver_date = models.DateTimeField(null=True, blank=True)
+
 
 
 	def get_status(self):
@@ -1614,6 +1536,7 @@ class Report(models.Model):
 
 
 
+
 class Classification(models.Model):
 	"""
 	Stores the possible classifications for variants.
@@ -1642,28 +1565,19 @@ class ReportVariantSampleClassification(models.Model):
 
 	report = models.ForeignKey(Report)
 	variant = models.ForeignKey(Variant)
-	
-	
-	user1 = models.ForeignKey("auth.User")
-	date1 = models.DateTimeField()
 	user_hgvs1 = models.TextField()
 	classification1 = models.ForeignKey(Classification, related_name="classification1")
-
-	user2 = models.ForeignKey("auth.User", blank=True, null=True, related_name="user2")
-	date2 = models.DateTimeField(blank=True, null=True)
 	user_hgvs2 = models.TextField(blank=True, null=True)
 	classification2 = models.ForeignKey( Classification,
 										 related_name="classification2",
 										 blank=True,
 										 null=True)
-
 	final_classification = models.ForeignKey(Classification,
 												related_name="final_classification",
 												blank=True,
 												null=True)
 	final_hgvs = models.TextField(blank=True, null=True)
-	final_user = models.ForeignKey("auth.User", blank=True, null=True, related_name="final_user")
-	final_date = models.DateTimeField(blank=True, null=True)
+
 
 	def classification_match(self):
 		"""

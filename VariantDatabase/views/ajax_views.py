@@ -225,8 +225,7 @@ def ajax_receive_classification_data(request):
 					new_report_sample_variant_classification = ReportVariantSampleClassification(
 
 						report = report, variant=variant,classification1=classification,
-						user1=request.user, date1 = timezone.now(), user_hgvs1 =user_hgvs
-
+						user_hgvs1 =user_hgvs
 						)
 
 
@@ -234,6 +233,8 @@ def ajax_receive_classification_data(request):
 
 
 				report.status ="2"
+				report.first_checker = request.user
+				report.first_check_date = timezone.now()
 				report.save()
 
 				return HttpResponse("Done")
@@ -273,8 +274,6 @@ def ajax_receive_classification_data(request):
 						report_sample_variant_classification =report_sample_variant_classification[0]
 
 						report_sample_variant_classification.classification2 = classification
-						report_sample_variant_classification.user2 = request.user
-						report_sample_variant_classification.date2 = timezone.now()
 						report_sample_variant_classification.user_hgvs2 = user_hgvs
 
 						report_sample_variant_classification.save()
@@ -297,16 +296,22 @@ def ajax_receive_classification_data(request):
 					for variant_classification in report_sample_variant_classifications:
 
 						variant_classification.final_classification = variant_classification.classification2
-						variant_classification.final_user = request.user
-						variant_classification.final_date = timezone.now()
 						variant_classification.final_hgvs = variant_classification.user_hgvs2
 
 						variant_classification.save()
 
+
+
+					report.second_checker = request.user
+					report.second_check_date = timezone.now()
+					report.resolver = request.user
+					report.resolver_date = timezone.now()
+
 					report.status ="4"
 
 				else:
-					
+					report.second_checker = request.user
+					report.second_check_date = timezone.now()
 					report.status ="3"
 
 				report.save()
@@ -318,7 +323,7 @@ def ajax_receive_classification_data(request):
 		elif report.status == "3" and check_number.strip() =="3" :
 
 
-			if has_permission(user, 'resolve_differences') == False:
+			if has_permission(request.user, 'resolve_differences') == False:
 
 				raise PermissionDenied
 
@@ -354,8 +359,6 @@ def ajax_receive_classification_data(request):
 						report_sample_variant_classification =report_sample_variant_classification[0]
 
 						report_sample_variant_classification.final_classification = classification
-						report_sample_variant_classification.final_user = request.user
-						report_sample_variant_classification.final_date = timezone.now()
 						report_sample_variant_classification.final_hgvs = user_hgvs
 
 						report_sample_variant_classification.save()
@@ -378,13 +381,12 @@ def ajax_receive_classification_data(request):
 					if variant_classification.final_classification == None:
 
 						variant_classification.final_classification = variant_classification.classification2
-						variant_classification.final_user = request.user
-						variant_classification.final_date = timezone.now()
 						variant_classification.final_hgvs = variant_classification.user_hgvs2
 
 						variant_classification.save()
 
-
+				report.resolver = request.user
+				report.resolver_date = timezone.now()
 				report.status ="4"
 				report.save()
 

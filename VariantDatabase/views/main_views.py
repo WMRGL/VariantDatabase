@@ -53,6 +53,10 @@ def list_worksheet_samples(request, pk_worksheet):
 
 	if request.method == "POST":
 
+		if has_permission(request.user, 'approve_qc') == False:
+
+			raise PermissionDenied
+
 		#if user is authorised
 		worksheet = worksheet = get_object_or_404(Worksheet, pk=pk_worksheet)
 		worksheet.status = "3"
@@ -91,8 +95,6 @@ def sample_summary(request, pk_sample):
 
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
-	total_summary = sample.total_variant_summary()
-
 	reports = Report.objects.filter(sample=sample)
 
 	if request.method == "POST": #if the user clicked create a new report
@@ -111,7 +113,8 @@ def sample_summary(request, pk_sample):
 				report = report_form.save(commit=False)
 				report.sample = sample
 				report.status ="1"
-				report.user = request.user
+				report.report_creator = request.user
+				report.creation_date = timezone.now()
 				report.panel = sample.panel
 				report.default_filter = sample.worksheet.sub_section.default_filter
 
@@ -119,112 +122,83 @@ def sample_summary(request, pk_sample):
 
 				return redirect(create_sample_report, sample.pk, report.pk, "1")
 
-	elif "submit_filter_form" in request.GET: #if the user clicked filter
 
-		filter_form = FilterForm(request.GET)
-
-		if filter_form.is_valid():
-
-			consequences =  filter_form.cleaned_data["consequences"]
-
-			consequences_to_include =[]
-
-			for consequence in consequences:
-
-				#can"t start python variables with a number  \
-				#so have to change key from 5_prime_UTR_variant to five_prime_UTR_variant
-				if consequence == "five_prime_UTR_variant": 
-
-					consequences_to_include.append("5_prime_UTR_variant")
-
-				elif consequence == "three_prime_UTR_variant":
-
-					consequences_to_include.append("3_prime_UTR_variant")
-
-				else:
-
-					consequences_to_include.append(consequence)
-
-			max_af = request.GET.get("max_af")
-
-			consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
-
-
-			if sample.panel.name == "None":
-
-				panel = None
-
-			else:
-
-				panel = sample.panel
-
-			variant_samples = sample.get_filtered_variants(consequences_query_set,max_af, panel)
-
-			variants = (Variant
-						.objects
-						.filter(variant_hash__in= variant_samples.values_list("variant_id", flat=True)))
-
-			summary = sample.variant_query_set_summary(variants)
-
-			gene_coverage = GeneCoverage.objects.filter(sample=sample)
-
-			exon_coverage = ExonCoverage.objects.filter(sample=sample)
-
-			user_settings = UserSetting.objects.filter(user=request.user)
-
-			report_form = ReportForm()
-
-			return render(  request,
-							"VariantDatabase/sample_summary.html",
-							{"sample": sample,
-							"variants": variant_samples,
-							"reports": reports,
-							"report_form": report_form,
-							"summary": summary,
-							"total_summary": total_summary,
-						 	"gene_coverage": gene_coverage,
-						 	"exon_coverage": exon_coverage ,
-						 	"user_settings": user_settings,
-						 	 "filter_form": filter_form })
 
 	else:
 
-		filter_dict = sample.worksheet.sub_section.default_filter.create_filter_dict()
+		if "submit_filter_form" in request.GET: #if the user clicked filter
 
-		consequences_to_include =[]
+			filter_form = FilterForm(request.GET)
 
-		for key in filter_dict:
+			if filter_form.is_valid():
 
-			if "freq" not in key and filter_dict[key] ==True:
+				consequences =  filter_form.cleaned_data["consequences"]
 
-				if key == "five_prime_UTR_variant":
+				consequences_to_include = (variant_utilities
+											.create_conseqences_to_include_form(consequences))
 
-					consequences_to_include.append("5_prime_UTR_variant")
+				max_af = filter_form.cleaned_data["max_af"]
 
-				elif key == "three_prime_UTR_variant":
+				panel_pk = filter_form.cleaned_data["panels"]
 
-					consequences_to_include.append("3_prime_UTR_variant")
+				update_panel = filter_form.cleaned_data["update_panel"]
 
-				else:
+				panel = get_object_or_404(Panel, pk=panel_pk)
 
-					consequences_to_include.append(key)
+				if update_panel == True:
 
+					sample.panel = panel
+					sample.save()
 
-		consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
-
-		if sample.panel.name == "None":
-
-			panel = None
 
 		else:
 
+			#use default settings for subsection
+			filter_dict = sample.worksheet.sub_section.default_filter.create_filter_dict()
+
+			consequences_to_include = variant_utilities.create_conseqences_to_include(filter_dict)
+
+			max_af = filter_dict['freq_max_af']
+
 			panel = sample.panel
 
-		variant_samples = sample.get_filtered_variants(consequences_query_set,filter_dict["freq_max_af"], panel)
-														 
-		variants = Variant.objects.filter(variant_hash__in= variant_samples.values_list("variant_id",flat=True))
+			filter_form = FilterForm(initial={"panels": panel.pk})
 
-		summary = sample.variant_query_set_summary(variants)
+			filter_form.fields["consequences"].initial = filter_dict
+			filter_form.fields["max_af"].initial = filter_dict["freq_max_af"]
+
+			
+		variant_samples = VariantSample.objects.filter(sample=sample).select_related('variant')
+
+		variants = (Variant
+					.objects
+					.filter(variant_hash__in= variant_samples
+					.values_list("variant_id",flat=True)))
+
+		total_summary = variant_utilities.variant_query_set_summary(variants)
+
+
+		if panel.name == "None":
+
+			variant_samples = (variant_utilities
+								.get_filtered_variants(variant_samples,
+													 	consequences_to_include,
+													 	max_af))
+
+
+		else:
+
+			variant_samples = (variant_utilities
+					.get_filtered_variants(variant_samples,
+										 	consequences_to_include,
+										 	max_af, panel))
+										 
+		variants = (Variant
+					.objects
+					.filter(variant_hash__in= variant_samples
+					.values_list("variant_id",flat=True)))
+
+		summary = variant_utilities.variant_query_set_summary(variants)
 
 		gene_coverage = GeneCoverage.objects.filter(sample=sample)
 
@@ -234,24 +208,20 @@ def sample_summary(request, pk_sample):
 
 		report_form = ReportForm()
 
-		filter_form = FilterForm()
-
-		filter_form.fields["consequences"].initial = filter_dict
-		filter_form.fields["max_af"].initial = filter_dict["freq_max_af"]
-
-		return render(request,
-					 "VariantDatabase/sample_summary.html",
-
-					  {"sample": sample,
+		return render(  request,
+						"VariantDatabase/sample_summary.html",
+						{"sample": sample,
 						"variants": variant_samples,
 						"reports": reports,
 						"report_form": report_form,
 						"summary": summary,
 						"total_summary": total_summary,
-						"gene_coverage": gene_coverage,
-						"exon_coverage": exon_coverage,
-						"user_settings": user_settings,
-						"filter_form": filter_form})
+					 	"gene_coverage": gene_coverage,
+					 	"exon_coverage": exon_coverage,
+					 	"user_settings": user_settings,
+					 	"filter_form": filter_form,
+					 	"panel":panel })
+
 
 
 @login_required
@@ -500,30 +470,9 @@ def create_sample_report(request, pk_sample, pk_report, check_number):
 
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
-	total_summary = sample.total_variant_summary()
-
 	filter_dict = report.default_filter.create_filter_dict()
 
-	consequences_to_include =[]
-
-	for key in filter_dict:
-
-		if "freq" not in key and filter_dict[key] ==True:
-
-			if key == "five_prime_UTR_variant":
-
-				consequences_to_include.append("5_prime_UTR_variant")
-
-			elif key == "three_prime_UTR_variant":
-
-				consequences_to_include.append("3_prime_UTR_variant")
-
-			else:
-
-				consequences_to_include.append(key)
-
-
-	consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
+	consequences_to_include = variant_utilities.create_conseqences_to_include(filter_dict)
 
 	if report.panel.name == "None":
 
@@ -533,14 +482,17 @@ def create_sample_report(request, pk_sample, pk_report, check_number):
 
 		panel = report.panel 
 
-	variant_samples = (sample.get_filtered_variants(consequences_query_set, filter_dict["freq_max_af"], panel))
+	variant_samples = VariantSample.objects.filter(sample=sample).select_related('variant')
 
-	variants = (Variant
-				.objects
-				.filter(variant_hash__in= variant_samples
-				.values_list("variant_id", flat=True)))
+	variants = Variant.objects.filter(variant_hash__in= variant_samples.values_list("variant_id",flat=True))
 
-	summary = sample.variant_query_set_summary(variants)
+	total_summary = variant_utilities.variant_query_set_summary(variants)
+
+	variant_samples = variant_utilities.get_filtered_variants(variant_samples, consequences_to_include,filter_dict['freq_max_af'], panel)
+													 
+	variants = Variant.objects.filter(variant_hash__in= variant_samples.values_list("variant_id",flat=True))
+
+	summary = variant_utilities.variant_query_set_summary(variants)
 
 	user_settings = UserSetting.objects.filter(user=request.user)
 

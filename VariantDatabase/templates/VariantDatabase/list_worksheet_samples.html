@@ -2,7 +2,7 @@
 
   {% block content %}
 
-
+{% load permission_tags %}
   	<br>
 
   	<div class="alert alert-info">
@@ -138,7 +138,7 @@
 		
 
 
-		
+			{% if user|can:'approve_qc' %}
 
 
 		    <div class="panel panel-danger">
@@ -161,6 +161,16 @@
 
 	        </div>
 	        </div>
+
+	        {% else %}
+
+	        <div class="alert alert-warning">
+  				<strong>Warning!</strong> You do not have permission to approve QC.
+			</div>
+
+			{% endif %}
+
+
 
 		{% elif not worksheet.qc_present %}
 

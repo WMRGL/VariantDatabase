@@ -76,7 +76,6 @@
 	    <li><a data-toggle="tab" href="#filter">Filter</a></li>
 	    <li><a data-toggle="tab" href="#QC">QC</a></li>
 	   	<li><a data-toggle="tab" href="#coverage">Coverage</a></li>
-	    <li><a data-toggle="tab" href="#history">History</a></li>
 	    <li><a data-toggle="tab" href="#report">Report</a></li>
 
   	</ul>
@@ -107,7 +106,7 @@
 
 		<strong>{{ sample.name }}</strong> |<strong>               Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} | 
 	    <strong> Indels </strong> {{summary.indel_count}} / {{total_summary.indel_count}} | <strong> LOF : </strong> {{summary.lof_count}} / {{total_summary.lof_count}} |
-	    <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}} | <strong> Panel : </strong> {{sample.panel}}
+	    <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}} | <strong> Panel : </strong> {{panel}}
 
 
 
@@ -164,6 +163,7 @@ tr.shown td.details-control {
           <th class='worksheet_count'> Worksheet Count </th>
           <th class='ab_std'> AB Z-Score </th>
           <th class='clinsig'> Clin Sig </th>
+          <th class='prev_class'> Prev Class </th>
           <th class='genotype'> Genotype </th>
           <th class='callers'> Callers </th>
           <th class='allele_depth'> AD </th>
@@ -192,6 +192,7 @@ tr.shown td.details-control {
         <td class='worst_consequence get_detail'> {{variant.variant.worst_consequence}} </td>
         <td class="genes get_detail"> {{variant.variant.get_genes|join:" "}} </td>
         <td class= "max_af get_detail"> {{variant.variant.max_af}} </td>
+
         <td class='exac_frequency get_detail'> 
                 <a class="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-placement="top" data-container="body" data-content='<ul class="list-group">
                                                   <li class="list-group-item">ADJ AF : {{ variant.variant.exac_adj_af}}</li>
@@ -208,6 +209,10 @@ tr.shown td.details-control {
         <td class='worksheet_count get_detail'> {{variant.variant.get_worksheet_count}}</td>
         <td class='ab_std get_detail'> {{variant.allele_balance_out_of_range|floatformat:2}}</td>
         <td class='clinsig get_detail'> {{variant.variant.clinical_sig}} </td>
+
+        <td class='prev_class get_detail'> {{variant.get_previous_classification}} </td>
+
+
         <td class='genotype get_detail'> {{variant.display_genotype}} </td>
         <td class='callers get_detail'> {{variant.caller}} </td>
         <td class='allele_depth get_detail'> {{variant.allele_depth}} </td>
@@ -227,12 +232,7 @@ tr.shown td.details-control {
 
       </tbody>
       </table>
-
-
-  	      			
-                	
-
-                  	
+	
 
       </div>
 
@@ -255,7 +255,7 @@ tr.shown td.details-control {
 
         <hr>
 
-        <h3> Gene Filter: <a href= "{% url 'panel_view' sample.panel.pk  %}">  {{sample.panel}}   </a> </h3> 
+        <h3> Gene Filter: <a href= "{% url 'panel_view' panel.pk  %}">  {{panel}}   </a> </h3> 
 
 	
 
@@ -727,16 +727,6 @@ tr.shown td.details-control {
 
 
 
-	<!--History Tab with link to History -->
-	<div id="history" class="tab-pane fade">
-
-	<p> History </p>
-
-
-
-	</div>
-
-
 	<div id="report" class="tab-pane fade">
 
 
@@ -750,7 +740,6 @@ tr.shown td.details-control {
 			<th> Report First Check</th>
 			<th> Report Second Check</th>
 			<th> Report Status </th>
-			<th> Report Creator </th>
 			<th> Action </th>
 			<th> View </th>
 
@@ -770,14 +759,13 @@ tr.shown td.details-control {
 
 				<td> {{report.pk}} </td>
 
-				<td> name on date    </td>
+				<td> {{report.first_checker}} on {{report.first_check_date}}   </td>
 
-				<td> name on date   </td>
+				<td> {{report.second_checker}} on {{report.second_check_date}}      </td>
 
 
 				<td> {{report.get_status }} </td>
 
-				<td> {{ report.user }} </td>
 
 				{% if report.status == '2'  and user|can:'complete_check' %}
 

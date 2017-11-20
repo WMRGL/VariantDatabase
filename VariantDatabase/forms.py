@@ -76,9 +76,13 @@ class FilterForm(forms.Form):
 	try:
 	
 		consequences_list = Consequence.objects.all()
+		panels_list = Panel.objects.all()
+		choices_panels = [(panel.pk, panel.name) for panel in panels_list]
 		choices_consequence = [(consequence.name, consequence.name) for consequence in consequences_list]
 		consequences = forms.MultipleChoiceField(choices_consequence)
 		max_af = forms.FloatField(required=True, max_value=1, min_value=0)
+		panels = forms.ChoiceField(choices=choices_panels)
+		update_panel = forms.BooleanField(required=False)
 
 	except:
 
@@ -102,7 +106,7 @@ class FilterForm(forms.Form):
 		self.helper.form_class = "form-horizontal"
 		self.helper.layout = Layout(
 			
-			Field("max_af"), Div("consequences") )
+			Field("max_af"), Div("consequences"), Div("panels"), Div("update_panel") )
 
 
 class CreatePanelForm(forms.ModelForm):

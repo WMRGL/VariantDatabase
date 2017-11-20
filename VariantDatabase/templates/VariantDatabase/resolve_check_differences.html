@@ -218,18 +218,40 @@
 
            <select size="1" id="{{variant.variant.variant_hash}}" name="{{variant.variant.variant_hash}}">
 
-            {% for classification in classifications %}
+          {% for classification in classifications %}
+
+              {% if variant.get_previous_classification.name == "Poly" and classification.name == "Poly"    %}
 
 
+                  <option value={{classification.name}} selected>
 
-                  <option value={{classification.name}}>
 
-
-                                  {{classification.name}}
+                                 {{classification.name}}
                   </option>
 
 
-              {% endfor %}
+              {% else %}
+
+              <option value={{classification.name}}>
+
+
+                              {{classification.name}}
+              </option>
+
+          {% endif %}
+
+       {% endfor %}
+
+
+
+
+
+
+
+
+
+
+
 
              </select>
 

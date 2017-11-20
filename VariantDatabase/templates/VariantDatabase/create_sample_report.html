@@ -160,6 +160,7 @@
           <th class='worksheet_count'> Worksheet Count </th>
           <th class='ab_std'> AB Z-Score </th>
           <th class='clinsig'> Clin Sig </th>
+          <th class='prev_class'> Prev Class </th>
           <th class='genotype'> Genotype </th>
           <th class='callers'> Callers </th>
           <th class='allele_depth'> AD </th>
@@ -210,6 +211,7 @@
         <td class='worksheet_count get_detail'> {{variant.variant.get_worksheet_count}}</td>
         <td class='ab_std get_detail'> {{variant.allele_balance_out_of_range|floatformat:2}} </td>
         <td class='clinsig get_detail'> {{variant.variant.clinical_sig}} </td>
+        <td class='prev_class get_detail'> {{variant.get_previous_classification}} </td>
         <td class='genotype get_detail'> {{variant.display_genotype}} </td>
         <td class='callers get_detail'> {{variant.caller}} </td>
         <td class='allele_depth get_detail'> {{variant.allele_depth}} </td>
@@ -221,16 +223,29 @@
 
 			 	{% for classification in classifications %}
 
+          {% if variant.get_previous_classification.name == "Poly" and classification.name == "Poly"    %}
 
 
-			        <option value={{classification.name}}>
+                          <option value={{classification.name}} selected>
 
 
-			                        {{classification.name}}
-			        </option>
+                             {{classification.name}}
+              </option>
 
 
-			    {% endfor %}
+          {% else %}
+
+
+
+              <option value={{classification.name}}>
+
+
+                              {{classification.name}}
+              </option>
+
+          {% endif %}
+
+			 {% endfor %}
 
 			   </select>
 
