@@ -759,12 +759,41 @@ tr.shown td.details-control {
 
 				<td> {{report.pk}} </td>
 
+				{% if report.first_checker == None %}
+
+				<td> N/A   </td>
+
+				{% else %}
+
 				<td> {{report.first_checker}} on {{report.first_check_date}}   </td>
+
+				{% endif %}
+
+
+				{% if report.second_checker == None %}
+
+				<td> N/A   </td>
+
+				{% else %}
 
 				<td> {{report.second_checker}} on {{report.second_check_date}}      </td>
 
+				{% endif %}
+
+
+
+
+
+				
+
 
 				<td> {{report.get_status }} </td>
+
+				{% if report.locked == True and report.lock_user != user  %}
+
+					<td> Locked by {{report.lock_user}}</td>
+
+				{% else %}
 
 
 				{% if report.status == '2'  and user|can:'complete_check' %}
@@ -784,8 +813,11 @@ tr.shown td.details-control {
 				<td> None</td>
 
 				{% endif %}
+				{% endif %}
 
 				<td> <a href= "{% url 'view_sample_report' sample.pk report.pk %}"> View</td>
+
+
 
 			</tr>
 

@@ -235,6 +235,8 @@ def ajax_receive_classification_data(request):
 				report.status ="2"
 				report.first_checker = request.user
 				report.first_check_date = timezone.now()
+				report.lock_user = None
+				report.locked = False
 				report.save()
 
 				return HttpResponse("Done")
@@ -308,12 +310,16 @@ def ajax_receive_classification_data(request):
 					report.resolver_date = timezone.now()
 
 					report.status ="4"
+					sample.status = "2"
+					sample.save()
 
 				else:
 					report.second_checker = request.user
 					report.second_check_date = timezone.now()
 					report.status ="3"
 
+				report.lock_user = None
+				report.locked = False
 				report.save()
 
 
@@ -388,7 +394,11 @@ def ajax_receive_classification_data(request):
 				report.resolver = request.user
 				report.resolver_date = timezone.now()
 				report.status ="4"
+				report.lock_user = None
+				report.locked = False
 				report.save()
+				sample.status = "2"
+				sample.save()
 
 				return HttpResponse("Done")
 
@@ -417,6 +427,7 @@ def ajax_update_panel(request):
 		panel = get_object_or_404(Panel, name=panel)
 
 		panel.description = comment
+		panel.locked = True
 		panel.save()
 
 

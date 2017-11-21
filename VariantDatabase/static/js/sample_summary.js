@@ -26,11 +26,11 @@ $(document).ready(function(){
 
 	var user_settings = $('#user_settings').text().trim();
 
-	var temp = new Array();
+	var user_settings_array = new Array();
 
-	temp = user_settings.split(",");
+	user_settings_array = user_settings.split(",");
 
-	console.log(temp);
+	console.log(user_settings_array);
 
 	
 
@@ -48,7 +48,7 @@ $(document).ready(function(){
 
 						{
 
-						targets: temp  ,
+						targets: user_settings_array,
 						visible: false
 
 

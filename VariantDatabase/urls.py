@@ -1,8 +1,9 @@
-from django.conf.urls import url, include
+from django.conf.urls import url
 from . import views
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
+from .forms import CustomPasswordChangeForm
 
 urlpatterns = [ url(r"^$", views.home_page, name="home_page"),
 				url(r"^sections/$", views.list_sections, name="list_sections"),
@@ -14,6 +15,8 @@ urlpatterns = [ url(r"^$", views.home_page, name="home_page"),
 				url(r"^search/$", views.search, name="search"),
 				url(r"^login/$", auth_views.login, {"template_name": "VariantDatabase/login.html"}, name="login"),
 				url(r"^logout/$", auth_views.logout, {"template_name": "VariantDatabase/logout.html"}, name="logout"),
+				url(r"^password_change/$", auth_views.password_change, {"template_name": "VariantDatabase/change_password.html", 'password_change_form': CustomPasswordChangeForm}, name="password_change"),
+				url(r"^password_change_done/$", auth_views.password_change_done, {"template_name": "VariantDatabase/change_password_done.html"}, name="password_change_done"),
 				url(r"^ajax/ajax_detail/$", views.ajax_detail, name="ajax_detail"),
 				url(r"^ajax/ajax_comments/$", views.ajax_comments, name="ajax_comments"),
 				url(r"^ajax/ajax_table_expand/$", views.ajax_table_expand, name="ajax_table_expand"),
@@ -31,13 +34,7 @@ urlpatterns = [ url(r"^$", views.home_page, name="home_page"),
 				url(r"^search/region/(?P<location>[-\w]+)/$", views.view_region_search, name="view_region_search"),
 				url(r"^search/samples/(?P<sample_query>[-\w]+)/$", views.view_sample_search, name="view_sample_search"),
 
-
-
-
-
-
-] 
-
+				] 
 
 if settings.DEBUG is True:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

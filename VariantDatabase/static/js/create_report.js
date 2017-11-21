@@ -21,11 +21,11 @@ $(document).ready(function(){
 
 	var user_settings = $('#user_settings').text().trim();
 
-	var temp = new Array();
+	var user_settings_array = new Array();
 
-	temp = user_settings.split(",");
+	user_settings_array = user_settings.split(",");
 
-	console.log(temp);
+	console.log(user_settings_array);
 
 	
 
@@ -43,12 +43,17 @@ $(document).ready(function(){
 
 						{
 
-						targets: ["worst_consequence", "max_af", "worksheet_count", "tcr", "clinsig", "filter_status","tcf", 'exac_frequency' ]  ,
+						targets: user_settings_array,
 						visible: false
 
+						}]
+
+					
 
 
-					}]
+
+
+					
 	});
 
 

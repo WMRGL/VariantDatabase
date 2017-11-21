@@ -21,6 +21,7 @@ def home_page(request):
 
 	return render(request, "VariantDatabase/home_page.html", {})
 
+
 @login_required
 def list_sections(request):
 
@@ -39,7 +40,6 @@ def list_sections(request):
 				 {"all_sections": all_sections} )
 
 
-
 @login_required
 def list_worksheet_samples(request, pk_worksheet):
 
@@ -49,7 +49,6 @@ def list_worksheet_samples(request, pk_worksheet):
 	"""
 
 	worksheet = get_object_or_404(Worksheet, pk=pk_worksheet)
-
 
 	if request.method == "POST":
 
@@ -64,13 +63,11 @@ def list_worksheet_samples(request, pk_worksheet):
 
 		return redirect(list_worksheet_samples, pk_worksheet)
 
-
 	else:
 
 		form = WorksheetStatusUpdateForm()
 
 		quality_data = worksheet.get_quality_data()
-
 
 	samples_in_worksheet = (Sample
 								.objects
@@ -82,7 +79,6 @@ def list_worksheet_samples(request, pk_worksheet):
 				 "form": form,
 				 "worksheet": worksheet,
 				 "quality_data": quality_data})
-
 
 
 @login_required
@@ -98,7 +94,6 @@ def sample_summary(request, pk_sample):
 	reports = Report.objects.filter(sample=sample)
 
 	if request.method == "POST": #if the user clicked create a new report
-
 
 		if has_permission(request.user, 'create_report') == False:
 
@@ -121,8 +116,6 @@ def sample_summary(request, pk_sample):
 				report.save()
 
 				return redirect(create_sample_report, sample.pk, report.pk, "1")
-
-
 
 	else:
 
@@ -150,7 +143,6 @@ def sample_summary(request, pk_sample):
 					sample.panel = panel
 					sample.save()
 
-
 		else:
 
 			#use default settings for subsection
@@ -158,16 +150,16 @@ def sample_summary(request, pk_sample):
 
 			consequences_to_include = variant_utilities.create_conseqences_to_include(filter_dict)
 
-			max_af = filter_dict['freq_max_af']
+			max_af = filter_dict["freq_max_af"]
 
 			panel = sample.panel
 
 			filter_form = FilterForm(initial={"panels": panel.pk})
 
 			filter_form.fields["consequences"].initial = filter_dict
+
 			filter_form.fields["max_af"].initial = filter_dict["freq_max_af"]
 
-			
 		variant_samples = VariantSample.objects.filter(sample=sample).select_related('variant')
 
 		variants = (Variant
@@ -177,7 +169,6 @@ def sample_summary(request, pk_sample):
 
 		total_summary = variant_utilities.variant_query_set_summary(variants)
 
-
 		if panel.name == "None":
 
 			variant_samples = (variant_utilities
@@ -185,14 +176,13 @@ def sample_summary(request, pk_sample):
 													 	consequences_to_include,
 													 	max_af))
 
-
 		else:
 
 			variant_samples = (variant_utilities
 					.get_filtered_variants(variant_samples,
 										 	consequences_to_include,
 										 	max_af, panel))
-										 
+
 		variants = (Variant
 					.objects
 					.filter(variant_hash__in= variant_samples
@@ -223,7 +213,6 @@ def sample_summary(request, pk_sample):
 					 	"panel":panel })
 
 
-
 @login_required
 def variant_detail(request, pk_sample, variant_hash):
 
@@ -249,6 +238,7 @@ def variant_detail(request, pk_sample, variant_hash):
 					"transcripts": transcripts,
 					"other_alleles": other_alleles})
 
+
 @login_required
 def view_gene(request, gene_pk):
 	"""
@@ -263,6 +253,7 @@ def view_gene(request, gene_pk):
 	variants = gene.get_all_variants()
 
 	return render(request,"VariantDatabase/gene.html", {"variants": variants, "gene": gene})
+
 
 @login_required
 def view_detached_variant(request, variant_hash):
@@ -289,6 +280,7 @@ def view_detached_variant(request, variant_hash):
 	 				"frequency_data": frequency_data,
 	 				"samples":samples } )
 
+
 @login_required
 def user_settings(request):
 	"""
@@ -296,21 +288,24 @@ def user_settings(request):
 
 	"""
 
-
 	user_settings = UserSetting.objects.filter(user=request.user)
 
+	columns_dict = variant_utilities.get_column_config_dict("conf/columns.txt")
 
 	if request.method == "POST":
 
-
 		user_settings = user_settings[0]
-
 
 		form = UserSettingsForm(request.POST, instance=user_settings)
 
 		if form.is_valid():
 
 			user_settings = form.save()
+
+			user_settings.columns_to_hide = variant_utilities.process_user_settings(
+												user_settings.columns_to_hide,
+												columns_dict)
+			user_settings.save()
 
 			return redirect("home_page")
 
@@ -321,12 +316,15 @@ def user_settings(request):
 	else:
 
 		user_settings = UserSetting(user=request.user)
+
 		user_settings.save()
 
 		form = UserSettingsForm(instance=user_settings)
 
 	
-	return render(request, "VariantDatabase/user_settings.html" , {"form": form})
+	return render(request, "VariantDatabase/user_settings.html",
+							 {"form": form})
+
 
 @login_required
 def search(request):
@@ -344,7 +342,6 @@ def search(request):
 	"""
 
 	form = SearchForm()
-
 
 	#if the user has searched for something
 	if request.GET.get("search") != "" and request.GET.get("search") != None: 
@@ -379,8 +376,11 @@ def search(request):
 			variant_list = search_query.split("-")
 
 			chromosome = "chr"+variant_list[0]
+
 			position = variant_list[1]
+
 			ref = variant_list[2]
+
 			alt = variant_list[3]
 
 			variant_hash = variant_utilities.get_variant_hash(chromosome,position,ref,alt)
@@ -415,7 +415,6 @@ def search(request):
 
 		elif location_search.match(search_query): # if we have searched for a location
 
-
 			return redirect(view_location_search, search_query)
 
 		elif region_search.match(search_query): # if we have searched for a region
@@ -445,14 +444,11 @@ def search(request):
 
 			return render(request, "VariantDatabase/search.html" , {"form": form})
 
-
 		else:
 
 			return render(request, "VariantDatabase/search.html" , {"error": True, "form": form})
 
-
 	else:
-
 
 		return render(request, "VariantDatabase/search.html" , {"form": form})
 
@@ -466,7 +462,16 @@ def create_sample_report(request, pk_sample, pk_report, check_number):
 	Sample Reports can be created from the Summary View.
 
 	"""
+
 	report = get_object_or_404(Report, pk=pk_report)
+
+	if report.locked == True and report.lock_user != request.user:
+
+		raise PermissionDenied
+
+	report.locked = True
+	report.lock_user = request.user
+	report.save()
 
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
@@ -520,10 +525,18 @@ def resolve_check_differences(request, pk_sample, pk_report):
 
 	"""
 
-
 	sample = get_object_or_404(Sample, pk=pk_sample)
 
 	report = get_object_or_404(Report, pk=pk_report)
+
+	if report.locked == True and report.lock_user != request.user:
+
+		raise PermissionDenied
+
+	report.locked = True
+	report.lock_user = request.user
+	report.save()
+
 
 	user_settings = UserSetting.objects.filter(user=request.user)
 
@@ -549,7 +562,6 @@ def resolve_check_differences(request, pk_sample, pk_report):
 
 		variant_classification_list.append((variant_sample, variant_classification))
 
-
 	matches =[]
 
 	discrepencies =[]
@@ -565,7 +577,6 @@ def resolve_check_differences(request, pk_sample, pk_report):
 
 			discrepencies.append(variant_classification)
 
-
 	return render(request,
 					"VariantDatabase/resolve_check_differences.html",
 					{"matches": matches,
@@ -574,7 +585,6 @@ def resolve_check_differences(request, pk_sample, pk_report):
 	  				"user_settings": user_settings,
 	  				"classifications": classifications,
 	  				"report": report, })
-
 
 
 @login_required
@@ -621,6 +631,7 @@ def view_location_search(request,location):
 					"VariantDatabase/view_location_search.html",
 					{"variants": variants, "location":location})
 
+
 @login_required
 def view_region_search(request,location):
 	"""
@@ -648,6 +659,7 @@ def view_region_search(request,location):
 					"VariantDatabase/view_location_search.html",
 					{"variants": variants, "location":location})
 
+
 @login_required
 def view_sample_search(request,sample_query):
 	"""
@@ -663,6 +675,7 @@ def view_sample_search(request,sample_query):
 				"VariantDatabase/view_sample_search.html",
 				{"samples": samples,"sample_query": sample_query})
 
+
 @login_required
 def panel_list(request):
 	"""
@@ -677,10 +690,8 @@ def panel_list(request):
 
 	panels = Panel.objects.all().exclude(name="None")
 
-
 	#Contains the panels that a user has selected in the form
 	requested_panels =  request.POST.getlist("inherit_select")
-
 
 	if request.method == "POST":
 
@@ -695,6 +706,8 @@ def panel_list(request):
 			new_panel = form.save(commit=False)
 
 			new_panel.description = "None"
+
+			new_panel.locked = False
 
 			new_panel.save()
 
@@ -721,15 +734,12 @@ def panel_list(request):
 
 				new_panel_gene.save()
 
-
 			return redirect(panel_edit_create, new_panel.pk)
-
 
 	form = CreatePanelForm()
 
 	return render(request,"VariantDatabase/panel_list.html", {"panels": panels, "form": form})
 	
-
 
 @has_permission_decorator('create_panel')
 @login_required
@@ -743,6 +753,11 @@ def panel_edit_create(request, pk_panel):
 
 	panel = get_object_or_404(Panel, pk=pk_panel)
 
+	#if it is an old panel do not allow editing - only superusers
+	if panel.locked ==True:
+
+		raise PermissionDenied
+	
 	panel_genes = PanelGene.objects.filter(panel=panel)
 
 	already_in_genes = [panel_gene.gene for panel_gene in panel_genes]
@@ -752,6 +767,7 @@ def panel_edit_create(request, pk_panel):
 	return render(request,
 				"VariantDatabase/panel_edit_create.html",
 				{"panel_genes": panel_genes, "other_genes": other_genes, "panel": panel})
+
 
 @login_required
 def panel_view(request, pk_panel):

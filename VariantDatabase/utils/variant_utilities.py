@@ -24,11 +24,9 @@ def get_variant_hash(chromosome, pos, ref,alt):
 
 	return hash_id
 
-
-
 def variant_query_set_summary(variant_query_set):
 	"""
-	Summerises the data in a variant queryset e.g. how many variants.
+	Summarises the data in a variant queryset e.g. how many variants.
 
 	"""
 
@@ -53,8 +51,6 @@ def variant_query_set_summary(variant_query_set):
 
 	return summary_dict
 
-
-
 def get_filtered_variants(variant_samples, consequences_query_set, max_frequency, panel=None):
 	"""
 	Gets all the variants for a sample and applies the following filters:
@@ -76,7 +72,6 @@ def get_filtered_variants(variant_samples, consequences_query_set, max_frequency
 
 
 	"""
-
 
 	variant_samples = (variant_samples
 			.filter(variant__worst_consequence__in=consequences_query_set)
@@ -112,7 +107,6 @@ def get_filtered_variants(variant_samples, consequences_query_set, max_frequency
 
 		return variant_samples
 
-
 def create_conseqences_to_include(filter_dict):
 	"""
 	Takes the filter_dict created by create_filter_dict() method \
@@ -143,7 +137,6 @@ def create_conseqences_to_include(filter_dict):
 
 	return consequences_query_set
 
-
 def create_conseqences_to_include_form(form_data):
 	"""
 	Does the same as create_conseqences_to_include() except \
@@ -173,3 +166,43 @@ def create_conseqences_to_include_form(form_data):
 	consequences_query_set = Consequence.objects.filter(name__in = consequences_to_include)
 
 	return consequences_query_set
+
+def get_column_config_dict(location):
+	"""
+	Find the column config file (conf/columns.txt) \
+	and convert to a dictionary.
+
+	"""
+
+	columns_dict ={}
+
+	file = open("conf/columns.txt", "r")
+
+	for line in file:
+
+		columns_dict[line.strip()] = True
+
+	return columns_dict
+
+def process_user_settings(user_settings_string, columns_dict):
+
+	"""
+	Processes the user_settings string that the user can use \
+	to configure which columns they want to see.
+
+	"""
+
+	final_list =[]
+
+	final_string = ""
+
+	user_settings = user_settings_string.split(",")
+
+	for column in user_settings:
+
+		if column.strip() in columns_dict:
+
+			final_list.append(column.strip())
+
+
+	return ",".join(list(set(final_list)))

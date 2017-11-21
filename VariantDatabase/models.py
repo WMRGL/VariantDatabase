@@ -17,8 +17,8 @@ class Section(models.Model):
 	"""
 
 	owner = models.ForeignKey("auth.User")
-	title = models.CharField(max_length=200)
-	description = models.TextField()
+	title = models.CharField(max_length=25)
+	description = models.CharField(max_length=25)
 
 	def __str__(self):
 		return self.title
@@ -34,6 +34,7 @@ class Section(models.Model):
 		all_worksheets = Worksheet.objects.filter(sub_section__section=self)
 
 		return all_worksheets
+
 
 class SampleFilter(models.Model):
 	"""
@@ -131,6 +132,7 @@ class SampleFilter(models.Model):
 		
 		return filter_dict
 
+
 class SubSection(models.Model):
 	"""
 	A Model to represent a subsection.
@@ -160,9 +162,6 @@ class SubSection(models.Model):
 		return Sample.objects.filter(worksheet__sub_section=self).count()
 	
 
-
-
-
 class Worksheet(models.Model):
 	"""
 	The Worksheet model represents a laboratory worksheet.
@@ -179,7 +178,7 @@ class Worksheet(models.Model):
 			("5", "Failed"))
 			
 
-	name = models.CharField(max_length=100, unique=True)
+	name = models.CharField(max_length=30, unique=True)
 	sub_section = models.ForeignKey(SubSection)
 	comment = models.TextField()
 	status = models.CharField(max_length=1, choices = choices)
@@ -247,7 +246,6 @@ class Worksheet(models.Model):
 
 			return None
 
-
 	def get_quality_data(self):
 		"""
 		Gets the ReadLaneQuality objects associated with the worksheet.
@@ -291,6 +289,7 @@ class Worksheet(models.Model):
 
 			return False
 
+
 class Panel(models.Model):
 	"""
 	A model for storing gene lists that the variants in a sample to be filtered by.
@@ -305,10 +304,10 @@ class Panel(models.Model):
 	name = models.CharField(max_length=20, unique=True)
 	description = models.TextField()
 	subsection = models.ForeignKey(SubSection, null=True, blank=True)
+	locked = models.BooleanField()
 
 	def __str__(self):
 		return self.name
-
 
 	def number_of_genes(self):
 		"""
@@ -359,7 +358,6 @@ class Sample(models.Model):
 	bam_file_bwa = models.TextField(null=True, blank=True)
 	visible = models.BooleanField() #To allow the hiding of a sample
 	status = models.CharField(max_length=1, choices = choices)
-
 	sample_well = models.CharField(max_length =10)
 	i7_index_id = models.IntegerField()
 	index = models.CharField(max_length =50)
@@ -408,7 +406,6 @@ class Sample(models.Model):
 	insert_size_image = models.FileField(upload_to="uploads/%y/%m/", null=True, blank=True)
 	quality_cycle_image = models.FileField(upload_to="uploads/%y/%m/", null=True, blank=True)
 	quality_cycle_read_image = models.FileField(upload_to="uploads/%y/%m/", null=True, blank=True)
-
 	quality_cycle_read_freq_image = models.FileField(upload_to="uploads/%y/%m/",
 													 null=True, blank=True)
 	quality_heatmap_image = models.FileField(upload_to="uploads/%y/%m/", null=True, blank=True)
@@ -434,7 +431,6 @@ class Sample(models.Model):
 
 			return False
 
-
 	def get_status(self):
 		"""
 		Returns current status.
@@ -453,7 +449,6 @@ class Sample(models.Model):
 
 			return None
 
-
 	def get_error_rate(self):
 		"""
 		Calculate the error rate for the sample using the information imported from the .stats file.
@@ -468,9 +463,6 @@ class Sample(models.Model):
 
 			return self.mismatches /float(self.bases_mapped_cigar)
 
-
-
-
 	def get_mapped_percentage(self):
 		"""
 		Get percentage of reads mapped
@@ -482,7 +474,6 @@ class Sample(models.Model):
 		else:
 
 			return float(self.reads_mapped)/float(self.raw_total_sequences)
-
 
 	def sample_qc_passed(self):
 		"""
@@ -516,10 +507,6 @@ class Sample(models.Model):
 				return "PASS"
 
 
-
-
-
-
 class Consequence(models.Model):
 	"""
 	A model to hold the VEP consequences.
@@ -528,7 +515,7 @@ class Consequence(models.Model):
 
 	"""
 
-	name = models.CharField(max_length = 100, primary_key =True)
+	name = models.CharField(max_length = 35, primary_key =True)
 	impact = models.IntegerField() #number giving impact rating 1-28
 
 	def __str__(self):
@@ -546,8 +533,6 @@ class Gene(models.Model):
 	"""
 
 	name = models.CharField(max_length=50, db_index=True, unique=True)
-
-
 
 	def __str__(self):
 		return self.name
@@ -569,7 +554,6 @@ class Gene(models.Model):
 
 		return variants
 
-
 	def get_canonical_transcript(self):
 		"""
 		A Gene may have multiple Transcripts assosiated with it.
@@ -589,6 +573,7 @@ class Gene(models.Model):
 
 		return Transcript.objects.filter(gene=self)
 
+
 class PanelGene(models.Model):
 
 	"""
@@ -598,6 +583,7 @@ class PanelGene(models.Model):
 
 	panel = models.ForeignKey(Panel)
 	gene = models.ForeignKey(Gene)
+
 
 class Transcript(models.Model):
 	"""
@@ -667,8 +653,6 @@ class Variant(models.Model):
 	esp_ea_af = models.FloatField()
 	esp_aa_af = models.FloatField()
 
-
-
 	def __str__(self):
 		return self.chromosome + " " + str(self.position) + " " +  self.ref + " " +self.alt
 
@@ -714,7 +698,6 @@ class Variant(models.Model):
 
 		return samples
 
-
 	def get_genes(self):
 		"""
 		Return all Genes that a variant is found in.
@@ -734,8 +717,6 @@ class Variant(models.Model):
 
 		return list(set(my_list))
 
-
-
 	def display_ids(self):
 		"""
 		Return IDs as a list e.g ids seperated by & symbols
@@ -744,8 +725,6 @@ class Variant(models.Model):
 		variant_ids = self.rs_number.split("&")
 
 		return variant_ids
-
-
 
 	def same_codon_missense(self):
 		"""
@@ -826,8 +805,6 @@ class Variant(models.Model):
 
 				return list(set(same_codon))
 
-
-
 	def get_other_alleles(self):
 		"""	
 		Returns any other variants at the same position
@@ -839,7 +816,6 @@ class Variant(models.Model):
 							.exclude(variant_hash = self.variant_hash))
 
 		return other_alleles
-
 
 	def get_picked_transcript(self):
 
@@ -853,8 +829,6 @@ class Variant(models.Model):
 		picked = VariantTranscript.objects.filter(variant=self).filter(picked=True)
 
 		return picked
-
-
 
 	def get_picked_hgvsc(self):
 		"""
@@ -874,7 +848,6 @@ class Variant(models.Model):
 
 			picked = picked[0]
 
-		
 			if picked.transcript == None or picked.hgvsc=="":
 				
 				transcripts = VariantTranscript.objects.filter(variant=self)
@@ -884,7 +857,6 @@ class Variant(models.Model):
 					return None
 
 				else:
-
 
 					transcripts = transcripts.exclude(hgvsc="")
 
@@ -896,17 +868,13 @@ class Variant(models.Model):
 
 						return transcripts[0].hgvsc
 
-
 			else:
 
 				return picked.hgvsc
 
-	
 		else:
 
 			return "Error"
-
-		
 
 	def get_picked_hgvsp(self):
 
@@ -927,7 +895,6 @@ class Variant(models.Model):
 
 			picked = picked[0]
 
-		
 			if picked.transcript == None or picked.hgvsp=="":
 				
 				transcripts = VariantTranscript.objects.filter(variant=self)
@@ -938,7 +905,6 @@ class Variant(models.Model):
 
 				else:
 
-
 					if len(transcripts) == 0:
 
 						return None
@@ -947,17 +913,13 @@ class Variant(models.Model):
 
 						return transcripts[0].hgvsp
 
-
 			else:
 
 				return picked.hgvsp
 
-	
 		else:
 
 			return "Error"
-
-
 
 	def get_frequency_data(self):
 
@@ -1023,8 +985,6 @@ class Variant(models.Model):
 
 		return frequency_dict
 
-
-
 	def previous_classifications(self):
 		"""
 		For getting all classifications for a variant.
@@ -1046,41 +1006,6 @@ class Variant(models.Model):
 		return classifications
 
 
-
-
-	def previous_classifications_tuple_list(self):
-		"""
-		Returns a list of tuples containing information on previous \
-		classifications. This is intended to be used by futher functions \
-		that will display the information e.g list by sebsection.
-
-		Output:
-
-		classifications = list, list of tuples (final_class, subsection, date, sample)
-
-		"""
-
-		classifications_dict = {}
-
-
-		classifications = (ReportVariantSampleClassification
-							.objects
-							.filter(variant=self)
-							.exclude(final_classification=None)
-							.select_related('final_classification'))
-
-		classifications = [(x.final_classification,
-							x.report.sample.worksheet.sub_section,
-							x.final_date,
-							x.report.sample) for x in classifications]
-
-		return classifications
-
-
-
-
-
-
 class VariantSample(models.Model):
 
 	"""
@@ -1093,7 +1018,7 @@ class VariantSample(models.Model):
 
 	variant = models.ForeignKey(Variant)
 	sample = models.ForeignKey(Sample)
-	genotype = models.CharField(max_length =50)
+	genotype = models.CharField(max_length =10)
 	caller = models.CharField(max_length=50)
 	allele_depth = models.CharField(max_length=50)
 	filter_status = models.CharField(max_length=100)
@@ -1103,7 +1028,6 @@ class VariantSample(models.Model):
 
 	def __str__(self):
 		return str(self.variant) + str(self.sample)
-
 
 	def get_subsection_count(self):
 		"""
@@ -1121,7 +1045,6 @@ class VariantSample(models.Model):
 
 		return count
 
-
 	def get_subsection_frequency(self):
 		"""
 		Returns the frequency within a subsection/project. \
@@ -1138,7 +1061,6 @@ class VariantSample(models.Model):
 		frequency = round(float(count) /float(total),2)
 
 		return frequency
-
 
 	def get_worksheet_count(self):
 		"""
@@ -1216,12 +1138,9 @@ class VariantSample(models.Model):
 
 		return zscore
 
-
-
-		
 	def get_previous_classification(self):
 		"""
-		returns classifications done in the same section.
+		Returns the most recent classification done in the same section.
 
 		"""
 
@@ -1240,11 +1159,6 @@ class VariantSample(models.Model):
 		else:
 
 			return None
-
-
-
-
-
 
 
 class VariantTranscript(models.Model):
@@ -1284,7 +1198,6 @@ class ReadLaneQuality(models.Model):
 	worksheet = models.ForeignKey(Worksheet)
 	read = models.IntegerField()
 	lane = models.IntegerField()
-
 	yield_g = models.FloatField()
 	density = models.FloatField()
 	cluster_count_pf = models.FloatField()
@@ -1301,11 +1214,9 @@ class ReadLaneQuality(models.Model):
 	error_rate_75 = models.FloatField(null=True)
 	error_rate_100 = models.FloatField(null=True)
 
-
 	def __str__(self):
 
 		return self.worksheet.name+ " " + str(self.pk)
-
 
 	def format_density(self):
 
@@ -1323,6 +1234,7 @@ class ReadLaneQuality(models.Model):
 
 		return self.reads_pf/1000000
 
+
 class GeneCoverage(models.Model):
 	"""
 	Model to hold the gene coverage data for a sample.
@@ -1332,7 +1244,6 @@ class GeneCoverage(models.Model):
 
 	sample = models.ForeignKey(Sample)
 	gene = models.ForeignKey(Gene)
-
 	x100 = models.IntegerField()
 	x200 = models.IntegerField()
 	x300 = models.IntegerField()
@@ -1344,18 +1255,16 @@ class GeneCoverage(models.Model):
 	mean_coverage = models.FloatField()
 	number_of_regions = models.IntegerField()
 
-
 	def __str__(self):
 
 		return self.sample.name+ " " + self.gene.name + " " +str(self.pk)
-
-
 
 	def get_percentages(self):
 
 		raw_data = [self.x100, self.x200, self.x300, self.x400, self.x500, self.x600]
 
 		return map(lambda x: round((float(x)/float(self.number_of_regions)*100),1), raw_data)
+
 
 class ExonCoverage(models.Model):
 	"""
@@ -1378,7 +1287,6 @@ class ExonCoverage(models.Model):
 	max_coverage = models.IntegerField()
 	mean_coverage = models.FloatField()
 	number_of_regions = models.IntegerField()
-
 
 	def __str__(self):
 
@@ -1405,7 +1313,6 @@ class Comment(models.Model):
 	def __str__(self):
 
 		return str(self.variant_sample) + " " +str(self.pk)
-
 
 	def get_evidence(self):
 
@@ -1436,15 +1343,11 @@ class UserSetting(models.Model):
 	"""
 	A class for storing user settings - mainly which columns we want to see.
 
-
 	"""
 
 	default = "allele_depth,vafs,tcf,tcr,clinsig,filter_status"
-
 	columns_to_hide= models.CharField(max_length=200, default=default)
-	igv_view = models.BooleanField(default=True) #does the user want to see the IGV viewer
 	user = models.ForeignKey("auth.User")
-
 
 
 class Report(models.Model):
@@ -1459,8 +1362,10 @@ class Report(models.Model):
 	choices =(
 		("1", "Awaiting First Check"),
 		("2", "Awaiting Second Check"),
-		("3", "Complete"),
-		("4", "Invalid"))
+		("3", "Awaiting Resolution"),
+		("4", "Complete"),
+		("5", "Invalid"),
+		)
 
 
 
@@ -1468,19 +1373,21 @@ class Report(models.Model):
 	status = models.CharField(max_length=1, choices =choices)
 	panel = models.ForeignKey(Panel)
 	default_filter = models.ForeignKey(SampleFilter)
-
-
 	report_creator = models.ForeignKey("auth.User", related_name="report_creator")
 	first_checker = models.ForeignKey("auth.User", related_name="first_checker", null=True, blank=True)
 	second_checker = models.ForeignKey("auth.User", related_name="second_checker", null=True, blank=True)
 	resolver = models.ForeignKey("auth.User", related_name="resolver", null=True, blank=True)
-
 	creation_date = models.DateTimeField()
 	first_check_date = models.DateTimeField(null=True, blank=True)
 	second_check_date = models.DateTimeField(null=True, blank=True)
 	resolver_date = models.DateTimeField(null=True, blank=True)
 
+	lock_user = models.ForeignKey("auth.User", related_name="lock_user", null=True, blank=True)
+	locked = models.BooleanField(default=False)
 
+	def __str__(self):
+
+		return str(self.sample) + " " +str(self.panel)
 
 	def get_status(self):
 		"""
@@ -1501,6 +1408,8 @@ class Report(models.Model):
 		except:
 
 			return None
+
+
 
 
 	def number_of_mismatches(self):
@@ -1528,13 +1437,7 @@ class Report(models.Model):
 
 				count = count+1
 
-
 		return count
-
-
-
-
-
 
 
 class Classification(models.Model):
@@ -1577,7 +1480,6 @@ class ReportVariantSampleClassification(models.Model):
 												blank=True,
 												null=True)
 	final_hgvs = models.TextField(blank=True, null=True)
-
 
 	def classification_match(self):
 		"""

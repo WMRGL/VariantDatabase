@@ -819,7 +819,6 @@ def upload_sample_vcf(output_dir, sample_name):
 		pos = str(variant["pos"])
 		ref = variant["reference"]
 		alt = variant["alt_alleles"][0]
-		#hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
 
 		hash_id = variant_utilities.get_variant_hash(chromosome, pos,ref,alt)
 
