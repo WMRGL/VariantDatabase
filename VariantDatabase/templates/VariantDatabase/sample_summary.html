@@ -1,838 +1,489 @@
 <!--Sample Summary Page - displays variants, WC, history , reports etc   -->
-
 {% extends 'VariantDatabase/base.html' %}
+
 {% load static %}
-{% load crispy_forms_tags %}
-{% load permission_tags %}
 
-	{% block js-head %}
+{% load crispy_forms_tags %} 
 
+{% load permission_tags %} 
 
-  	{{block.super}}
-  
+{% block js-head %} 
 
-	<link rel="stylesheet" href= "{% static 'css/qc_display.css' %}">
-
-
-    <!-- IGV JS-->
-    <script type="text/javascript" src="{% static 'js/igv.js' %}"></script>
-
-
-    <!-- IGV CSS -->
-    <link rel="stylesheet" type="text/css" href="{% static 'css/igv.css' %}">
-
-    <!-- Datatables -->
-
-  	<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-
-  	<link rel="stylesheet" href= "https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+{{block.super}}
+<link rel="stylesheet" href="{% static 'css/qc_display.css' %}">
+<script type="text/javascript" src="{% static 'js/igv.js' %}"></script>
+<!-- IGV CSS -->
+<link rel="stylesheet" type="text/css" href="{% static 'css/igv.css' %}">
+<!-- Datatables -->
+<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+<!-- Datatables -colreorder extension -->
+<script type="text/javascript" src="https://cdn.datatables.net/colreorder/1.4.0/js/dataTables.colReorder.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/colreorder/1.4.0/css/colReorder.dataTables.min.css">
+<!-- Datatables -buttons extension -->
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.colVis.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.4.1/css/buttons.dataTables.min.css">
 
 
-  	<!-- Datatables -colreorder extension -->
-
-  	<script type="text/javascript" src="https://cdn.datatables.net/colreorder/1.4.0/js/dataTables.colReorder.min.js"></script>
-
-  	<link rel="stylesheet" href= "https://cdn.datatables.net/colreorder/1.4.0/css/colReorder.dataTables.min.css">
-
- 
-  	<!-- Datatables -buttons extension -->
+{% endblock js-head %}
 
 
-  	<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.colVis.min.js"></script>
+{% block content %}
 
-  	<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
-
- 	<link rel="stylesheet" href= "https://cdn.datatables.net/buttons/1.4.1/css/buttons.dataTables.min.css">
-
-	{% endblock js-head %}
+<div id='sample_pk' style="display: none;">{{sample.pk}} </div>
+<div id='user_settings' style="display: none;">{{user_settings.0.columns_to_hide}} </div>
+<br> 
 
 
+{% if sample.sample_qc_passed == 'FAIL' %}
 
 
- {% block content %}
-
-
-
-	<div id='sample_pk' style="display: none;" >{{sample.pk}} </div>
-	<div id='user_settings' style="display: none;" >{{user_settings.0.columns_to_hide}}  </div>
-
-    <br>
-
-	{% if sample.sample_qc_passed == 'FAIL' %}
-
-	   <div class="alert alert-danger ">
-  		 <strong> Danger!  </strong> The sample has failed automatic quality control.
-
-
-					
+	<div class="alert alert-danger ">
+	    <strong> Danger!  </strong> The sample has failed automatic quality control.
 	</div>
 
-	{% endif %}
- 
-   <ul class="nav nav-tabs">
 
+{% endif %}
+
+<ul class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="#variants">Variants</a></li>
+    <li><a data-toggle="tab" href="#filter">Filter</a></li>
+    <li><a data-toggle="tab" href="#QC">QC</a></li>
+    <li><a data-toggle="tab" href="#coverage">Coverage</a></li>
+    <li><a data-toggle="tab" href="#history">History</a></li>
+    <li><a data-toggle="tab" href="#report">Report</a></li>
+</ul>
+<br>
+
+<div class="tab-content">
+    <!--Variants Tab displays filtered variants -->
+    <div id="variants" class="tab-pane active">
+        <!--detail div replaced using -->
+        <div class="container-fluid" id='detail'>
+        </div>
+        <!-- end of container -->
+        <hr>
+        <div id="button_group" style='float:right; margin-right:25px'> </div>
+        <strong>{{ sample.name }}</strong> |<strong>               Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} |
+        <strong> Indels </strong> {{summary.indel_count}} / {{total_summary.indel_count}} | <strong> LOF : </strong> {{summary.lof_count}} / {{total_summary.lof_count}} |
+        <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}} | <strong> Panel : </strong> {{panel}}
+        <hr>
+        <style>
+        td.details-control {
+            background: url('http://www.datatables.net/examples/resources/details_open.png') no-repeat center center;
+            cursor: pointer;
+        }
+
+        tr.shown td.details-control {
+            background: url('http://www.datatables.net/examples/resources/details_close.png') no-repeat center center;
+        }
+        </style>
+        <table id="variant_table" class="table table-hover" data-role="table" data-mode="columntoggle">
+            <thead>
+                <tr>
+                    <th style="display:none;" class='variant_hash'> Variant Hash </th>
+                    <th class='expand_box'></th>
+                    <th class='hgvsc'> HGVSc </th>
+                    <th class='variant_desc'> Variant </th>
+                    <th class='reference'> Ref </th>
+                    <th class='alt'> Alt </th>
+                    <th class='worst_consequence'> Worst Consequence </th>
+                    <th class="genes"> Genes </th>
+                    <th class="max_af"> Max AF </th>
+                    <th class='exac_frequency'> ExAC </th>
+                    <th class='project_count'> Project Frequency </th>
+                    <th class='worksheet_count'> Worksheet Count </th>
+                    <th class='ab_std'> AB Z-Score </th>
+                    <th class='clinsig'> Clin Sig </th>
+                    <th class='prev_class'> Prev Class </th>
+                    <th class='genotype'> Genotype </th>
+                    <th class='callers'> Callers </th>
+                    <th class='allele_depth'> AD </th>
+                    <th class='vafs'> VAFS </th>
+                    <th class='tcf'> TCF </th>
+                    <th class='tcr'> TCR </th>
+                    <th class='filter_status'> Filter </th>
+                </tr>
+            </thead>
+            <tbody>
+
+                {% for variant in variants %}
+
+	                <tr class='variant'>
+	                    <td class='variant_hash' style="display:none;"> {{variant.variant.variant_hash}}</td>
+	                    <td class="details-control"></td>
+	                    <td class='hgvsc get_detail'> {{variant.variant.get_picked_hgvsc|truncatechars:50}} </td>
+	                    <td class='variant_desc get_detail '> {{variant.variant.chromosome}} {{variant.variant.position}} </td>
+	                    <td class='reference get_detail'> {{variant.variant.ref|truncatechars:10}} </td>
+	                    <td class='alt get_detail'> {{variant.variant.alt|truncatechars:10}} </td>
+	                    <td class='worst_consequence get_detail'> {{variant.variant.worst_consequence}} </td>
+	                    <td class="genes get_detail"> {{variant.variant.get_genes|join:" "}} </td>
+	                    <td class="max_af get_detail"> {{variant.variant.max_af}} </td>
+	                    <td class='exac_frequency get_detail'>
+	                        <a class="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-placement="top" data-container="body" data-content='<ul class="list-group">
+	                                                  <li class="list-group-item">ADJ AF : {{ variant.variant.exac_adj_af}}</li>
+	                                                  <li class="list-group-item">AFR AF : {{ variant.variant.exac_afr_af}}</li>
+	                                                  <li class="list-group-item">AMR AF : {{ variant.variant.exac_amr_af}}</li>
+	                                                  <li class="list-group-item">EAS AF : {{ variant.variant.exac_eas_af}}</li>
+	                                                  <li class="list-group-item">FIN AF : {{ variant.variant.exac_fin_af}}</li>
+	                                                  <li class="list-group-item">NFE AF : {{ variant.variant.exac_nfe_af}}</li>
+	                                                  <li class="list-group-item">OTH AF : {{ variant.variant.exac_oth_af}}</li>
+	                                                  <li class="list-group-item">SAS AF : {{ variant.variant.exac_sas_af}}</li></ul>'>{{variant.variant.exac_af}}</a>
+	                    </td>
+	                    <td class='project_count get_detail'> {{variant.get_subsection_frequency}}</td>
+	                    <td class='worksheet_count get_detail'> {{variant.variant.get_worksheet_count}}</td>
+	                    <td class='ab_std get_detail'> {{variant.allele_balance_out_of_range|floatformat:2}}</td>
+	                    <td class='clinsig get_detail'> {{variant.variant.clinical_sig}} </td>
+	                    <td class='prev_class get_detail'> {{variant.get_previous_classification}} </td>
+	                    <td class='genotype get_detail'> {{variant.display_genotype}} </td>
+	                    <td class='callers get_detail'> {{variant.caller}} </td>
+	                    <td class='allele_depth get_detail'> {{variant.allele_depth}} </td>
+	                    <td class='vafs get_detail'> {{variant.vafs}} </td>
+	                    <td class='tcf get_detail'> {{variant.total_count_forward}} </td>
+	                    <td class='tcr get_detail'> {{variant.total_count_reverse}} </td>
+	                    <td class='filter_status get_detail'> {{variant.filter_status}} </td>
+                	</tr>
 
-	    <li class="active"><a data-toggle="tab" href="#variants">Variants</a></li>
-	    <li><a data-toggle="tab" href="#filter">Filter</a></li>
-	    <li><a data-toggle="tab" href="#QC">QC</a></li>
-	   	<li><a data-toggle="tab" href="#coverage">Coverage</a></li>
-	    <li><a data-toggle="tab" href="#report">Report</a></li>
+                {% endfor %}
 
-  	</ul>
+            </tbody>
+        </table>
+    </div>
+    <!--Filter Tab  -->
 
-  	<br>
-
-  	<div class="tab-content" >
-
-
-  	<!--Variants Tab displays filtered variants -->
-  	<div id="variants" class="tab-pane active"> <!--detail div replaced using -->
-
-  	 <div class ="container-fluid" id='detail'> 
-		    
-
-
-    
-    </div><!-- end of container -->
-
-
-	<hr>
-
-	<div id ="button_group" style='float:right; margin-right:25px' > </div>
-
-
-
-        
-
-		<strong>{{ sample.name }}</strong> |<strong>               Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} | 
-	    <strong> Indels </strong> {{summary.indel_count}} / {{total_summary.indel_count}} | <strong> LOF : </strong> {{summary.lof_count}} / {{total_summary.lof_count}} |
-	    <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}} | <strong> Panel : </strong> {{panel}}
-
-
-
-
-	     
-
-
-
-
-<hr>
-
-
-<style> 
-
-
-
-
- td.details-control {
-    background: url('http://www.datatables.net/examples/resources/details_open.png') no-repeat center center;
-    cursor: pointer;
-}
-tr.shown td.details-control {
-    background: url('http://www.datatables.net/examples/resources/details_close.png') no-repeat center center;
-}
-
-
-
-
-
-
-
-
-
-</style>
-
-
-
-  <table id="variant_table" class = "table table-hover" data-role="table" data-mode="columntoggle">
-
-          <thead>
-
-        <tr>
-          <th style="display:none;" class='variant_hash'> Variant Hash </th>
-          <th class='expand_box'></th>
-          <th class='hgvsc'> HGVSc </th>
-          <th class='variant_desc'> Variant </th>
-          <th class='reference'> Ref </th>
-          <th class='alt'> Alt </th>
-          <th class='worst_consequence'> Worst Consequence </th>
-          <th class="genes"> Genes </th>
-          <th class="max_af"> Max AF </th>
-          <th class='exac_frequency'> ExAC </th>
-          <th class='project_count'> Project Frequency </th>
-          <th class='worksheet_count'> Worksheet Count </th>
-          <th class='ab_std'> AB Z-Score </th>
-          <th class='clinsig'> Clin Sig </th>
-          <th class='prev_class'> Prev Class </th>
-          <th class='genotype'> Genotype </th>
-          <th class='callers'> Callers </th>
-          <th class='allele_depth'> AD </th>
-          <th class='vafs'> VAFS </th>
-          <th class='tcf'> TCF </th>
-          <th class='tcr'> TCR </th>
-          <th class='filter_status'> Filter </th>
-
-        </tr>
-
-      </thead>
-
-      <tbody>
-
-
-      {% for variant in variants %}
-
-      <tr class='variant'>
-
-        <td class='variant_hash' style="display:none;"> {{variant.variant.variant_hash}}</td>
-        <td class="details-control"></td>
-        <td class='hgvsc get_detail'> {{variant.variant.get_picked_hgvsc|truncatechars:50}} </td>
-        <td class='variant_desc get_detail '> {{variant.variant.chromosome}} {{variant.variant.position}} </td>
-        <td class ='reference get_detail'> {{variant.variant.ref|truncatechars:10}} </td>
-        <td class='alt get_detail'> {{variant.variant.alt|truncatechars:10}} </td>
-        <td class='worst_consequence get_detail'> {{variant.variant.worst_consequence}} </td>
-        <td class="genes get_detail"> {{variant.variant.get_genes|join:" "}} </td>
-        <td class= "max_af get_detail"> {{variant.variant.max_af}} </td>
-
-        <td class='exac_frequency get_detail'> 
-                <a class="exac" href="#" data-toggle="popover" title="ExAC Pop AF" data-placement="top" data-container="body" data-content='<ul class="list-group">
-                                                  <li class="list-group-item">ADJ AF : {{ variant.variant.exac_adj_af}}</li>
-                                                  <li class="list-group-item">AFR AF : {{ variant.variant.exac_afr_af}}</li>
-                                                  <li class="list-group-item">AMR AF : {{ variant.variant.exac_amr_af}}</li>
-                                                  <li class="list-group-item">EAS AF : {{ variant.variant.exac_eas_af}}</li>
-                                                  <li class="list-group-item">FIN AF : {{ variant.variant.exac_fin_af}}</li>
-                                                  <li class="list-group-item">NFE AF : {{ variant.variant.exac_nfe_af}}</li>
-                                                  <li class="list-group-item">OTH AF : {{ variant.variant.exac_oth_af}}</li>
-                                                  <li class="list-group-item">SAS AF : {{ variant.variant.exac_sas_af}}</li></ul>' >{{variant.variant.exac_af}}</a>
-
-            </td>
-        <td class='project_count get_detail'>  {{variant.get_subsection_frequency}}</td>
-        <td class='worksheet_count get_detail'> {{variant.variant.get_worksheet_count}}</td>
-        <td class='ab_std get_detail'> {{variant.allele_balance_out_of_range|floatformat:2}}</td>
-        <td class='clinsig get_detail'> {{variant.variant.clinical_sig}} </td>
-
-        <td class='prev_class get_detail'> {{variant.get_previous_classification}} </td>
-
-
-        <td class='genotype get_detail'> {{variant.display_genotype}} </td>
-        <td class='callers get_detail'> {{variant.caller}} </td>
-        <td class='allele_depth get_detail'> {{variant.allele_depth}} </td>
-        <td class='vafs get_detail'> {{variant.vafs}} </td>
-        <td class ='tcf get_detail'> {{variant.total_count_forward}} </td>
-        <td class='tcr get_detail'> {{variant.total_count_reverse}} </td>
-        <td class='filter_status get_detail'> {{variant.filter_status}} </td>
-
-
-      </tr>
-
-      {% endfor %}
-
-
-
-
-
-      </tbody>
-      </table>
-	
-
-      </div>
-
-      <!--Filter Tab  -->
-	<div id="filter" class="tab-pane fade">
-
-	     <button type="button" class="btn btn-default btn-sm" id='selectall'>
-          <span class="glyphicon glyphicon-check"></span> Select All
+    <div id="filter" class="tab-pane fade">
+        <button type="button" class="btn btn-default btn-sm" id='selectall'>
+            <span class="glyphicon glyphicon-check"></span> Select All
         </button>
+        <hr> {% crispy filter_form %}
+        <hr>
+        <h3> Gene Filter: <a href= "{% url 'panel_view' panel.pk  %}">  {{panel}}   </a> </h3>
+    </div>
+
+    <!--QC Tab with link to QC -->
+    <div id="QC" class="tab-pane fade">
+        <div class="alert alert-info">
+            <strong>QC Status: {{sample.sample_qc_passed}}  </strong>
+        </div>
+
+        <table class='table table-bordered'>
+            <thead>
+                <tr>
+                    <th colspan="2">Summary</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td> Raw Total Sequences </td>
+                    <td> {{sample.raw_total_sequences}} </td>
+                </tr>
+                <tr>
+                    <td> Filtered </td>
+                    <td> {{sample.filtered_sequences}} </td>
+                </tr>
+                <tr>
+                    <td> Non-Primary </td>
+                    <td> {{sample.non_primary_alignments}} </td>
+                </tr>
+                <tr>
+                    <td> Duplicated </td>
+                    <td> {{sample.reads_duplicated}} </td>
+                </tr>
+                <tr>
+                    <td> Mapped </td>
+                    <td> {{sample.reads_mapped}} </td>
+                </tr>
+                <tr>
+                    <td> Zero MQ </td>
+                    <td> {{sample.reads_MQ0}} </td>
+                </tr>
+                <tr>
+                    <td> Average Read Length </td>
+                    <td> {{sample.average_length}} </td>
+                </tr>
+                <tr>
+                    <td> Total Bases </td>
+                    <td> {{sample.total_length}} </td>
+                </tr>
+                <tr>
+                    <td> Total Bases Mapped </td>
+                    <td> {{sample.bases_mapped_cigar}} </td>
+                </tr>
+                <tr>
+                    <td> Base Error Rate </td>
+                    <td> {{sample.get_error_rate|floatformat:"5"}} </td>
+                </tr>
+            </tbody>
+        </table>
 
         <hr>
-
-
-
-
-
-
-        {% crispy filter_form %}
-
-
+        <h3> Sam Stats Figures </h3>
         <hr>
 
-        <h3> Gene Filter: <a href= "{% url 'panel_view' panel.pk  %}">  {{panel}}   </a> </h3> 
-
-	
-
-
-
-	</div>
-
-
-
-
-	<!--QC Tab with link to QC -->
-	<div id="QC" class="tab-pane fade">
-
-	
-
-	<div class="alert alert-info">
-  		<strong>QC Status: {{sample.sample_qc_passed}}  </strong> 
-	</div>
-
-
-        <table class = 'table table-bordered' >
-	        <thead>
-	          <tr>
-	            <th colspan="2">Summary</th>
-
-	          </tr>
-	        </thead>
-
-			<tbody>
-
-			<tr>
-
-				<td> Raw Total Sequences </td>
-				<td> {{sample.raw_total_sequences}} </td>
-
-
-			</tr>
-
-			<tr>
-
-				<td> Filtered </td>
-				<td> {{sample.filtered_sequences}} </td>
-
-			</tr>
-
-			<tr>
-
-				<td> Non-Primary </td>
-				<td> {{sample.non_primary_alignments}} </td>
-
-			</tr>
-
-			<tr>
-
-				<td> Duplicated </td>
-				<td> {{sample.reads_duplicated}} </td>
-
-			</tr>
-
-			<tr>
-
-				<td> Mapped </td>
-				<td> {{sample.reads_mapped}} </td>
-
-			</tr>
-
-			<tr>
-
-				<td> Zero MQ </td>
-				<td> {{sample.reads_MQ0}} </td>
-
-			</tr>
-
-
-			<tr>
-
-				<td> Average Read Length </td>
-				<td> {{sample.average_length}} </td>
-
-			</tr>
-
-
-			<tr>
-
-				<td> Total Bases </td>
-				<td> {{sample.total_length}} </td>
-
-			</tr>
-
-			<tr>
-
-				<td> Total Bases Mapped </td>
-				<td> {{sample.bases_mapped_cigar}} </td>
-
-			</tr>
-
-			<tr>
-
-				<td> Base Error Rate </td>
-				<td> {{sample.get_error_rate|floatformat:"5"}} </td>
-
-			</tr>
-
-			</tbody>
-
-
-		</table>
-
-
-
-		<hr>
-
-		<h3> Sam Stats Figures </h3>
-
-		<hr>
         <table class="imgs">
-
-        <tbody>
-
-			<tr>
-
-			<td>
-			{% if sample.acgt_cycles_image %}
-
-
-
-			<a class="thumbnail" href={{sample.acgt_cycles_image.url}}><img src={{sample.acgt_cycles_image.url}} width="150px"><span>Per Base Sequence Content<br><img src={{sample.acgt_cycles_image.url}}></span></a>
-
-
-			{%endif%}
-
-			</td>
-
-			<td>
-
-			{% if sample.coverage_image %}
-
-			<a class="thumbnail" href={{sample.coverage_image.url}}><img src={{sample.coverage_image.url}} width="150px"><span>Coverage<br><img src={{sample.coverage_image.url}}></span></a>
-
-			{%endif%}
-
-			</td>
-
-			<td>
-
-			{% if sample.gc_content_image %}
-
-			<a class="thumbnail" href={{sample.gc_content_image.url}}><img src={{sample.gc_content_image.url}} width="150px"><span>GC Content<br><img src={{sample.gc_content_image.url}}></span></a>
-
-			{%endif%}
-
-			</td>
-
-
-			</tr>
-
-			<tr>
-
-
-			<td>
-
-			{% if sample.gc_depth_image %}
-
-			<a class="thumbnail" href={{sample.gc_depth_image.url}}><img src={{sample.gc_depth_image.url}} width="150px"><span>GC Depth<br><img src={{sample.gc_depth_image.url}}></span></a>
-
-			{%endif%}
-
-			 </td>
-
-			<td>
-
-			{% if sample.indel_cycles_image %}
-
-			<a class="thumbnail" href={{sample.indel_cycles_image.url}}><img src={{sample.indel_cycles_image.url}} width="150px"><span>Indel Cycles<br><img src={{sample.indel_cycles_image.url}}></span></a>
-
-			{%endif%}
-
-
-			</td>
-
-			<td>
-
-			{% if sample.indel_dist_image %}
-
-			<a class="thumbnail" href={{sample.indel_dist_image.url}}><img src={{sample.indel_dist_image.url}} width="150px"><span>Indel Dist<br><img src={{sample.indel_dist_image.url}}></span></a>
-
-			{%endif%}
-
-			</td>
-
-			</tr>
-
-			<tr>
-
-			<td>
-
-			{% if sample.insert_size_image %}
-
-			<a class="thumbnail" href={{sample.insert_size_image.url}}><img src={{sample.insert_size_image.url}} width="150px"><span>Insert Size<br><img src={{sample.insert_size_image.url}}></span></a>
-
-			{%endif%}
-
-			</td>
-
-			<td>
-
-			{% if sample.quality_cycle_image %}
-
-			<a class="thumbnail" href={{sample.quality_cycle_image.url}}><img src={{sample.quality_cycle_image.url}} width="150px"><span>Quality Cycle<br><img src={{sample.quality_cycle_image.url}}></span></a>
-
-			{%endif%}
-
-			</td>
-
-			<td>
-
-			{% if sample.quality_cycle_read_image %}
-
-			<a class="thumbnail" href={{sample.quality_cycle_read_image.url}}><img src={{sample.quality_cycle_read_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_cycle_read_image.url}}></span></a> 
-
-			{%endif%}
-
-			</td>
-
-			</tr>
-
-			<tr>
-
-			<td>
-
-			{% if sample.quality_cycle_read_freq_image %}
-
-			<a class="thumbnail" href={{sample.quality_cycle_read_freq_image.url}}><img src={{sample.quality_cycle_read_freq_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_cycle_read_freq_image.url}}></span></a>
-
-			{%endif%}
-
-			</td>
-
-
-			<td>
-
-			{% if sample.quality_cycle_read_freq_image %}
-
-
-			<a class="thumbnail" href={{sample.quality_heatmap_image.url}}><img src={{sample.quality_heatmap_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_heatmap_image.url}}></span></a>
-
-			{%endif%}
-
-			</td>
-
-
-			</tr>
-
-
-		
-
-		</tbody>
-
-
-    </table>
-
-
-	</div>
-
-
-	<!--Coverage Tab with Gene/Exon Coverage -->
-	<div id="coverage" class="tab-pane fade">
-
-	<h3> Gene Coverage </h3>
-
-	     <button type="button" class="btn btn-default btn-sm" id='togglecovdata'>
-          <span class="glyphicon glyphicon-plus"></span> Toggle
+            <tbody>
+                <tr>
+                    <td>
+                        {% if sample.acgt_cycles_image %}
+                        <a class="thumbnail" href={{sample.acgt_cycles_image.url}}><img src={{sample.acgt_cycles_image.url}} width="150px"><span>Per Base Sequence Content<br><img src={{sample.acgt_cycles_image.url}}></span></a>
+                        {%endif%} 
+                    </td>
+                    <td>
+                        {% if sample.coverage_image %}
+                        <a class="thumbnail" href={{sample.coverage_image.url}}><img src={{sample.coverage_image.url}} width="150px"><span>Coverage<br><img src={{sample.coverage_image.url}}></span></a>
+                        {%endif%}
+                    </td>
+                    <td>
+                        {% if sample.gc_content_image %}
+                        <a class="thumbnail" href={{sample.gc_content_image.url}}><img src={{sample.gc_content_image.url}} width="150px"><span>GC Content<br><img src={{sample.gc_content_image.url}}></span></a>
+                        {%endif%}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {% if sample.gc_depth_image %}
+                        <a class="thumbnail" href={{sample.gc_depth_image.url}}><img src={{sample.gc_depth_image.url}} width="150px"><span>GC Depth<br><img src={{sample.gc_depth_image.url}}></span></a> 
+                        {%endif%}
+                    </td>
+                    <td>
+                        {% if sample.indel_cycles_image %}
+                        <a class="thumbnail" href={{sample.indel_cycles_image.url}}><img src={{sample.indel_cycles_image.url}} width="150px"><span>Indel Cycles<br><img src={{sample.indel_cycles_image.url}}></span></a> 
+                        {%endif%}
+                    </td>
+                    <td>
+                        {% if sample.indel_dist_image %}
+                        <a class="thumbnail" href={{sample.indel_dist_image.url}}><img src={{sample.indel_dist_image.url}} width="150px"><span>Indel Dist<br><img src={{sample.indel_dist_image.url}}></span></a> 
+                        {%endif%}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {% if sample.insert_size_image %}
+                        <a class="thumbnail" href={{sample.insert_size_image.url}}><img src={{sample.insert_size_image.url}} width="150px"><span>Insert Size<br><img src={{sample.insert_size_image.url}}></span></a> 
+                        {%endif%}
+                    </td>
+                    <td>
+                        {% if sample.quality_cycle_image %}
+                        <a class="thumbnail" href={{sample.quality_cycle_image.url}}><img src={{sample.quality_cycle_image.url}} width="150px"><span>Quality Cycle<br><img src={{sample.quality_cycle_image.url}}></span></a>
+                        {%endif%} 
+                    </td>
+                    <td>
+                        {% if sample.quality_cycle_read_image %}
+                        <a class="thumbnail" href={{sample.quality_cycle_read_image.url}}><img src={{sample.quality_cycle_read_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_cycle_read_image.url}}></span></a> 
+                        {%endif%}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        {% if sample.quality_cycle_read_freq_image %}
+                        <a class="thumbnail" href={{sample.quality_cycle_read_freq_image.url}}><img src={{sample.quality_cycle_read_freq_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_cycle_read_freq_image.url}}></span></a> 
+                        {%endif%}
+                    </td>
+                    <td>
+                        {% if sample.quality_cycle_read_freq_image %}
+                        <a class="thumbnail" href={{sample.quality_heatmap_image.url}}><img src={{sample.quality_heatmap_image.url}} width="150px"><span>Quality Cycle 2<br><img src={{sample.quality_heatmap_image.url}}></span></a> 
+                        {%endif%}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!--Coverage Tab with Gene/Exon Coverage -->
+    <div id="coverage" class="tab-pane fade">
+        <h3> Gene Coverage </h3>
+        <button type="button" class="btn btn-default btn-sm" id='togglecovdata'>
+            <span class="glyphicon glyphicon-plus"></span> Toggle
         </button>
+        <table class='table table-hover table-condensed'>
+            <thead>
+                <tr>
+                    <th> Gene </th>
+                    <th class='hidecol' style=display:none> 100x </th>
+                    <th class='hidecol' style=display:none> 200x </th>
+                    <th class='hidecol' style=display:none> 300x </th>
+                    <th class='hidecol' style=display:none> 400x </th>
+                    <th class='hidecol' style=display:none> 500x </th>
+                    <th class='hidecol' style=display:none> 600x </th>
+                    <th> Min </th>
+                    <th> Max </th>
+                    <th> Mean </th>
+                    <th> pct > 100x </th>
+                    <th> pct > 200x </th>
+                    <th> pct > 300x </th>
+                    <th> pct > 400x </th>
+                    <th> pct > 500x </th>
+                    <th> pct > 600x </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for gene in gene_coverage %}
 
+	                <tr>
+	                    <td> {{gene.gene}} </td>
+	                    <td class='hidecol' style=display:none> {{gene.x100}} </td>
+	                    <td class='hidecol' style=display:none> {{gene.x200}} </td>
+	                    <td class='hidecol' style=display:none> {{gene.x300}} </td>
+	                    <td class='hidecol' style=display:none> {{gene.x400}} </td>
+	                    <td class='hidecol' style=display:none> {{gene.x500}} </td>
+	                    <td class='hidecol' style=display:none> {{gene.x600}} </td>
+	                    <td> {{gene.min_coverage}} </td>
+	                    <td> {{gene.max_coverage}} </td>
+	                    <td> {{gene.mean_coverage}} </td>
+	                    {% with gene_percentages=gene.get_percentages %}
+	                    	{% for pc in gene_percentages %}
+	                    		{% if pc >= 95 %}
+	                    			<td class="success"> {{pc}} </td>
+	                    		{% else %}
+	                    			<td class="danger"> {{pc}} </td>
+	                    		{% endif %}
 
+	                    	{% endfor %}
 
+	                    {% endwith %}
+	                </tr>
 
-	<table class = 'table table-hover table-condensed'>
+                {% endfor %}
+            </tbody>
+        </table>
 
+        <h3> Exon Coverage </h3>
+        <table class='table table-hover table-condensed'>
+            <thead>
+                <tr>
+                    <th visibility:hidden> Gene </th>
+                    <th> Exon </th>
+                    <th class='hidecol' style=display:none> 100x </th>
+                    <th class='hidecol' style=display:none> 200x </th>
+                    <th class='hidecol' style=display:none> 300x </th>
+                    <th class='hidecol' style=display:none> 400x </th>
+                    <th class='hidecol' style=display:none> 500x </th>
+                    <th class='hidecol' style=display:none> 600x </th>
+                    <th> Min </th>
+                    <th> Max </th>
+                    <th> Mean </th>
+                    <th> pct > 100x </th>
+                    <th> pct > 200x </th>
+                    <th> pct > 300x </th>
+                    <th> pct > 400x </th>
+                    <th> pct > 500x </th>
+                    <th> pct > 600x </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exon in exon_coverage %}
+                <tr>
+                    <td> {{exon.gene}} </td>
+                    <td> {{exon.exon}} </td>
+                    <td class='hidecol' style=display:none> {{exon.x100}} </td>
+                    <td class='hidecol' style=display:none> {{exon.x200}} </td>
+                    <td class='hidecol' style=display:none> {{exon.x300}} </td>
+                    <td class='hidecol' style=display:none> {{exon.x400}} </td>
+                    <td class='hidecol' style=display:none> {{exon.x500}} </td>
+                    <td class='hidecol' style=display:none> {{exon.x600}} </td>
+                    <td> {{exon.min_coverage}} </td>
+                    <td> {{exon.max_coverage}} </td>
+                    <td> {{exon.mean_coverage}} </td>
+                    {% with exon_percentages=exon.get_percentages %}
 
+                    	{% for pc in exon_percentages %}
+                      		{% if pc >= 95 %}
+                    			<td class="success"> {{pc}} </td>
+                    		{% else %}
+                    			<td class="danger"> {{pc}} </td>
+                    		{% endif %}
+                    	{% endfor %}
+                    {% endwith %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-	  	  	<thead>
+    <div id="history" class="tab-pane fade">
+        <table class='table table-hover'>
+            <thead>
+                <tr>
+                    <th> Change Category </th>
+                    <th> Change Description </th>
+                    <th> Date </th>
+                    <th> User </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for change in history %}
+                <tr>
+                    <td> {{ change }} </td>
+                    <td> {{ change.changes }} </td>
+                    <td> {{ change.timestamp}} </td>
+                    <td> {{ change.actor }} </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-				<tr>
-					<th> Gene </th>
-					<th  class ='hidecol' style=display:none> 100x </th>
-					<th  class ='hidecol'style=display:none> 200x </th>
-					<th  class ='hidecol'style=display:none> 300x </th>
-					<th  class ='hidecol'style=display:none> 400x </th>
-					<th  class ='hidecol'style=display:none> 500x </th>
-					<th  class ='hidecol'style=display:none> 600x </th>
-					<th> Min </th>
-					<th> Max </th>
-					<th> Mean </th>
+        {% if user|can:'change_sample_status' %}
 
-					<th> pct > 100x </th>
-					<th> pct > 200x </th>
-					<th> pct > 300x </th>
-					<th> pct > 400x </th>
-					<th> pct > 500x </th>
-					<th> pct > 600x </th>
+        <hr> {% crispy sample_status_form %}
 
-				</tr>
+        {% endif %}
 
-			</thead>
+    </div>
+    <div id="report" class="tab-pane fade">
+        <table class='table'>
+            <thead>
+                <tr>
+                    <th> Report ID </th>
+                    <th> Report First Check</th>
+                    <th> Report Second Check</th>
+                    <th> Report Status </th>
+                    <th> Action </th>
+                    <th> View </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td> {{report.pk}} </td>
+                    {% if report.first_checker == None %}
+                    <td> N/A </td>
+                    {% else %}
+                    <td> {{report.first_checker}} on {{report.first_check_date}} </td>
+                    {% endif %}
+                    {% if report.second_checker == None %}
+                    <td> N/A </td>
+                    {% else %}
+                    <td> {{report.second_checker}} on {{report.second_check_date}} </td>
+                    {% endif %}
+                    <td> {{report.get_status }} </td>
 
-			<tbody>
+                    {% if report.locked == True and report.lock_user != user %}
+                    	<td> Locked by {{report.lock_user}}</td>
+                    {% else %}
 
-			{% for gene in gene_coverage %}
+                    	{% if report.status == '2' and user|can:'complete_check' %}
+                    		<td> <a href="{% url 'create_sample_report' sample.pk report.pk 2 %}"> Perform Second Check  </a></td>
+                    	{% elif report.status == '3' and user|can:'resolve_differences' %}
+                    		<td> <a href="{% url 'resolve_check_differences' sample.pk report.pk %}"> Resolve Differences  </a></td>
+                    	{% elif report.status == '1' and user|can:'complete_check' %}
+                    		<td> <a href="{% url 'create_sample_report' sample.pk report.pk 1 %}"> Perform First Check  </a></td>
+                    	{% else %}
+                    		<td> None</td>
+                    	{% endif %} 
 
-			<tr>
-
-				<td> {{gene.gene}} </td>
-				<td  class ='hidecol'style=display:none>  {{gene.x100}} </td>
-				<td  class ='hidecol'style=display:none> {{gene.x200}} </td>
-				<td  class ='hidecol'style=display:none> {{gene.x300}} </td>
-				<td  class ='hidecol'style=display:none> {{gene.x400}} </td>
-				<td  class ='hidecol'style=display:none> {{gene.x500}} </td>
-				<td  class ='hidecol'style=display:none> {{gene.x600}} </td>
-				<td> {{gene.min_coverage}} </td>
-				<td> {{gene.max_coverage}} </td>
-				<td> {{gene.mean_coverage}} </td>
-
-
-
-
-				{% with gene_percentages=gene.get_percentages %}
-
-
-				{% for pc in gene_percentages %}
-
-
-
-				{% if pc >= 95 %}
-
-
-				<td class="success" > {{pc}} </td>
-
-
-				{% else %}
-
-
-				<td class="danger" > {{pc}} </td>
-
-				{% endif %}
-
-
-
-
-
-				{% endfor %}
-
-				{% endwith %}
-
-
-
-
+                    {% endif %}
+                    <td> <a href="{% url 'view_sample_report' sample.pk report.pk %}"> View</td>
 
 			</tr>
 
-			{% endfor %}
-
-			</tbody>
-
-	</table>
-
-	<h3> Exon Coverage </h3>
-
-
-
-
-
-		<table class = 'table table-hover table-condensed'>
-
-	  	  	<thead>
-
-				<tr>
-					<th visibility:hidden> Gene </th>
-					<th> Exon </th>
-					<th class ='hidecol' style=display:none> 100x </th>
-					<th class ='hidecol' style=display:none> 200x </th>
-					<th class ='hidecol' style=display:none> 300x </th>
-					<th class ='hidecol' style=display:none> 400x </th>
-					<th class ='hidecol' style=display:none> 500x </th>
-					<th class ='hidecol' style=display:none> 600x </th>
-					<th> Min </th>
-					<th> Max </th>
-					<th> Mean </th>
-
-
-					<th> pct > 100x </th>
-					<th> pct > 200x </th>
-					<th> pct > 300x </th>
-					<th> pct > 400x </th>
-					<th> pct > 500x </th>
-					<th> pct > 600x </th>
-
-				</tr>
-
-			</thead>
-
-			<tbody>
-
-			{% for exon in exon_coverage %}
-
-			<tr>
-
-				<td> {{exon.gene}} </td>
-				<td> {{exon.exon}} </td>
-				<td class ='hidecol' style=display:none> {{exon.x100}} </td>
-				<td class ='hidecol' style=display:none> {{exon.x200}} </td>
-				<td class ='hidecol' style=display:none> {{exon.x300}} </td>
-				<td class ='hidecol' style=display:none> {{exon.x400}} </td>
-				<td class ='hidecol' style=display:none> {{exon.x500}} </td>
-				<td class ='hidecol' style=display:none> {{exon.x600}} </td>
-				<td> {{exon.min_coverage}} </td>
-				<td> {{exon.max_coverage}} </td>
-				<td> {{exon.mean_coverage}} </td>
-
-
-
-				{% with exon_percentages=exon.get_percentages %}
-
-
-
-					{% for pc in exon_percentages %}
-
-
-
-					{% if pc >= 95 %}
-
-
-					<td class="success" > {{pc}} </td>
-
-
-					{% else %}
-
-
-					<td class="danger" > {{pc}} </td>
-
-					{% endif %}
-
-
-
-
-
-					{% endfor %}
-
-
-				{% endwith %}
-
-
-
-
-
-			</tr>
-
-			{% endfor %}
-
-			</tbody>
-
-	</table>
-
-
-
-	</div>
-
-
-
-
-
-	<div id="report" class="tab-pane fade">
-
-
-	<table class='table'>
-
-		<thead>
-
-		<tr>
-
-			<th> Report ID </th>
-			<th> Report First Check</th>
-			<th> Report Second Check</th>
-			<th> Report Status </th>
-			<th> Action </th>
-			<th> View </th>
-
-
-
-		</tr>
-
-
-		</thead>
-
-		<tbody>
-
-			{% for report in reports %}
-
-
-			<tr>
-
-				<td> {{report.pk}} </td>
-
-				{% if report.first_checker == None %}
-
-				<td> N/A   </td>
-
-				{% else %}
-
-				<td> {{report.first_checker}} on {{report.first_check_date}}   </td>
-
-				{% endif %}
-
-
-				{% if report.second_checker == None %}
-
-				<td> N/A   </td>
-
-				{% else %}
-
-				<td> {{report.second_checker}} on {{report.second_check_date}}      </td>
-
-				{% endif %}
-
-
-
-
-
-				
-
-
-				<td> {{report.get_status }} </td>
-
-				{% if report.locked == True and report.lock_user != user  %}
-
-					<td> Locked by {{report.lock_user}}</td>
-
-				{% else %}
-
-
-				{% if report.status == '2'  and user|can:'complete_check' %}
-
-				<td> <a href= "{% url 'create_sample_report' sample.pk report.pk 2 %}"> Perform Second Check  </a></td>
-
-				{% elif report.status == '3' and user|can:'resolve_differences'  %}
-
-				<td> <a href= "{% url 'resolve_check_differences' sample.pk report.pk %}"> Resolve Differences  </a></td>
-
-				{% elif report.status == '1' and user|can:'complete_check'  %}
-
-				<td> <a href= "{% url 'create_sample_report' sample.pk report.pk 1 %}"> Perform First Check  </a></td>
-
-				{% else %}
-
-				<td> None</td>
-
-				{% endif %}
-				{% endif %}
-
-				<td> <a href= "{% url 'view_sample_report' sample.pk report.pk %}"> View</td>
-
-
-
-			</tr>
-
-		   {% endfor %}
+		   		{% endfor %}
 
 		</tbody>
 
 	</table>
 
 	<hr>
-
-
-
-
-
 
 	{% if user|can:'create_report' %}
 
@@ -849,30 +500,15 @@ tr.shown td.details-control {
 
         </div>
     
-        </form>
+    </form>
 
         
-       {% endif %}
-
+    {% endif %}
 
 	</div>
 	</div>
-
-
 
 <script type="text/javascript" src="{% static 'js/sample_summary.js' %}"></script>
 
 
-
-
-
-
-
- 
-{% endblock %}  
-  
-  
- 
-
-  
-  
+{% endblock %}

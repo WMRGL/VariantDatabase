@@ -32,6 +32,8 @@ class SeniorAnalyst(AbstractUserRole):
 		"resolve_differences": True,
 		"create_panel": True,
 		"edit_panel": True,
-		"change_sample_panel": True
+		"change_sample_panel": True,
+		"change_worksheet_status": True,
+		"change_sample_status": True,
 
 	}

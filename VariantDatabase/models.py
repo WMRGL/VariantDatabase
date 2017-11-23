@@ -24,7 +24,7 @@ class Section(models.Model):
 		return self.title
 
 
-	def get_worksheets(self):
+	def get_worksheets_all(self):
 
 		"""
 		Return all worksheets related 
@@ -32,6 +32,21 @@ class Section(models.Model):
 		"""
 
 		all_worksheets = Worksheet.objects.filter(sub_section__section=self)
+
+		return all_worksheets
+
+	def get_worksheets_no_complete(self):
+
+		"""
+		Return all worksheets related 
+
+		"""
+
+		all_worksheets = Worksheet.objects.filter(sub_section__section=self)
+
+		all_worksheets = all_worksheets.exclude(status="4")
+
+		all_worksheets = all_worksheets.exclude(status="5")
 
 		return all_worksheets
 
@@ -330,7 +345,7 @@ class Panel(models.Model):
 		genes =  List of genes 
 		"""
 
-		genes = PanelGene.objects.filter(panel =self).select_related('gene')
+		genes = PanelGene.objects.filter(panel =self).select_related("gene")
 
 		genes = [gene.gene for gene in genes]
 
@@ -505,6 +520,16 @@ class Sample(models.Model):
 			else:
 
 				return "PASS"
+
+
+	def get_history(self):
+		"""
+		Returns entire history from the audit log.
+		"""
+
+		content_type = ContentType.objects.get(app_label ="VariantDatabase", model="sample")
+
+		return LogEntry.objects.filter(object_pk = self.pk, content_type=content_type)
 
 
 class Consequence(models.Model):
@@ -726,84 +751,22 @@ class Variant(models.Model):
 
 		return variant_ids
 
-	def same_codon_missense(self):
+	def get_similar_variants(self, range=15):
 		"""
-		Is the variant in the same codon as an existing variant in the DB?
+		return any indels between + or - a certain number of bases
 
-		How does this work?
-
-		1) Only look at missense variants
-		2) Get all variants that could be in the same codon e.g. +2 or -2 in position.
-		3) Get the hgvsp for our variant
-		4) For each of the variants that are nearby i.e. the query in part 2
-			4a) only look at missense variants
-			4b) get the hgvp for that variant
-			4c) for each of the hgvsp for that variant
-				4d) See if the codon is the same as the original
-				4e) if so then add to list to be returned
-
-
-		NOTE : NOT TESTED!
 		"""
 
-		if self.worst_consequence.name == "missense_variant":
+		upper_limit = self.position + range
+		lower_limit = self.position - range
 
-			same_codon = []
+		variants = Variant.objects.filter(chromosome=self.chromosome)
 
-			position_range =2
+		variants = variants.filter(position__range=[lower_limit, upper_limit])
 
-			variant_list = (Variant
-							.objects
-							.filter(chromosome=self.chromosome)
-							.filter(position__range=(self.position-position_range,self.position+position_range ))
-							.exclude(variant_hash =self.variant_hash))
+		variants = variants.exclude(pk=self.pk)
 
-			transcript_list =[]
-
-			self_hgvsp = VariantTranscript.objects.filter(variant=self).values_list("hgvsp", flat=True)
-
-			for hgvsp in self_hgvsp:
-
-				transcript, codon = vcf_parser.extract_codon_from_hgvs(hgvsp)
-
-				if transcript == False:
-
-					return None
-
-				transcript_list.append((transcript.strip(), codon))
-
-
-			for variant in variant_list:
-
-				if variant.worst_consequence.name == "missense_variant":
-
-					variant_hgvsp_list = (VariantTranscript
-											.objects
-											.filter(variant=variant)
-											.values_list("hgvsp", flat=True))
-
-					transcript_list_vars =[]
-
-					for hgvsp in variant_hgvsp_list:
-
-						transcript, codon = vcf_parser.extract_codon_from_hgvs(hgvsp)
-
-						transcript_list_vars.append((transcript.strip(),codon))
-
-						both = set(transcript_list) & set(transcript_list_vars)
-
-
-						if len(both) >0:
-
-							same_codon.append(variant)
-
-			if len(list(set(same_codon))) == 0:
-
-				return None
-
-			else:
-
-				return list(set(same_codon))
+		return variants
 
 	def get_other_alleles(self):
 		"""	
@@ -1497,3 +1460,16 @@ class ReportVariantSampleClassification(models.Model):
 
 
 auditlog.register(Worksheet)
+auditlog.register(Sample, exclude_fields=["acgt_cycles_image",
+	"coverage_image",
+	"gc_content_image",
+	"gc_depth_image",
+	"gc_depth_image",
+	"indel_cycles_image",
+	"indel_dist_image",
+	"insert_size_image",
+	"quality_cycle_image",
+	"quality_cycle_read_image",
+	"quality_cycle_read_freq_image"])
+
+

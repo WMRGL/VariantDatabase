@@ -152,7 +152,7 @@
         {% endfor %}
 
 
-
+{% csrf_token %}
 
 
 
@@ -443,25 +443,25 @@ $(document).ready(function () {
 
       {
 
-    url: '/static/213837-2-D17-26177-HP_S2.bwa.drm.realn.sorted.bam',
-    name: 'mybam',
-    visibilityWindow: 50000,
-    colorBy: "strand"
+      url: '/static/213837-2-D17-26177-HP_S2.bwa.drm.realn.sorted.bam',
+      name: 'mybam',
+      visibilityWindow: 50000,
+      colorBy: "strand"
 
       },
 
       { 
 
-    url: '/static/213837-2-D17-26177-HP_S2.unified.annovar.wmrgldb.vcf.gz',
-    name: 'myvcf'
+      url: '/static/213837-2-D17-26177-HP_S2.unified.annovar.wmrgldb.vcf.gz',
+      name: 'myvcf'
 
       },   
 
       {
 
-    url: '/files/genomic_resources/panels/TSCP/version_1/TSCP_sanger_primers_no_overlaps.sorted.bed',
-    name: 'primer_bed'
-      }                  
+      url: '/files/genomic_resources/panels/TSCP/version_1/TSCP_sanger_primers_no_overlaps.sorted.bed',
+      name: 'primer_bed'
+      } 
 
       ]
       };

@@ -1,10 +1,13 @@
 from django import forms
 from .models import  *
 from django.core.urlresolvers import reverse
-from crispy_forms.bootstrap import Field, InlineRadios, TabHolder, Tab
+from crispy_forms.bootstrap import Field, InlineRadios, TabHolder, Tab,InlineCheckboxes
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div, Fieldset
 from django.contrib.auth.forms import PasswordChangeForm
+
+from django.forms.widgets import DateInput
+
 
 
 class WorksheetStatusUpdateForm(forms.ModelForm):
@@ -190,3 +193,89 @@ class CreatePanelForm(forms.ModelForm):
 
 		model = Panel
 		fields = ("name","subsection",)
+
+
+
+class ChangeWorksheetStatus(forms.ModelForm):
+	"""
+	Form for manually updating the worksheet status.
+
+	"""
+
+	def __init__(self, *args, **kwargs):
+
+		super(ChangeWorksheetStatus, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
+		self.helper.form_id = "change-worksheet-status"
+		self.helper.label_class = "col-lg-2"
+		self.helper.field_class = "col-lg-8"
+		self.helper.form_method = "POST"
+		self.helper.form_action = ""
+		self.helper.add_input(Submit("submit-change-status", "Submit", css_class="btn-success"))
+		self.helper.form_class = "form-horizontal"
+		self.helper.layout = Layout(
+			
+				Field("status"))
+
+	class Meta:
+
+		model = Worksheet
+		fields = ("status",)
+
+class ChangeSampleStatus(forms.ModelForm):
+	"""
+	Form for manually updating the sample status.
+
+	"""
+
+	def __init__(self, *args, **kwargs):
+
+		super(ChangeSampleStatus, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
+		self.helper.form_id = "change-worksheet-status"
+		self.helper.label_class = "col-lg-2"
+		self.helper.field_class = "col-lg-8"
+		self.helper.form_method = "POST"
+		self.helper.form_action = ""
+		self.helper.add_input(Submit("submit-sample-status", "Submit", css_class="btn-success"))
+		self.helper.form_class = "form-horizontal"
+		self.helper.layout = Layout(
+			
+				Field("status"))
+
+	class Meta:
+
+		model = Sample
+		fields = ("status",)
+
+
+
+			
+class WorksheetFilterForm(forms.Form):
+	"""	
+	A form for filtering variants in the summary page.
+
+	Allows the user to:
+
+		1) Choose consequences and AFs to filter by.
+		2) Select a panel to gene filter by.
+		3) Optionally save that panel change.
+
+	"""
+
+	view_complete = forms.BooleanField(required=False)
+
+	def __init__(self, *args, **kwargs):
+
+		super(WorksheetFilterForm, self).__init__(*args, **kwargs)
+		self.helper = FormHelper()
+		self.helper.form_id = "search-filter-form"
+		self.helper.label_class = "col-lg-1"
+		self.helper.field_class = "col-lg-2"
+		self.helper.form_method = "GET"
+		self.helper.form_action = ""
+		self.helper.add_input(Submit("submit_filter_form", "Submit", css_class="btn-success"))
+		self.helper.form_class = "form-horizontal"
+		self.helper.layout = Layout(
+			
+			Field("view_complete"))

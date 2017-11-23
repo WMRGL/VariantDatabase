@@ -111,7 +111,8 @@
     "fields": {
       "name": "D-MPD-001",
       "description": "First panel",
-      "subsection": "MPN_SureSeq_OGT"
+      "subsection": "MPN_SureSeq_OGT",
+      "locked": true
     }
   },
   {
@@ -120,7 +121,8 @@
     "fields": {
       "name": "D-MPD-003",
       "description": "None",
-      "subsection": "MPN_SureSeq_OGT"
+      "subsection": "MPN_SureSeq_OGT",
+      "locked": true
     }
   },
   {
@@ -129,7 +131,8 @@
     "fields": {
       "name": "None",
       "description": "None",
-      "subsection": null
+      "subsection": null,
+      "locked": true
     }
   },
   {
@@ -442,7 +445,6 @@
     "pk": 1,
     "fields": {
       "columns_to_hide": "allele_depth,vafs,tcf,tcr,clinsig,filter_status",
-      "igv_view": true,
       "user": 1
     }
   },

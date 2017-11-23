@@ -3,6 +3,7 @@
   {% block content %}
 
 {% load permission_tags %}
+{% load crispy_forms_tags %}
   	<br>
 
   	<div class="alert alert-info">
@@ -45,7 +46,6 @@
 
 
 
-
 		</tr>
 
 
@@ -57,7 +57,15 @@
 
 			<td>{{ sample.get_status      }} </td>
 
-			<td>{{ sample.sample_qc_passed      }} </td>
+			{% if sample.sample_qc_passed == "PASS" %}
+
+			<td> <span class="glyphicon glyphicon-ok-sign text-success"></span></td>
+
+			{% else %}
+
+			<td> <span class="glyphicon glyphicon-remove-sign text-danger"></span></td>
+
+			{% endif %}
 		
 
 		</tr>
@@ -247,8 +255,14 @@
 
 		</table>
 
+		{% if user|can:'change_worksheet_status' %}
+
+		<hr>
+
+			{% crispy status_form %}
 
 
+		{% endif %}
 	</div>
 
 	</div>

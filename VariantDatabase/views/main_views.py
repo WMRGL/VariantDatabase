@@ -34,10 +34,26 @@ def list_sections(request):
 
 	"""
 
+	if "submit_filter_form" in request.GET:
+
+		form = WorksheetFilterForm(request.GET)
+
+		if form.is_valid():
+
+			show_complete = form.cleaned_data["view_complete"]
+
+	else:
+
+		show_complete = False
+
+		form = WorksheetFilterForm()
+
 	all_sections = Section.objects.all()
 
 	return render(request, "VariantDatabase/list_sections.html",
-				 {"all_sections": all_sections} )
+				 {"all_sections": all_sections,
+				 "form": form,
+				 "show_complete": show_complete} )
 
 
 @login_required
@@ -52,20 +68,46 @@ def list_worksheet_samples(request, pk_worksheet):
 
 	if request.method == "POST":
 
-		if has_permission(request.user, 'approve_qc') == False:
+		print request.POST
 
-			raise PermissionDenied
+		if "submit-change-status" in request.POST:
 
-		#if user is authorised
-		worksheet = worksheet = get_object_or_404(Worksheet, pk=pk_worksheet)
-		worksheet.status = "3"
-		worksheet.save()
+			print 'hi'
 
-		return redirect(list_worksheet_samples, pk_worksheet)
+			#if user is authorised
+			if has_permission(request.user, "change_worksheet_status") == False:
+
+				raise PermissionDenied
+
+			else:
+
+				status_form = ChangeWorksheetStatus(request.POST, instance=worksheet)
+
+				if status_form.is_valid():
+
+					worksheet = status_form.save()
+					worksheet.save()
+
+					return redirect(list_worksheet_samples, pk_worksheet)
+
+		else:
+			#The approve qc form
+			#if user is authorised
+			if has_permission(request.user, "approve_qc") == False:
+
+				raise PermissionDenied
+
+			worksheet = worksheet = get_object_or_404(Worksheet, pk=pk_worksheet)
+			worksheet.status = "3"
+			worksheet.save()
+
+			return redirect(list_worksheet_samples, pk_worksheet)
 
 	else:
 
 		form = WorksheetStatusUpdateForm()
+
+		status_form = ChangeWorksheetStatus(instance =worksheet)
 
 		quality_data = worksheet.get_quality_data()
 
@@ -78,7 +120,8 @@ def list_worksheet_samples(request, pk_worksheet):
 				{"samples_in_worksheet": samples_in_worksheet,
 				 "form": form,
 				 "worksheet": worksheet,
-				 "quality_data": quality_data})
+				 "quality_data": quality_data,
+				 "status_form": status_form})
 
 
 @login_required
@@ -93,13 +136,13 @@ def sample_summary(request, pk_sample):
 
 	reports = Report.objects.filter(sample=sample)
 
-	if request.method == "POST": #if the user clicked create a new report
-
-		if has_permission(request.user, 'create_report') == False:
-
-			raise PermissionDenied
+	if request.method == "POST": #if the user is posting a form
 
 		if "reportform" in request.POST:
+
+			if has_permission(request.user, 'create_report') == False:
+
+				raise PermissionDenied
 
 			report_form = ReportForm(request.POST)
 
@@ -116,6 +159,22 @@ def sample_summary(request, pk_sample):
 				report.save()
 
 				return redirect(create_sample_report, sample.pk, report.pk, "1")
+
+
+		elif "submit-sample-status" in request.POST:
+
+			if has_permission(request.user, 'change_sample_status') == False:
+
+				raise PermissionDenied
+
+			sample_status_form = ChangeSampleStatus(request.POST, instance = sample)
+
+			if sample_status_form.is_valid():
+
+				sample = sample_status_form.save()
+				sample.save()
+
+				return redirect(sample_summary, sample.pk) 
 
 	else:
 
@@ -198,6 +257,10 @@ def sample_summary(request, pk_sample):
 
 		report_form = ReportForm()
 
+		history = sample.get_history()
+
+		sample_status_form = ChangeSampleStatus(instance=sample)
+
 		return render(  request,
 						"VariantDatabase/sample_summary.html",
 						{"sample": sample,
@@ -210,7 +273,9 @@ def sample_summary(request, pk_sample):
 					 	"exon_coverage": exon_coverage,
 					 	"user_settings": user_settings,
 					 	"filter_form": filter_form,
-					 	"panel":panel })
+					 	"panel":panel,
+					 	"history": history,
+					 	'sample_status_form': sample_status_form })
 
 
 @login_required

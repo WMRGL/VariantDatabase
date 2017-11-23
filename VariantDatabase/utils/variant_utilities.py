@@ -206,3 +206,5 @@ def process_user_settings(user_settings_string, columns_dict):
 
 
 	return ",".join(list(set(final_list)))
+
+
