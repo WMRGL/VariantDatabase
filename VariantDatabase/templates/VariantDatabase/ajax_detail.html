@@ -406,9 +406,14 @@ $(document).ready(function () {
 
 
   //Hear we init IGV.js
-  var div, options, browser;
+  var div,
+   options,
+   browser,
+  cancerStudyId = "acc_tcga",
+  sampleIds = "TCGA-OR-A5J1-01,TCGA-OR-A5K3-01";
 
   div = $("#myDiv")[0];
+
   options = {
     locus:"{{variant.chromosome}}:{{variant.position|add:-40}}-{{variant.position|add:40}}",
     showKaryo: false,
@@ -441,27 +446,23 @@ $(document).ready(function () {
       displayMode: "EXPANDED"
       },
 
-      {
+       {
+                        name: cancerStudyId,
+                        type: "variant",
+                        displayMode: "EXPANDED",
+                        sourceType: "custom",
+                        source: {
+                            url: "http://127.0.0.1:8000/api/variantsigv/",
+                            method: "GET",
+                            contentType: "application/x-www-form-urlencoded",
+                            body: "",
+                            parser: JSON.parse
+                        }
+                    }
 
-      url: '/static/213837-2-D17-26177-HP_S2.bwa.drm.realn.sorted.bam',
-      name: 'mybam',
-      visibilityWindow: 50000,
-      colorBy: "strand"
 
-      },
 
-      { 
 
-      url: '/static/213837-2-D17-26177-HP_S2.unified.annovar.wmrgldb.vcf.gz',
-      name: 'myvcf'
-
-      },   
-
-      {
-
-      url: '/files/genomic_resources/panels/TSCP/version_1/TSCP_sanger_primers_no_overlaps.sorted.bed',
-      name: 'primer_bed'
-      } 
 
       ]
       };

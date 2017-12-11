@@ -25,6 +25,7 @@ urlpatterns = [ url(r"^$", views.home_page, name="home_page"),
 				url(r"^user_settings/$", views.user_settings, name="user_settings"),
 
 				url(r"^api/variants/$", views.api_variants, name="api_variants"),
+				url(r"^api/variantsigv/$", views.api_variants_igv, name="api_variants_igv"),
 
 				url(r"^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/(?P<check_number>(1|2))/$", views.create_sample_report, name="create_sample_report"),
 				url(r"^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/view/$", views.view_sample_report, name="view_sample_report"),

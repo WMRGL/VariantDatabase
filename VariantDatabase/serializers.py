@@ -6,7 +6,7 @@ class VariantFreqSerializer(serializers.ModelSerializer):
 	class Meta:
 
 		model = Variant
-		fields = ('variant_hash', 'max_af', 'worst_consequence', 'chromosome', 'position', 'ref','alt')
+		fields = ('chromosome', 'position', 'ref','alt', 'worst_consequence')
 
 
 
