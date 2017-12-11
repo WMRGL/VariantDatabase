@@ -1,9 +1,10 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 from . import views
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
 from .forms import CustomPasswordChangeForm
+
 
 urlpatterns = [ url(r"^$", views.home_page, name="home_page"),
 				url(r"^sections/$", views.list_sections, name="list_sections"),
@@ -24,8 +25,7 @@ urlpatterns = [ url(r"^$", views.home_page, name="home_page"),
 				url(r"^ajax/update_panel/$", views.ajax_update_panel, name="ajax_update_panel"),
 				url(r"^user_settings/$", views.user_settings, name="user_settings"),
 
-				url(r"^api/variants/$", views.api_variants, name="api_variants"),
-				url(r"^api/variantsigv/$", views.api_variants_igv, name="api_variants_igv"),
+				url(r"^api/variants/$", views.VariantView.as_view(), name="api_variants"),
 
 				url(r"^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/(?P<check_number>(1|2))/$", views.create_sample_report, name="create_sample_report"),
 				url(r"^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/view/$", views.view_sample_report, name="view_sample_report"),

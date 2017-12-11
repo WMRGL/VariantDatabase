@@ -1,39 +1,44 @@
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
-from VariantDatabase.serializers import VariantFreqSerializer
+from VariantDatabase.serializers import VariantSerializer
 from VariantDatabase.models import *
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from rest_framework import generics
 
 
-def api_variants(request):
+
+
+class VariantView(generics.ListAPIView):
 	"""
-	API for getting all variants
+	This is an API endpoint for viewing Variant objects within the database.
+
+	Options:
+
+	chr = chromosome ID e.g. chr3 or X
+	start = start position
+	end = end position
+
 
 	"""
 
-	if request.method == "GET":
+	model = Variant
+	queryset = Variant.objects.all()
+	serializer_class = VariantSerializer
+	
+	def get_queryset(self):
 
-		chromosome = request.GET.get('chr')
-		start = request.GET.get('start')
-		end = request.GET.get('end')
+		queryset = Variant.objects.all()
 
+		chromosome = self.request.query_params.get('chr', None)
 
+		start = self.request.query_params.get('start', None)
 
-		variants = Variant.objects.filter(chromosome=chromosome)
-		variants = variants.filter(position__range=(start,end))
+		end = self.request.query_params.get('end', None)
 
+		if chromosome is not None and start is not None and end is not None:
 
-		serializer = VariantFreqSerializer(variants, many=True)
-		return JsonResponse(serializer.data, safe=False)
+			queryset = queryset.filter(chromosome=chromosome)
 
+			queryset = queryset.filter(position__range=(start,end))
 
+		return queryset
 
-def api_variants_igv(request):
-
-	data = [{"chr":1, "pos":60000}]
-
-
-	if request.method == "GET":
-
-		return JsonResponse(data, safe=False)
+	
