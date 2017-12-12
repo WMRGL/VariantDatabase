@@ -1,4 +1,4 @@
-from VariantDatabase.serializers import VariantSerializer
+from VariantDatabase.serializers import *
 from VariantDatabase.models import *
 from django.http import JsonResponse
 from rest_framework import generics
@@ -6,7 +6,7 @@ from rest_framework import generics
 
 
 
-class VariantView(generics.ListAPIView):
+class VariantListView(generics.ListAPIView):
 	"""
 	This is an API endpoint for viewing Variant objects within the database.
 
@@ -20,7 +20,6 @@ class VariantView(generics.ListAPIView):
 	"""
 
 	model = Variant
-	queryset = Variant.objects.all()
 	serializer_class = VariantSerializer
 	
 	def get_queryset(self):
@@ -35,10 +34,40 @@ class VariantView(generics.ListAPIView):
 
 		if chromosome is not None and start is not None and end is not None:
 
+			start = start.split(".")[0]
+			end = end.split(".")[0]
+
 			queryset = queryset.filter(chromosome=chromosome)
 
 			queryset = queryset.filter(position__range=(start,end))
 
 		return queryset
 
+class VariantView(generics.RetrieveAPIView):
+	"""
+	This is an API end point for getting a particular variant
+
+	"""
+
+	queryset = Variant.objects.all()
+	serializer_class = VariantSerializer
+	lookupfield = "variant_hash"
+
+
+
+
+
+
+
+class WorksheetListView(generics.ListAPIView):
+	"""
+	This is an API endpoint for viewing Worksheet objects within the database.
+
+	"""
+
+	model = Worksheet
+	queryset = Worksheet.objects.all()
+	serializer_class = WorkSheetSerializer
 	
+
+
