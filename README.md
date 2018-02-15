@@ -50,6 +50,19 @@ VariantDatabase allows the following:
 
 `pysam==0.10.0`
 
+`django-crispy-forms==1.6.1`
+
+`django-extensions==1.9.9`
+
+`django-filter==1.1.0`
+
+`django-role-permissions==2.1.0`
+
+`djangorestframework==3.6.4`
+
+`scipy==1.0.0`
+
+
 ##### Other
 
 To serve VCF and BAMs using IGV.js a webserver capable of HTTP range requests is required. Nginx is used in a typical deployment. Nginx is typically paired with Gunicorn which handles dynamic requests.
@@ -223,7 +236,7 @@ For the vcf files to be correctly parsed by the VariantDatabase parser (parsers/
 
 Once VEP is installed annotate your vcfs with the following command:
 
-`vep -i input_vcf -o output.vcf --cache --fork 4  --refseq --vcf --flag_pick --exclude_predicted --everything --dont_skip --total_length --offline --fasta fasta_location`
+`vep -i input_vcf -o output.vcf --cache --fork 4 --refseq --vcf --flag_pick --exclude_predicted --format vcf --everything --dont_skip --total_length  --offline--fasta fasta_location`
 
 Other VCF annotations that are required include: INFO/Caller, FORMAT/AD, INFO/TCF, INFO/TCR and INFO/VAFS 
 
