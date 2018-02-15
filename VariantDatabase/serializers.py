@@ -2,6 +2,12 @@ from rest_framework import serializers
 from .models import Variant, Worksheet
 
 class VariantSerializer(serializers.ModelSerializer):
+	"""
+	A serialiser to be used on lists of variants.
+
+	Used by the IGV.js API
+
+	"""
 
 
 	chr = serializers.SerializerMethodField('get_chr_name')
@@ -33,7 +39,7 @@ class VariantSerializer(serializers.ModelSerializer):
 
 	def get_var_freq(self, variant):
 
-		return round(variant.get_frequency_data()['global'][2],2)
+		return round(variant.get_frequency_data()['global'][2],5)
 
 	def get_prev_class(self, variant):
 
@@ -49,9 +55,49 @@ class VariantSerializer(serializers.ModelSerializer):
 
 
 class WorkSheetSerializer(serializers.ModelSerializer):
+	"""
+	Worksheet serializer
+
+	"""
 
 
 	class Meta:
 
 		model = Worksheet
 		fields = "__all__"
+
+
+class IndividualVariantSerializer(serializers.ModelSerializer):
+	"""
+	Gets the info for a particualr variant
+
+	"""
+
+	lab_frequency = serializers.SerializerMethodField('get_var_freq')
+	classifications = serializers.SerializerMethodField('get_class')
+
+	class Meta:
+
+		model = Variant
+		fields = (
+		"variant_hash",
+		"chromosome",
+		"position",
+		"ref",
+		"alt",
+		"worst_consequence",
+		"lab_frequency",
+		"classifications")
+
+	def get_var_freq(self, variant):
+
+		return variant.get_frequency_data()
+
+
+	def get_class(self, variant):
+
+		classifications =  variant.previous_classifications()
+
+		classifications = [{"report_pk":classification.report.pk, "final_classification":classification.final_classification.name}  for classification in classifications]
+
+		return classifications

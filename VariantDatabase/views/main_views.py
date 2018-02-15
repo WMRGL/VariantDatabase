@@ -852,7 +852,10 @@ def panel_view(request, pk_panel):
 
 
 
+def api_root(request):
 
+
+	return render(request, 'VariantDatabase/api_root.html', {})
 
 
 

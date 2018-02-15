@@ -142,19 +142,17 @@ def validate_input(file_path, sample):
 
 				return [False, "Too many alts"]
 
+			try:
+
+				sample_vcf = rec.samples[sample]
+
+			except:
+
+				return [False, "Sample name does not match file"]
+
 	except:
 
 		return [False, "Could not open file"]
-
-
-	try:
-
-		sample_vcf = rec.samples[sample]
-
-	except:
-
-		return [False, "Sample name does not match file"]
-
 
 	return [True, "Success"]
 

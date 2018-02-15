@@ -87,7 +87,7 @@ def upload_sample_sheet(sample_sheet_data):
 
 	try:
 
-		subsection = SubSection.objects.get(name=subsection_name)
+		subsection = SubSection.objects.get(name="MPN_SureSeq_OGT") #change after mass upload!
 		print "Found SubSection: name = " + subsection.name
 
 	except SubSection.DoesNotExist:
@@ -754,7 +754,7 @@ def upload_sample_vcf(output_dir, sample_name):
 
 	#Find VCF file
 
-	query = output_dir +   "vcfs*/" + sample_name +"*.vcf.gz"
+	query = output_dir +   "vcfs*vep*/" + sample_name +"*.vcf.gz"
 
 	vcf_file_path = glob.glob(query)
 

@@ -1097,9 +1097,17 @@ class VariantSample(models.Model):
 
 		variant_ab = self.calculate_allele_balance()
 
-		zscore = (variant_ab - mean) / std
+		try:
 
-		return zscore
+			zscore = (variant_ab - mean) / std
+
+			return zscore
+
+		except:
+
+			return False
+
+		
 
 	def get_previous_classification(self):
 		"""
@@ -1372,9 +1380,6 @@ class Report(models.Model):
 
 			return None
 
-
-
-
 	def number_of_mismatches(self):
 		"""
 		Returns the number of mismatches between in the 
@@ -1401,6 +1406,14 @@ class Report(models.Model):
 				count = count+1
 
 		return count
+
+	def generate_frozen_json(self):
+		"""
+		Freeze the data into json for permanent storage.
+
+		"""
+
+		pass
 
 
 class Classification(models.Model):

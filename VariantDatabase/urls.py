@@ -28,9 +28,11 @@ urlpatterns = [ url(r"^$", views.home_page, name="home_page"),
 				url(r"^ajax/update_panel/$", views.ajax_update_panel, name="ajax_update_panel"),
 				url(r"^user_settings/$", views.user_settings, name="user_settings"),
 
+				url(r"^api/$", views.api_root, name="api_root"),
 				url(r"^api/variants/$", views.VariantListView.as_view(), name="api_variant_list"),
 				url(r"^api/worksheets/$", views.WorksheetListView.as_view(), name="api_worksheet_list"),
-				url(r"^api/variant/(?P<pk>\w+)/$", views.VariantView.as_view(), name="api_variant"),
+				url(r"^api/variant_hash/(?P<pk>\w+)/$", views.VariantViewHash.as_view(), name="api_variant_hash"),
+				url(r"^api/variant/$", views.VariantViewLocation.as_view(), name="api_variant_location"),
 
 				url(r"^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/(?P<check_number>(1|2))/$", views.create_sample_report, name="create_sample_report"),
 				url(r"^sample/(?P<pk_sample>\d+)/report/(?P<pk_report>\d+)/view/$", views.view_sample_report, name="view_sample_report"),

@@ -2,8 +2,9 @@ from VariantDatabase.serializers import *
 from VariantDatabase.models import *
 from django.http import JsonResponse
 from rest_framework import generics
-
-
+from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import NotFound
 
 
 class VariantListView(generics.ListAPIView):
@@ -43,18 +44,47 @@ class VariantListView(generics.ListAPIView):
 
 		return queryset
 
-class VariantView(generics.RetrieveAPIView):
+class VariantViewHash(generics.RetrieveAPIView):
 	"""
-	This is an API end point for getting a particular variant
+	This is an API end point for getting a particular variant using its sha256 hash
+
+	To create the hash use:
+
+	sha256(chromosome+" "+pos+" "+ref+" "+alt)
 
 	"""
 
 	queryset = Variant.objects.all()
-	serializer_class = VariantSerializer
+	serializer_class = IndividualVariantSerializer
 	lookupfield = "variant_hash"
 
+class VariantViewLocation(generics.RetrieveAPIView):
+	"""
+	This is an API end point for getting a particular variant using it's position:
 
+	Options:
 
+	chr = chromosome ID e.g. chr3 or X
+	position = genomic location
+	ref = reference sequence
+	alt = alternative sequence
+
+	"""
+
+	queryset = Variant.objects.all()
+	serializer_class = IndividualVariantSerializer
+	
+
+	def get_object(self):
+
+		chromosome = self.request.query_params.get('chr', None)
+		position = self.request.query_params.get('position', None)
+		ref = self.request.query_params.get('ref', None)
+		alt = self.request.query_params.get('alt', None)
+
+		variant = get_object_or_404(Variant, chromosome=chromosome, position=position, ref=ref,alt=alt)
+
+		return variant
 
 
 
