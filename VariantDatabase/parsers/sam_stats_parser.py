@@ -44,7 +44,7 @@ def get_sam_stats(sample_name, stats_location):
 
 	with zipfile.ZipFile(stats_location) as myzip:
 
-
+		#print myzip.namelist()
 		with myzip.open(file_name, "r") as csvfile:
 
 			reader = csv.reader(csvfile, delimiter="\t")

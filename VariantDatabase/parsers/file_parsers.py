@@ -183,90 +183,90 @@ def parse_sample_sheet(file):
 	sample_list = []
 
 
-	try:
-
-
-		with open(file, "rb") as csvfile:
-
-
-			reader = csv.reader(csvfile, delimiter=",")
-
-
-			subsection = ""
-
-			worksheet = ""
-
-			for row in reader:
-
-				if row[0] == "Project Name" or row[0] == "Project":
-
-					#If the row is Project_name or Project we set the subsection variable.
-
-					subsection = row[1]
-
-					if subsection =="":
-
-						return [False, "No subsection."]
 
 
 
-				if row[0] == "Experiment Name":
-
-					#If the row is Experiment Name  we set the worksheet variable.
-
-					worksheet = row[1]
-
-					if worksheet =="":
-
-						return [False, "No worksheet name."]
+	with open(file, "rb") as csvfile:
 
 
+		reader = csv.reader(csvfile, delimiter=",")
 
 
-				if row[0] == "Sample_ID":
+		subsection = ""
 
-					flag =1 #Set the plag to say we have now got to the samples.
+		worksheet = ""
 
-					for index, title in enumerate(expected):
+		for row in reader:
 
-						if title != row[index]:
+			if row[0] == "Project Name" or row[0] == "Project":
 
-							return [False, "Columns are incorrect."]
+				#If the row is Project_name or Project we set the subsection variable.
 
-				if flag ==1:
+				subsection = row[1]
 
-					
-					if row[0] == "" and flag ==1: #we have got to the end
+				if subsection =="":
 
-						if len(sample_list[1:]) == 0: # empty SampleSheet.csv
+					return [False, "No subsection."]
 
-							return [False, "There are no samples in the SampleSheet."]
 
-						else:
 
-							return [sample_list[1:], subsection, worksheet]
+			if row[0] == "Experiment Name":
+
+				#If the row is Experiment Name  we set the worksheet variable.
+
+				worksheet = row[1]
+
+				if worksheet =="":
+
+					return [False, "No worksheet name."]
+
+
+
+
+			if row[0] == "Sample_ID":
+
+				flag =1 #Set the plag to say we have now got to the samples.
+
+				for index, title in enumerate(expected):
+
+					if title != row[index]:
+
+						return [False, "Columns are incorrect."]
+
+			if flag ==1:
+
+				
+				if row[0] == "" and flag ==1: #we have got to the end
+
+					if len(sample_list[1:]) == 0: # empty SampleSheet.csv
+
+						return [False, "There are no samples in the SampleSheet."]
 
 					else:
 
-						sample_name = row[1].replace("_", "-")+'_S'+str(row[0]) #change sample name to same as in files
+						return [sample_list[1:], subsection, worksheet]
 
-						sample_name = sample_name.replace(".", "-")
+				else:
 
-						sample_list.append([row[0], sample_name,row[2],row[3],row[4],row[5],row[6]])
+					sample_name = row[1]
+
+					#sample_name = row[1].replace("_", "-") #+'_S'+str(row[0]) #change sample name to same as in files
+
+					#sample_name = sample_name.replace(".", "-")
+
+					sample_list.append([row[0], sample_name,row[2],row[3],row[4],row[5],row[6]])
 
 
-			if len(sample_list[1:]) == 0: # empty SampleSheet.csv
+		if len(sample_list[1:]) == 0: # empty SampleSheet.csv
 
-				
-				return [False, "There are no samples in the SampleSheet."]
+			
+			return [False, "There are no samples in the SampleSheet."]
 
-			else:
+		else:
 
-				return [sample_list[1:], subsection, worksheet]
+			return [sample_list[1:], subsection, worksheet]
 
-	except:
 
-		return [False, "Could no parse file."]
 
 
 def get_sample_names(sample_list):

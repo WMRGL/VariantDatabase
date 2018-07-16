@@ -478,6 +478,8 @@ def upload_all_sample_qcs(output_dir, sample_names):
 
 	for sample in sample_names:
 
+		print sample
+
 		upload_sample_qc(output_dir,sample)
 
 	return None
@@ -754,7 +756,7 @@ def upload_sample_vcf(output_dir, sample_name):
 
 	#Find VCF file
 
-	query = output_dir +   "vcfs*vep*/" + sample_name +"*.vcf.gz"
+	query = output_dir +   "vcfs*/" + sample_name +"*.vcf.gz"
 
 	vcf_file_path = glob.glob(query)
 
@@ -1097,7 +1099,11 @@ class Command(BaseCommand):
 
 		sample_sheet_data = process_sample_sheet(worksheet_dir)
 
+		print sample_sheet_data
+
 		sample_names =  file_parsers.get_sample_names(sample_sheet_data)
+
+		print sample_names
 
 		worksheet_name = sample_sheet_data[2]
 

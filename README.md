@@ -82,6 +82,8 @@ Within your python virtualenv type:
 
 `pip install -r requirements.txt`
 
+`pip install -f https://github.com/Illumina/interop/releases/latest interop`
+
 ##### Step 2 - Database Setup
 
 `python manage.py migrate`
