@@ -6,12 +6,10 @@
 
 	<br>
 
-
-
-
-      <div class="panel panel-success">
-        <div class="panel-heading">Login</div>
-        <div class="panel-body"> <form class="form-horizontal" method="post">{% csrf_token %}
+<div class="card bg-light mb-3" style="max-width: 18rem;">
+  <div class="card-header">Login</div>
+  <div class="card-body">
+   <form class="form-horizontal" method="post">{% csrf_token %}
 
             {{ form.as_p }}
 
@@ -24,10 +22,12 @@
         </div>
     
         </form>
+  </div>
+</div>
 
-        </div>
 
-    </div>
+
+
 
     
 

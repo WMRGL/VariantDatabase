@@ -59,17 +59,6 @@ $(document).ready(function(){
 
 
 
-
-	// column filter button for datatable - This moves the button group to a custom area
-	var buttons = new $.fn.dataTable.Buttons(variant_table, {
-	buttons: [{
-
-		extend:'colvis', columns: ':not(.noVis)'}]}).container().appendTo($('#button_group'));
-
-
-
-
-
 	//Row click function
 	$(".get_detail").click(function(){
 

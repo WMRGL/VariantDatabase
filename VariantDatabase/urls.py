@@ -9,8 +9,8 @@ from rest_framework import routers
 
 
 
-urlpatterns = [ url(r"^$", views.home_page, name="home_page"),
-				url(r"^sections/$", views.list_sections, name="list_sections"),
+urlpatterns = [ 
+				url(r"^$", views.list_sections, name="list_sections"),
 				url(r"^worksheet/(?P<pk_worksheet>\d+)/$", views.list_worksheet_samples, name="list_worksheet_samples"),
 				url(r"^sample/(?P<pk_sample>\d+)/summary/$", views.sample_summary, name="sample_summary"),
 				url(r"^gene/(?P<gene_pk>\w+)/$", views.view_gene, name="view_gene"),
@@ -28,7 +28,6 @@ urlpatterns = [ url(r"^$", views.home_page, name="home_page"),
 				url(r"^ajax/update_panel/$", views.ajax_update_panel, name="ajax_update_panel"),
 				url(r"^user_settings/$", views.user_settings, name="user_settings"),
 
-				url(r"^api/$", views.api_root, name="api_root"),
 				url(r"^api/variants/$", views.VariantListView.as_view(), name="api_variant_list"),
 				url(r"^api/worksheets/$", views.WorksheetListView.as_view(), name="api_worksheet_list"),
 				url(r"^api/variant_hash/(?P<pk>\w+)/$", views.VariantViewHash.as_view(), name="api_variant_hash"),

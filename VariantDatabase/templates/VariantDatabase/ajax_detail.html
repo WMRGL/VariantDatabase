@@ -1,13 +1,22 @@
 {% load permission_tags %}
-    <ul class="nav nav-pills nav-stacked col-lg-1" >
-      <li ><a href="#tab_a" data-toggle="pill">Detail</a></li>
-      <li class="active"><a href="#tab_b" data-toggle="pill">IGV</a></li>
-      <li><a href="#tab_c" data-toggle="pill">Evidence</a></li>
-    </ul>
-    <div class="tab-content col-lg-11">
-            <div class="tab-pane" id="tab_a">
 
-                      <table class = 'table table-bordered' >
+  <div class="row">
+    <div class="col-1">
+      <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <a class="nav-link" id="v-pills-home-tab" data-toggle="pill" href="#tab_a" role="tab" aria-controls="v-pills-taba" aria-selected="true">Detail</a>
+        <a class="nav-link" id="v-pills-profile-tab" data-toggle="pill" href="#tab_b" role="tab" aria-controls="v-pills-tab_b" aria-selected="false">IGV</a>
+        <a class="nav-link" id="v-pills-messages-tab" data-toggle="pill" href="#tab_c" role="tab" aria-controls="v-pills-tab_c" aria-selected="false">Evidence</a>
+      </div>
+
+    </div>
+    <div class="col-11">
+      <div class="tab-content" id="v-pills-tabContent">
+        <div class="tab-pane fade show active" id="tab_a" role="tabpanel" aria-labelledby="v-pills-home-tab">
+         
+
+
+
+        <table class = 'table table-bordered' >
         <thead>
           <tr>
             <th colspan="2">Summary</th>
@@ -214,29 +223,35 @@
            </div>
 
 
-            </div>
-            <div class="tab-pane active" id="tab_b">
+       
+
+        </div>
+        <div class="tab-pane fade" id="tab_b" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+          
 
 
                   <div id="myDiv"></div> 
 
-            </div>
-            <div class="tab-pane" id="tab_c">
+            
+        </div>
+        <div class="tab-pane fade" id="tab_c" role="tabpanel" aria-labelledby="v-pills-messages-tab">
+          
                  <h4>Evidence</h4>
 
                  <div id='comment_box'> 
 
-                 <!-- Comment box folds the comments and files for the variant - updated via ajax -->
+                 <!-- Comment box folds the comments and files for the variant - updated via ajax --> 
 
                  {% for comment in comments %}
 
+                 <div class="card">
+                    <h7 class="card-header">{{comment.user}} on {{comment.time}}</h7>
+                    <div class="card-body">
 
-                 <div class="panel panel-default">
-                    <div class="panel-heading">{{comment.user}} on {{comment.time}}</div>
-                    <div class="panel-body">{{comment.text}}
+                      {{comment.text}}
 
 
-                      {% if comment.get_evidence == None %}
+                       {% if comment.get_evidence == None %}
 
                       {% else %}
 
@@ -252,12 +267,9 @@
                       {% endif %}
 
                     </div>
+                  </div>
+                  <hr>
 
-
-
-
-                    
-                </div>
 
 
 
@@ -281,12 +293,12 @@
                    </div>
 
                   <button type="button" class="btn btn-default btn-sm" id='comment_button'>
-                    <span class="glyphicon glyphicon-plus"></span> Add Comment/File
+                    <span ></span> Add Comment/File
                   </button>
 
-                  <label class="btn btn-default btn-sm">
-                      <span class="glyphicon glyphicon-plus"></span> Attach File <input type="file" style="display: none;" id='file_upload' name='file'> 
-                  </label> 
+                    <div class="btn btn-default btn-sm">
+                      Attach File <input type="file"  id='file_upload' name='file'> 
+                  </div>
 
 
                   <hr>
@@ -294,6 +306,8 @@
                   <div class="alert alert-info" id='file_name' style="display: none;">
                     
                   </div>
+
+
 
 
                   <input type="hidden" id='hidden_image_field'>
@@ -308,9 +322,19 @@
 
 
 
-            </div>
+            
+        </div>
+      </div>
+    </div>
+  </div>
 
-    </div><!-- tab content -->
+
+
+
+
+
+
+
 
 
 
@@ -536,3 +560,4 @@ function CLIPBOARD_CLASS(canvas_id, autoresize) {
 
 
 </script>
+

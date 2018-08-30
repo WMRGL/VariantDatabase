@@ -10,11 +10,11 @@
   		You are viewing information relating to: <strong> {{ worksheet }} </strong>
 	</div>
 
-   <ul class="nav nav-tabs">
+   <ul class="nav nav-tabs" role="tablist">
 
-    <li class="active"><a data-toggle="tab" href="#samples">Samples</a></li>
-    <li><a data-toggle="tab" href="#QC">QC</a></li>
-    <li><a data-toggle="tab" href="#history">History</a></li>
+    <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#samples">Samples</a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#QC">QC</a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#history">History</a></li>
 
   </ul>
 
@@ -23,7 +23,7 @@
   <div class="tab-content">
 
 
-  	<div id="samples" class="tab-pane fade in active">
+  	<div id="samples" class="tab-pane active">
 
 
   	{% if worksheet.awaiting_qc_approval   %}
@@ -35,7 +35,7 @@
 	{% endif %}
 
 
-  	<table class = 'table table-hover'>
+  	<table class="table table-hover table-bordered">
 
 		<tr>
 			<th> Sample Name </th>
@@ -59,11 +59,11 @@
 
 			{% if sample.sample_qc_passed == "PASS" %}
 
-			<td> <span class="glyphicon glyphicon-ok-sign text-success"></span></td>
+			<td> <i class="fas fa-check-circle"  style="color:green"></i></td>
 
 			{% else %}
 
-			<td> <span class="glyphicon glyphicon-remove-sign text-danger"></span></td>
+			<td> <i class="fas fa-times-circle"  style="color:red"></i></td>
 
 			{% endif %}
 		
@@ -89,7 +89,7 @@
 
 		
 
-		<table id="variant_table" class = 'table table-bordered table-sm'>
+		<table id="variant_table" class = "table table-hover table-bordered">
 
 
 	  	  	<thead>
@@ -218,7 +218,7 @@
 	
 
 
-		<table class = 'table table-hover'>
+		<table class = "table table-hover table-bordered">
 
 		<thead>
 

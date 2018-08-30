@@ -14,15 +14,6 @@ from rolepermissions.decorators import has_permission_decorator
 
 
 @login_required
-def home_page(request):
-	"""
-	The homepage
-	"""
-
-	return render(request, "VariantDatabase/home_page.html", {})
-
-
-@login_required
 def list_sections(request):
 
 	"""
@@ -34,26 +25,10 @@ def list_sections(request):
 
 	"""
 
-	if "submit_filter_form" in request.GET:
-
-		form = WorksheetFilterForm(request.GET)
-
-		if form.is_valid():
-
-			show_complete = form.cleaned_data["view_complete"]
-
-	else:
-
-		show_complete = False
-
-		form = WorksheetFilterForm()
-
 	all_sections = Section.objects.all()
 
 	return render(request, "VariantDatabase/list_sections.html",
-				 {"all_sections": all_sections,
-				 "form": form,
-				 "show_complete": show_complete} )
+				 {"all_sections": all_sections})
 
 
 @login_required
@@ -353,42 +328,8 @@ def user_settings(request):
 
 	"""
 
-	user_settings = UserSetting.objects.filter(user=request.user)
-
-	columns_dict = variant_utilities.get_column_config_dict("conf/columns.txt")
-
-	if request.method == "POST":
-
-		user_settings = user_settings[0]
-
-		form = UserSettingsForm(request.POST, instance=user_settings)
-
-		if form.is_valid():
-
-			user_settings = form.save()
-
-			user_settings.columns_to_hide = variant_utilities.process_user_settings(
-												user_settings.columns_to_hide,
-												columns_dict)
-			user_settings.save()
-
-			return redirect("home_page")
-
-	if user_settings.exists():
-
-		form = UserSettingsForm(instance=user_settings[0])
-
-	else:
-
-		user_settings = UserSetting(user=request.user)
-
-		user_settings.save()
-
-		form = UserSettingsForm(instance=user_settings)
-
 	
-	return render(request, "VariantDatabase/user_settings.html",
-							 {"form": form})
+	return render(request, "VariantDatabase/user_settings.html")
 
 
 @login_required
@@ -849,13 +790,6 @@ def panel_view(request, pk_panel):
 				"VariantDatabase/panel_view.html",
 				{"panel_genes": panel_genes, "panel": panel})
 
-
-
-
-def api_root(request):
-
-
-	return render(request, 'VariantDatabase/api_root.html', {})
 
 
 

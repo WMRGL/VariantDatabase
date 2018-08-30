@@ -1,13 +1,16 @@
 {% for comment in comments %}
 
 
-<div class="panel panel-default">
-  <div class="panel-heading">{{comment.user}} on {{comment.time}}</div>
-  <div class="panel-body">{{comment.text}}
+<div class="card">
+<h7 class="card-header">{{comment.user}} on {{comment.time}}</h7>
+<div class="card-body">
 
-    {% if comment.get_evidence == None %}
+  {{comment.text}}
 
-    {% else %}
+
+   {% if comment.get_evidence == None %}
+
+  {% else %}
 
     <hr>
 
@@ -20,12 +23,10 @@
 
   {% endif %}
 
-
-
-  </div>
-
-  
 </div>
+</div>
+
+<hr>
 
 
 {% endfor %}

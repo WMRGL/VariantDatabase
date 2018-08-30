@@ -10,21 +10,12 @@
 {% block js-head %} 
 
 {{block.super}}
-
+<!--
 <link rel="stylesheet" href="{% static 'css/qc_display.css' %}">
 <script type="text/javascript" src="{% static 'js/igvs_beta.js' %}"></script>
-<!-- IGV CSS -->
+ IGV CSS 
 <link rel="stylesheet" type="text/css" href="{% static 'css/igv_beta.css' %}">
-<!-- Datatables -->
-<script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
-<!-- Datatables -colreorder extension -->
-<script type="text/javascript" src="https://cdn.datatables.net/colreorder/1.4.0/js/dataTables.colReorder.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/colreorder/1.4.0/css/colReorder.dataTables.min.css">
-<!-- Datatables -buttons extension -->
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.1/js/buttons.colVis.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.4.1/js/dataTables.buttons.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.4.1/css/buttons.dataTables.min.css">
+-->
 
 
 {% endblock js-head %}
@@ -48,12 +39,12 @@
 {% endif %}
 
 <ul class="nav nav-tabs">
-    <li class="active"><a data-toggle="tab" href="#variants">Variants</a></li>
-    <li><a data-toggle="tab" href="#filter">Filter</a></li>
-    <li><a data-toggle="tab" href="#QC">QC</a></li>
-    <li><a data-toggle="tab" href="#coverage">Coverage</a></li>
-    <li><a data-toggle="tab" href="#history">History</a></li>
-    <li><a data-toggle="tab" href="#report">Report</a></li>
+    <li class="nav-item"><a class="nav-link active" data-toggle="tab"href="#variants">Variants</a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#filter">Filter</a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#QC">QC</a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#coverage">Coverage</a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#history">History</a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#report">Report</a></li>
 </ul>
 <br>
 
@@ -61,11 +52,10 @@
     <!--Variants Tab displays filtered variants -->
     <div id="variants" class="tab-pane active">
         <!--detail div replaced using -->
-        <div class="container-fluid" id='detail'>
+        <div  id='detail'>
         </div>
         <!-- end of container -->
         <hr>
-        <div id="button_group" style='float:right; margin-right:25px'> </div>
         <strong>{{ sample.name }}</strong> |<strong>               Variants: </strong> {{summary.total}} / {{total_summary.total}} | <strong> Missense:</strong> {{summary.missense_count}} / {{total_summary.missense_count}} |
         <strong> Indels </strong> {{summary.indel_count}} / {{total_summary.indel_count}} | <strong> LOF : </strong> {{summary.lof_count}} / {{total_summary.lof_count}} |
         <strong> Synonymous </strong> {{summary.synonymous}} / {{total_summary.synonymous}} | <strong> Panel : </strong> {{panel}}
@@ -80,7 +70,9 @@
             background: url('http://www.datatables.net/examples/resources/details_close.png') no-repeat center center;
         }
         </style>
-        <table id="variant_table" class="table table-hover" data-role="table" data-mode="columntoggle">
+
+
+        <table id="variant_table" class="table table-hover table-bordered">
             <thead>
                 <tr>
                     <th style="display:none;" class='variant_hash'> Variant Hash </th>
@@ -95,16 +87,10 @@
                     <th class='exac_frequency'> ExAC </th>
                     <th class='project_count'> Project Frequency </th>
                     <th class='worksheet_count'> Worksheet Count </th>
-                    <th class='ab_std'> AB Z-Score </th>
-                    <th class='clinsig'> Clin Sig </th>
                     <th class='prev_class'> Prev Class </th>
                     <th class='genotype'> Genotype </th>
                     <th class='callers'> Callers </th>
-                    <th class='allele_depth'> AD </th>
-                    <th class='vafs'> VAFS </th>
-                    <th class='tcf'> TCF </th>
-                    <th class='tcr'> TCR </th>
-                    <th class='filter_status'> Filter </th>
+
                 </tr>
             </thead>
             <tbody>
@@ -134,16 +120,10 @@
 	                    </td>
 	                    <td class='project_count get_detail'> {{variant.get_subsection_frequency}}</td>
 	                    <td class='worksheet_count get_detail'> {{variant.variant.get_worksheet_count}}</td>
-	                    <td class='ab_std get_detail'> {{variant.allele_balance_out_of_range|floatformat:2}}</td>
-	                    <td class='clinsig get_detail'> {{variant.variant.clinical_sig}} </td>
 	                    <td class='prev_class get_detail'> {{variant.get_previous_classification}} </td>
 	                    <td class='genotype get_detail'> {{variant.display_genotype}} </td>
 	                    <td class='callers get_detail'> {{variant.caller}} </td>
-	                    <td class='allele_depth get_detail'> {{variant.allele_depth}} </td>
-	                    <td class='vafs get_detail'> {{variant.vafs}} </td>
-	                    <td class='tcf get_detail'> {{variant.total_count_forward}} </td>
-	                    <td class='tcr get_detail'> {{variant.total_count_reverse}} </td>
-	                    <td class='filter_status get_detail'> {{variant.filter_status}} </td>
+
                 	</tr>
 
                 {% endfor %}
@@ -151,6 +131,8 @@
             </tbody>
         </table>
     </div>
+
+  
     <!--Filter Tab  -->
 
     <div id="filter" class="tab-pane fade">
@@ -168,7 +150,7 @@
             <strong>QC Status: {{sample.sample_qc_passed}}  </strong>
         </div>
 
-        <table class='table table-bordered'>
+        <table class="table table-hover table-bordered">
             <thead>
                 <tr>
                     <th colspan="2">Summary</th>
@@ -297,7 +279,8 @@
         <button type="button" class="btn btn-default btn-sm" id='togglecovdata'>
             <span class="glyphicon glyphicon-plus"></span> Toggle
         </button>
-        <table class='table table-hover table-condensed'>
+        <hr>
+        <table class="table table-hover table-bordered table-condensed">
             <thead>
                 <tr>
                     <th> Gene </th>
@@ -350,7 +333,7 @@
         </table>
 
         <h3> Exon Coverage </h3>
-        <table class='table table-hover table-condensed'>
+        <table class="table table-hover table-bordered table-condensed">
             <thead>
                 <tr>
                     <th visibility:hidden> Gene </th>
@@ -403,7 +386,7 @@
     </div>
 
     <div id="history" class="tab-pane fade">
-        <table class='table table-hover'>
+        <table class="table table-hover table-bordered">
             <thead>
                 <tr>
                     <th> Change Category </th>
@@ -432,7 +415,7 @@
 
     </div>
     <div id="report" class="tab-pane fade">
-        <table class='table'>
+        <table class="table table-hover table-bordered">
             <thead>
                 <tr>
                     <th> Report ID </th>
@@ -508,6 +491,9 @@
 
 	</div>
 	</div>
+
+
+
 
 <script type="text/javascript" src="{% static 'js/sample_summary.js' %}"></script>
 

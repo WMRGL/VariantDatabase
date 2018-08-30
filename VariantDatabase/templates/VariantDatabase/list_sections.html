@@ -1,44 +1,44 @@
 <!--Section List Page   -->
 {% extends 'VariantDatabase/base.html' %}
-{% load crispy_forms_tags %} 
 {% block content %}
 
 <br>
 
+<hr>
 
+<p> Welcome to WMRGL Variant Database. For more information on how to use the application please read the help pages or contact an administrator. </p>
 
-<div class="panel-group">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" href="#collapse1">Filter</a>
-      </h4>
-    </div>
-    <div id="collapse1" class="panel-collapse collapse">
-      <div class="panel-body">{% crispy form %}</div>
-    </div>
-  </div>
-</div>
+<hr>
 
 
 
 
-<ul class="nav nav-tabs">
+
+
+   <ul class="nav nav-tabs" role="tablist">
+
     {% for section in all_sections %}
-    <li><a data-toggle="tab" href={{ "#"|add:section.description }}> {{ section.title }}  </a></li>
+    <li class="nav-item">
+
+        <a class="nav-link" data-toggle="tab" href="{{ "#"|add:section.description }}"> {{ section.title }}  </a>
+
+    </li>
     {% endfor %}
-</ul>
-<div class="tab-content">
-    <br>
+
+
+  </ul>
+
+  <!-- Tab panes -->
+   <div class="tab-content">
+    
+     <br>
 
      {% for section in all_sections %}
 
-        <div id="{{ section.description }}" class="tab-pane fade">
+        <div class="tab-pane" id="{{section.description}}" >
 
 
-
-
-        <table class='table table-hover'>
+        <table class='table table-hover table-bordered' id='help'>
             <tr>
                 <th> Name </th>
                 <th> Comment </th>
@@ -47,8 +47,6 @@
                 <th> Status </th>
             </tr>
 
-
-            {% if show_complete == True %}
 
 
             {% for worksheet in section.get_worksheets_all %}
@@ -60,22 +58,6 @@
                 <td> {{worksheet.get_status}} </td>
             </tr>
             {% endfor %}
-
-
-            {% else %}
-
-
-            {% for worksheet in section.get_worksheets_no_complete %}
-            <tr>
-                <td> <a href="{% url 'list_worksheet_samples' worksheet.pk  %}"> {{ worksheet.name }}   </a> </td>
-                <td> {{ worksheet.comment }} </td>
-                <td> {{ worksheet.get_creation_date }} </td>
-                <td> {{ worksheet.sub_section }} </td>
-                <td> {{worksheet.get_status}} </td>
-            </tr>
-            {% endfor %}
-
-            {% endif %}
 
 
 
@@ -92,13 +74,9 @@
 
 
 
+
+  </div>
 </div>
-
-
-<hr>
-
-
-
 
 
 {% endblock %}

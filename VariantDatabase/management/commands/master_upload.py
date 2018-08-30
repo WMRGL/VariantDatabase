@@ -1099,8 +1099,6 @@ class Command(BaseCommand):
 
 		sample_sheet_data = process_sample_sheet(worksheet_dir)
 
-		print sample_sheet_data
-
 		sample_names =  file_parsers.get_sample_names(sample_sheet_data)
 
 		print sample_names

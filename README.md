@@ -63,6 +63,9 @@ VariantDatabase allows the following:
 `scipy==1.0.0`
 
 
+
+
+
 ##### Other
 
 To serve VCF and BAMs using IGV.js a webserver capable of HTTP range requests is required. Nginx is used in a typical deployment. Nginx is typically paired with Gunicorn which handles dynamic requests.
@@ -82,7 +85,7 @@ Within your python virtualenv type:
 
 `pip install -r requirements.txt`
 
-`pip install -f https://github.com/Illumina/interop/releases/latest interop`
+`pip install -f https://github.com/Illumina/interop/releases/v1.0.25 interop`
 
 ##### Step 2 - Database Setup
 
@@ -227,7 +230,7 @@ Add this option to import the variant information contained within the VEP annot
 Use this option to upload the data for a single sample. Example below:
 
 
-`python manage.py master_upload -worksheet_dir /home/cuser/Documents/Project/DatabaseData/worksheet_dir/ --output_dir /home/cuser/Documents/Project/DatabaseData/MPN_213837/  --sample_qc --coverage --variants --single_sample 213837-2-D17-26177-HP_S2`
+`python manage.py master_upload --worksheet_dir /home/cuser/Documents/Project/DatabaseData/worksheet_dir/ --output_dir /home/cuser/Documents/Project/DatabaseData/MPN_213837/  --sample_qc --coverage --variants --single_sample 213837-2-D17-26177-HP_S2`
 
 Note that the --sample_sheet and --run_qc options are not available when using the --single_sample option.
 

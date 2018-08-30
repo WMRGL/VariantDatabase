@@ -34,33 +34,6 @@ class ReportForm(forms.ModelForm):
 		fields = ()
 
 
-class UserSettingsForm(forms.ModelForm):
-	"""
-	Form for updating user settings.
-
-	"""
-	class Meta:
-
-		model = UserSetting
-		fields = ("columns_to_hide",)
-
-
-	def __init__(self, *args, **kwargs):
-		super(UserSettingsForm, self).__init__(*args, **kwargs)
-		self.helper = FormHelper()
-		self.helper.form_id = "user_settings-form"
-		self.helper.label_class = "col-lg-2"
-		self.helper.field_class = "col-lg-8"
-
-		self.helper.form_method = "POST"
-		self.helper.form_action = reverse("user_settings")
-		self.helper.add_input(Submit("submit", "Submit", css_class="btn-success"))
-		self.helper.form_class = "form-horizontal"
-		self.helper.layout = Layout(
-			
-				Field("columns_to_hide"))
-
-
 
 class CustomPasswordChangeForm(PasswordChangeForm):
 	"""
@@ -102,11 +75,9 @@ class SearchForm(forms.Form):
 		self.helper.form_class = "form-horizontal"
 		self.helper.layout = Layout(
 
-				Fieldset(
-					"Search",
 					Field(
 						"search",
-						placeholder="Search for a gene, variant, location, region or sample", title=False)))
+						placeholder="Search for a gene, variant, location, region or sample", title=False))
 
 
 
