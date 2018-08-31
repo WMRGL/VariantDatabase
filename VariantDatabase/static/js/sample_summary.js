@@ -15,9 +15,6 @@ Sample Summary Javascript - For the page sample_summary.html
 
 
 
-
-
-
 $(document).ready(function(){
 
 
