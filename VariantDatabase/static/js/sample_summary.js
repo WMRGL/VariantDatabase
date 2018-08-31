@@ -71,12 +71,12 @@ $(document).ready(function(){
 		console.log(variant_hash)
 
 
-		var selected = $(this).parent().hasClass("success");
-		$(this).parent().siblings().removeClass("success");
+		var selected = $(this).parent().hasClass("table-success");
+		$(this).parent().siblings().removeClass("table-success");
 
 
 		if(!selected){
-			$(this).parent().addClass("success");
+			$(this).parent().addClass("table-success");
 		
 			//Now we do the ajax
 			$.ajax({

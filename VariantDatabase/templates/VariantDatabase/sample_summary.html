@@ -10,12 +10,10 @@
 {% block js-head %} 
 
 {{block.super}}
-<!--
+
 <link rel="stylesheet" href="{% static 'css/qc_display.css' %}">
-<script type="text/javascript" src="{% static 'js/igvs_beta.js' %}"></script>
- IGV CSS 
-<link rel="stylesheet" type="text/css" href="{% static 'css/igv_beta.css' %}">
--->
+
+
 
 
 {% endblock js-head %}
@@ -204,10 +202,35 @@
         <h3> Sam Stats Figures </h3>
         <hr>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <table class="imgs">
             <tbody>
                 <tr>
-                    <td>
+                                       <td>
                         {% if sample.acgt_cycles_image %}
                         <a class="thumbnail" href={{sample.acgt_cycles_image.url}}><img src={{sample.acgt_cycles_image.url}} width="150px"><span>Per Base Sequence Content<br><img src={{sample.acgt_cycles_image.url}}></span></a>
                         {%endif%} 
@@ -271,6 +294,11 @@
                 </tr>
             </tbody>
         </table>
+
+
+
+
+
     </div>
 
     <!--Coverage Tab with Gene/Exon Coverage -->
@@ -318,9 +346,9 @@
 	                    {% with gene_percentages=gene.get_percentages %}
 	                    	{% for pc in gene_percentages %}
 	                    		{% if pc >= 95 %}
-	                    			<td class="success"> {{pc}} </td>
+	                    			<td class="table-success"> {{pc}} </td>
 	                    		{% else %}
-	                    			<td class="danger"> {{pc}} </td>
+	                    			<td class="table-danger"> {{pc}} </td>
 	                    		{% endif %}
 
 	                    	{% endfor %}
@@ -373,9 +401,9 @@
 
                     	{% for pc in exon_percentages %}
                       		{% if pc >= 95 %}
-                    			<td class="success"> {{pc}} </td>
+                    			<td class="table-success"> {{pc}} </td>
                     		{% else %}
-                    			<td class="danger"> {{pc}} </td>
+                    			<td class="table-danger"> {{pc}} </td>
                     		{% endif %}
                     	{% endfor %}
                     {% endwith %}

@@ -27,6 +27,7 @@ urlpatterns = [
 				url(r"^ajax/ajax_receive_classification_data/$", views.ajax_receive_classification_data, name="ajax_receive_classification_data"),
 				url(r"^ajax/update_panel/$", views.ajax_update_panel, name="ajax_update_panel"),
 				url(r"^user_settings/$", views.user_settings, name="user_settings"),
+				url(r"^configure_users/$", views.configure_users, name="configure_users"),
 
 				url(r"^api/variants/$", views.VariantListView.as_view(), name="api_variant_list"),
 				url(r"^api/worksheets/$", views.WorksheetListView.as_view(), name="api_worksheet_list"),

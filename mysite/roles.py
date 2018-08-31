@@ -20,7 +20,6 @@ class Analyst(AbstractUserRole):
 
 	}
 
-
 class SeniorAnalyst(AbstractUserRole):
 
 	available_permissions ={

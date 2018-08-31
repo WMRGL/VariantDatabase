@@ -1,19 +1,40 @@
 {% extends 'VariantDatabase/base.html' %}
 {% load static %}
 {% block content %}
-
-
+{% load permission_tags %}
 
 <br> 
+
+<div class="card bg-light mb-3" style="max-width: 18rem;">
+  <div class="card-header">User Information</div>
+  <div class="card-body">
+  	<p> Hello, {{user.username}}. Your current assigned permission role is: {{user_role}}. Please contact an administrator to change this. </p>
+
+  </div>
+</div>
 
 
 
 <div class="card bg-light mb-3" style="max-width: 18rem;">
   <div class="card-header">Change Password</div>
   <div class="card-body">
+  	<p> Change your password here. </p>
     <a href= "{% url 'password_change'  %}"> Click Here   </a>
   </div>
 </div>
 
+{% if user.is_superuser %}
+
+<div class="card bg-light mb-3" style="max-width: 18rem;">
+  <div class="card-header">Configure Users</div>
+  <div class="card-body">
+  	<p> This page allows superusers to assign roles to other users e.g. Viewer. </p>
+  		
+    <a href= "{% url 'configure_users'  %}"> Click Here   </a>
+  </div>
+</div>
+
+
+{% endif %}
 
 {% endblock %}  

@@ -11,6 +11,12 @@ from django.db import transaction
 from rolepermissions.checkers import has_permission
 from django.core.exceptions import PermissionDenied
 from rolepermissions.decorators import has_permission_decorator
+from rolepermissions.roles import get_user_roles
+from rolepermissions.roles import assign_role
+from rolepermissions.roles import clear_roles
+from rolepermissions.roles import RolesManager
+
+from django.contrib.auth.decorators import user_passes_test
 
 
 @login_required
@@ -43,11 +49,7 @@ def list_worksheet_samples(request, pk_worksheet):
 
 	if request.method == "POST":
 
-		print request.POST
-
 		if "submit-change-status" in request.POST:
-
-			print 'hi'
 
 			#if user is authorised
 			if has_permission(request.user, "change_worksheet_status") == False:
@@ -328,8 +330,11 @@ def user_settings(request):
 
 	"""
 
-	
-	return render(request, "VariantDatabase/user_settings.html")
+	user = request.user
+
+	user_role = get_user_roles(user)[0].get_name()
+
+	return render(request, "VariantDatabase/user_settings.html", {"user_role": user_role})
 
 
 @login_required
@@ -790,14 +795,33 @@ def panel_view(request, pk_panel):
 				"VariantDatabase/panel_view.html",
 				{"panel_genes": panel_genes, "panel": panel})
 
+@user_passes_test(lambda u: u.is_superuser)
+def configure_users(request):
+	"""
+	Allows an admin user to assign users to a specific group.
+
+	"""
+
+	if request.method == "POST":
+
+		form = ChangeUserGroupForm(request.POST)
+
+		if form.is_valid():
+
+			user_pk = form.cleaned_data['user_field']
+			user_role = form.cleaned_data['roles_field']
+
+			my_user = get_object_or_404(User, pk = user_pk )
+
+			clear_roles(my_user)
+			assign_role(my_user, user_role)
+
+			return redirect(list_sections)
 
 
+	form = ChangeUserGroupForm()
 
-
-
-
-
-
+	return render(request, "VariantDatabase/configure_users.html", {"form": form})
 
 
 

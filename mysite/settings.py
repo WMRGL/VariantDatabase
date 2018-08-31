@@ -141,10 +141,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-LOGIN_REDIRECT_URL ='home_page'
+LOGIN_REDIRECT_URL ='list_sections'
 LOGIN_URL = '/login/'
 
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 
 ROLEPERMISSIONS_MODULE = 'mysite.roles'

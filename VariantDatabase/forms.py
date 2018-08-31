@@ -5,10 +5,9 @@ from crispy_forms.bootstrap import Field, InlineRadios, TabHolder, Tab,InlineChe
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div, Fieldset
 from django.contrib.auth.forms import PasswordChangeForm
-
 from django.forms.widgets import DateInput
-
-
+from rolepermissions.roles import RolesManager
+from django.contrib.auth.models import User
 
 class WorksheetStatusUpdateForm(forms.ModelForm):
 	"""
@@ -250,3 +249,29 @@ class WorksheetFilterForm(forms.Form):
 		self.helper.layout = Layout(
 			
 			Field("view_complete"))
+
+
+class ChangeUserGroupForm(forms.Form):
+
+	available_roles = RolesManager.get_roles_names()
+	roles_choices = [(role, role) for role in available_roles]
+	roles_field = forms.ChoiceField(choices=roles_choices)
+	users = User.objects.filter()
+	user_choices = [(user.pk, user.username) for user in users]
+	user_field = forms.ChoiceField(choices=user_choices)
+
+
+	def __init__(self, *args, **kwargs):
+
+			super(ChangeUserGroupForm, self).__init__(*args, **kwargs)
+			self.helper = FormHelper()
+			self.helper.form_id = "configure_user_roles"
+			self.helper.label_class = "col-lg-2"
+			self.helper.field_class = "col-lg-8"
+			self.helper.form_method = "post"
+			self.helper.form_action = ""
+			self.helper.add_input(Submit("submit_configure_user_roles", "Submit", css_class="btn-success"))
+			self.helper.form_class = "form-horizontal"
+			self.helper.layout = Layout(
+				
+				Field("roles_field"),Div("user_field") )
