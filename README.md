@@ -63,9 +63,6 @@ VariantDatabase allows the following:
 `scipy==1.0.0`
 
 
-
-
-
 ##### Other
 
 To serve VCF and BAMs using IGV.js a webserver capable of HTTP range requests is required. Nginx is used in a typical deployment. Nginx is typically paired with Gunicorn which handles dynamic requests.
@@ -254,14 +251,37 @@ They can then be bgzipped in preparation for database import:
 
 ## User Guide
 
-Coming Soon - Wiki
+See the docs directory.
 
 
 ## Deployment
 
-Coming Soon - Guide to Nginx/Gunicorn Setup
+The database is designed to be deployed using gunicorn and Nginx.
 
-Coming Soon - Setting basic security settings
+To serve the BAMs and VCFs please configure the nginx config file to point at a storage location e.g. S drive. 
+
+The settings.py file contains two variables FILE_STORAGE_ROOT and FILE_STORAGE_URL which should be entered using the named storage location in the Nginx file.
+
+For example if in your Nginx config file says:
+
+```
+       location /files/ {
+        autoindex on;
+        alias   /home/joseph/Documents/variantdb_data/;
+    }
+
+
+```
+Then within the settings.py file the two variables should be:
+
+
+```
+FILE_STORAGE_ROOT = '/home/joseph/Documents/variantdb_data/'
+FILE_STORAGE_URL = '/files/'
+
+
+```
+
 
 ## Authors
 

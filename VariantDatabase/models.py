@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from auditlog.models import LogEntry
 from auditlog.registry import auditlog
 import numpy as np
+from django.conf import settings
 
 class Section(models.Model):
 	"""
@@ -530,6 +531,42 @@ class Sample(models.Model):
 		content_type = ContentType.objects.get(app_label ="VariantDatabase", model="sample")
 
 		return LogEntry.objects.filter(object_pk = self.pk, content_type=content_type)
+
+
+	def return_sample_vcf_url(self):
+		"""
+		Returns the URL of the vcf file.
+		In the settings files there are FILE_STORAGE_ROOT and FILE_STORAGE_URL variables. 
+		These should also be specified in the nginx config.
+		This function takes the direct url of the vcf file and adjusts it so that the url is correct.
+		"""
+
+		original_location = self.vcf_file
+
+		file_storage_base = settings.FILE_STORAGE_ROOT
+		file_storage_url = settings.FILE_STORAGE_URL
+
+		final_url = original_location.replace(file_storage_base,file_storage_url )
+
+		return final_url
+
+	def return_sample_bam_url(self):
+		"""
+		Returns the URL of the vcf file.
+		In the settings files there are FILE_STORAGE_ROOT and FILE_STORAGE_URL variables. 
+		These should also be specified in the nginx config.
+		This function takes the direct url of the vcf file and adjusts it so that the url is correct.
+		"""
+
+		original_location = self.bam_file_bwa
+
+		file_storage_base = settings.FILE_STORAGE_ROOT
+		file_storage_url = settings.FILE_STORAGE_URL
+
+		final_url = original_location.replace(file_storage_base,file_storage_url )
+
+		return final_url
+
 
 
 class Consequence(models.Model):

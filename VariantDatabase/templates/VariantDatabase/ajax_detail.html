@@ -464,14 +464,24 @@ $(document).ready(function () {
       displayMode: "EXPANDED"
       },
 
-            {
 
-      url: '/static/213837-2-D17-26177-HP_S2.bwa.drm.realn.sorted.bam',
-      name: 'mybam',
-      visibilityWindow: 50000,
-      colorBy: "strand"
+
+      {
+      name: "{{sample.name}} BAM",
+      type: "alignment",
+      url: "{{sample.return_sample_bam_url}}",
 
       },
+
+      {
+      name: "{{sample.name}} VCF",
+      type: "variant",
+      format: "vcf",
+      url: "{{sample.return_sample_vcf_url}}",
+
+      },
+
+
 
 
 

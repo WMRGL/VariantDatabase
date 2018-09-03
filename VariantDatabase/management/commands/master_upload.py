@@ -754,6 +754,26 @@ def upload_sample_vcf(output_dir, sample_name):
 		raise CommandError("Stuff already uploaded against this sample.")
 
 
+
+	#Find Bam file
+
+	query = output_dir +   "alignments*/" + sample_name +"*.bwa.drm.realn.sorted.bam"
+
+	bam_file_path = glob.glob(query)
+
+	if len(bam_file_path) != 1:
+
+		raise CommandError("Found more than one BAM file for sample: " + sample_name)
+
+	else:
+
+		bam_file_path = bam_file_path[0]
+
+	sample.bam_file_bwa = bam_file_path
+
+	sample.save()
+
+
 	#Find VCF file
 
 	query = output_dir +   "vcfs*/" + sample_name +"*.vcf.gz"
@@ -763,7 +783,7 @@ def upload_sample_vcf(output_dir, sample_name):
 
 	if len(vcf_file_path) != 1:
 
-		raise CommandError("Found more than one file for sample: " + sample_name)
+		raise CommandError("Found more than one VCF file for sample: " + sample_name)
 
 	else:
 

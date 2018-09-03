@@ -29,13 +29,22 @@ class VariantSerializer(serializers.ModelSerializer):
 
 	def get_start_name(self, variant):
 
-		return variant.position
+		length = max(len(variant.ref), len(variant.alt))
+
+		if length ==1:
+
+			return variant.position-1
+
+		else:
+
+			return variant.position
 
 	def get_end_name(self, variant):
 
 		length = max(len(variant.ref), len(variant.alt))
 
-		return variant.position+length
+		return variant.position+length-1
+
 
 	def get_var_freq(self, variant):
 

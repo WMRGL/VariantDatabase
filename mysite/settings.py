@@ -148,3 +148,9 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 
 ROLEPERMISSIONS_MODULE = 'mysite.roles'
+
+# Storage location root e.g. S drive
+# This should be mapped in the Nginx config file
+
+FILE_STORAGE_ROOT = '/home/joseph/Documents/variantdb_data/'
+FILE_STORAGE_URL = '/files/'
