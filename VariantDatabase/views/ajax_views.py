@@ -28,12 +28,13 @@ def ajax_detail(request):
 		variant_hash = variant_hash.strip()
 		sample_pk = sample_pk.strip()
 
-		variant= Variant.objects.get(variant_hash=str(variant_hash))
+		variant = Variant.objects.get(variant_hash=str(variant_hash))
 		sample = Sample.objects.get(pk=sample_pk)
 
 		variant_sample = VariantSample.objects.get(variant=variant, sample=sample)
 
-		comments =Comment.objects.filter(variant_sample=variant_sample)
+		# Should we show comments specific to a particular variant or to a particular variant_sample?
+		comments = Comment.objects.filter(variant_sample=variant_sample)
 
 		samples = variant.get_samples_with_variant()
 
