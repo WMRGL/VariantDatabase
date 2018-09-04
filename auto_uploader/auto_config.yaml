@@ -1,0 +1,23 @@
+project_dir: /home/joseph/Documents/VariantDatabase
+
+projects:
+
+  MPN_SureSeq_OGT:
+
+    to_watch:
+
+      folder1: [/home/joseph/Documents/variantdb_data/folder1_worksheet/, /home/joseph/Documents/variantdb_data/folder1_data/]
+
+    to_exclude: [caution, error,fail]
+
+    is_finished: pipeline-complete.txt
+
+    vep_annotate: true
+
+    intermediate_folder: true
+
+    intermediate_folder_prefix: MPN_
+
+    worksheet_name_prefix: MPN_
+
+    ignore_list_location: /home/joseph/Documents/variantdb_data/MPN_SureSeq_OGT_ignore_list.txt

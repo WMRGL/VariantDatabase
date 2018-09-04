@@ -1346,18 +1346,6 @@ class Evidence(models.Model):
 	comment = models.ForeignKey(Comment)
 
 
-class UserSetting(models.Model):
-
-	"""
-	A class for storing user settings - mainly which columns we want to see.
-
-	"""
-
-	default = "allele_depth,vafs,tcf,tcr,clinsig,filter_status"
-	columns_to_hide= models.CharField(max_length=200, default=default)
-	user = models.ForeignKey("auth.User")
-
-
 class Report(models.Model):
 
 	"""

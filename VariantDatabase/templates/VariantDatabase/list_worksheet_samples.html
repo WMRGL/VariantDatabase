@@ -29,7 +29,7 @@
   	{% if worksheet.awaiting_qc_approval   %}
 
   	<div class="alert alert-danger">
-  		<strong>Please Approve QA before viewing samples</strong> 
+  		<strong>Please Approve QC before viewing samples.</strong> 
 	</div>
 
 	{% endif %}
@@ -43,8 +43,6 @@
 			<th> Sample Status </th>
 
 			<th> Sample QC </th>
-
-
 
 		</tr>
 
@@ -149,11 +147,11 @@
 			{% if user|can:'approve_qc' %}
 
 
-		    <div class="panel panel-danger">
-	        <div class="panel-heading">Approve QC</div>
-	        <div class="panel-body"> <form class="form-horizontal" method="post">{% csrf_token %}
+		    <div class="card">
+	        <div class="card-header">Approve QC</div>
+	        <div class="card-body"> <form class="form-horizontal" method="post">{% csrf_token %}
 
-	        <p> Please check and then approve the QA </p>
+	        <p> Please check and then approve the QC. </p>
 
 	            {{ form.as_p }}
 

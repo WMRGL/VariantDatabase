@@ -2,7 +2,129 @@
 {% load static %}
 {% block content %}
 
-{{report_sample_variant_classifications}}
+
+<h1> {{sample.name}} </h1>
+
+<hr>
+
+<h2> Report Information </h2>
+
+
+
+	<table class = "table table-hover table-bordered">
+
+
+	  	  	<thead>
+
+				<tr>
+					<th> Report ID </th>
+					<th> Sample </th>
+					<th> Status </th>
+					<th> Panel Applied </th>
+					<th> Filter Applied </th>
+					<th> Report Creator </th>
+					<th> First Checker </th>
+					<th> Second Checker </th>
+					<th> Resolver </th>
+					<th> Creation Date </th>
+					<th> First Check Date </th>
+					<th> Second Check Date </th>
+					<th> Resolve Date </th>
+
+
+				</tr>
+
+			</thead>
+
+			<tbody>
+
+				<tr> 
+
+
+					<td> {{ report.pk }} </td>                                       
+					<td> {{ report.sample.name }} </td>
+					<td> {{ report.get_status }} </td>
+					<td> {{ report.panel.name }} </td>
+					<td> {{ report.default_filter }} </td>
+					<td> {{ report.report_creator }} </td>
+					<td> {{ report.first_checker }} </td>
+					<td> {{ report.second_checker }} </td>
+					<td> {{ report.resolver }} </td>
+					<td> {{ report.creation_date }} </td>
+					<td> {{ report.first_check_date }} </td>
+					<td> {{ report.second_check_date }} </td>
+					<td> {{ report.resolver_date }} </td>
+
+
+
+				</tr>
+
+
+
+
+
+
+			</tbody>
+
+	</table>
+
+
+	<hr>
+
+	<h2> Variant Information </h2>
+
+
+	<table class = "table table-hover table-bordered">
+
+		<thead>
+
+			<tr>
+				<th> Variant </th>
+				<th> First Check Class </th>
+				<th> Second Check Class </th>
+				<th> Final Class </th>
+				<th> First Class HGVS </th>
+				<th> Second Class HGVS </th>
+				<th> Final HGVS </th>
+
+			</tr>
+
+		</thead>
+
+		<tbody>
+			
+			{% for variant in report_sample_variant_classifications %}
+
+
+				<tr>
+
+					<td> {{variant.variant}} </td>
+					<td> {{variant.classification1}} </td>
+					<td> {{variant.classification2}} </td>
+					<td> {{variant.final_classification}} </td>
+					<td> {{variant.user_hgvs1}} </td>
+					<td> {{variant.user_hgvs2}} </td>
+					<td> {{variant.final_hgvs}} </td>
+
+
+				</tr>
+
+
+			{% endfor %}
+
+
+
+		</tbody>
+
+	</table>
+
+
+	<hr>
+
+	<h2> Evidence Used </h2>
+
+
+
 
 
 

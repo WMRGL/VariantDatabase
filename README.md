@@ -242,7 +242,6 @@ Once VEP is installed annotate your vcfs with the following command:
 
 Other VCF annotations that are required include: INFO/Caller, FORMAT/AD, INFO/TCF, INFO/TCR and INFO/VAFS 
 
-
 They can then be bgzipped in preparation for database import:
 
 `bgzip file_name`
@@ -281,7 +280,6 @@ FILE_STORAGE_URL = '/files/'
 
 
 ```
-
 
 ## Authors
 

@@ -34,7 +34,7 @@ def ajax_detail(request):
 		variant_sample = VariantSample.objects.get(variant=variant, sample=sample)
 
 		# Should we show comments specific to a particular variant or to a particular variant_sample?
-		comments = Comment.objects.filter(variant_sample=variant_sample)
+		comments = Comment.objects.filter(variant_sample__variant=variant)
 
 		samples = variant.get_samples_with_variant()
 

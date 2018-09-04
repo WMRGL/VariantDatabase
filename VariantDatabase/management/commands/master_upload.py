@@ -1179,7 +1179,6 @@ class Command(BaseCommand):
 
 					upload_all_sample_variants(output_dir, sample_names)
 
-
 					self.stdout.write(self.style.SUCCESS("Variant upload complete."))
 
 				self.stdout.write(self.style.SUCCESS("Upload Complete"))

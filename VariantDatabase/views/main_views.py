@@ -230,8 +230,6 @@ def sample_summary(request, pk_sample):
 
 		exon_coverage = ExonCoverage.objects.filter(sample=sample)
 
-		user_settings = UserSetting.objects.filter(user=request.user)
-
 		report_form = ReportForm()
 
 		history = sample.get_history()
@@ -248,7 +246,6 @@ def sample_summary(request, pk_sample):
 						"total_summary": total_summary,
 					 	"gene_coverage": gene_coverage,
 					 	"exon_coverage": exon_coverage,
-					 	"user_settings": user_settings,
 					 	"filter_form": filter_form,
 					 	"panel":panel,
 					 	"history": history,
@@ -510,8 +507,6 @@ def create_sample_report(request, pk_sample, pk_report, check_number):
 
 	summary = variant_utilities.variant_query_set_summary(variants)
 
-	user_settings = UserSetting.objects.filter(user=request.user)
-
 	classifications = Classification.objects.filter(subsection=sample.worksheet.sub_section)
 
 	return render(request,
@@ -520,7 +515,6 @@ def create_sample_report(request, pk_sample, pk_report, check_number):
 				"variants": variant_samples,
 				"summary": summary,
 				"total_summary": total_summary,
-				"user_settings": user_settings,
 				"classifications": classifications,
 				"report": report,
 				"check_number": check_number })
@@ -612,9 +606,14 @@ def view_sample_report(request, pk_sample, pk_report):
 												.objects
 												.filter(report=report))
 
+
+	evidence = False
+
 	return render(request,
 				"VariantDatabase/view_sample_report.html",
-				{"report_sample_variant_classifications": report_sample_variant_classifications})
+				{"report_sample_variant_classifications": report_sample_variant_classifications,
+				"report" : report,
+				"sample": sample})
 
 
 @login_required
