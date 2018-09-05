@@ -40,8 +40,6 @@ def get_sam_stats(sample_name, stats_location):
 
 	sample_qc_dict ={}
 
-	
-
 	with zipfile.ZipFile(stats_location) as myzip:
 
 		#print myzip.namelist()

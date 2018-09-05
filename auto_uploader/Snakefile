@@ -1,0 +1,57 @@
+configfile: "/home/joseph/Documents/VariantDatabase/auto_uploader/configs/vep_annotation.yaml"
+
+initial_files, = glob_wildcards("vcfs_" + config["worksheet_name"] + "/{id}.unified.annovar.wmrgldb.vcf.gz")
+
+
+# Set up end target
+rule all:
+    input:  expand("vep_vcfs_" + config["worksheet_name"] +  "/{id}.unified.annovar.wmrgldb.header.vep.vcf.gz.tbi", id=initial_files)
+
+# Here we add some things to the vcf headers and remove some annotations to stop vep from complaining
+rule fix_vcfs:
+	input:
+		vcf = "vcfs_" + config["worksheet_name"]+ "/{sample}.unified.annovar.wmrgldb.vcf.gz"
+	output:
+		"header_fixed_vcfs/{sample}.unified.annovar.wmrgldb.header.vcf"
+	params:
+		header_file = config["header_file"]
+	shell:
+		"bcftools annotate --header-lines {params.header_file} {input.vcf} | "
+		"bcftools annotate -x INFO/END,INFO/START,INFO/SVLEN > {output} "
+
+# Here was compress and index the above vcfs
+rule compress_and_index_fixed_vcfs:
+	input:
+		"header_fixed_vcfs/{sample}.unified.annovar.wmrgldb.header.vcf"
+	output:
+		vcf = "header_fixed_vcfs/{sample}.unified.annovar.wmrgldb.header.vcf.gz",
+		index = "header_fixed_vcfs/{sample}.unified.annovar.wmrgldb.header.vcf.gz.tbi"
+	shell:
+		"bgzip {input} && tabix {input}.gz"
+
+# Annotate with VEP
+rule vep_annotate:
+	input:
+		vcf = "header_fixed_vcfs/{sample}.unified.annovar.wmrgldb.header.vcf.gz",
+		index = "header_fixed_vcfs/{sample}.unified.annovar.wmrgldb.header.vcf.gz.tbi"
+	output:
+		"vep_vcfs_" + config["worksheet_name"] +  "/{sample}.unified.annovar.wmrgldb.header.vep.vcf.gz"
+	params:
+		vep_cache = config["vep_cache_location"],
+		ref = config["reference"],
+		forks = config["vep_forks"],
+	shell:
+		"vep -i {input} -o {output} --cache --fork {params.forks} --vcf --flag_pick --format vcf "
+		"--exclude_predicted --everything --dont_skip --total_length  --offline --fasta {params.ref} "
+		"--dir_cache {params.vep_cache} --compress_output bgzip"
+		
+# Index the vcfs
+rule index_vep_vcfs:
+	input:
+		"vep_vcfs_" + config["worksheet_name"] +  "/{sample}.unified.annovar.wmrgldb.header.vep.vcf.gz"	
+	output:
+		"vep_vcfs_" + config["worksheet_name"] +  "/{sample}.unified.annovar.wmrgldb.header.vep.vcf.gz.tbi"
+	shell:
+		"tabix {input}"	
+
+

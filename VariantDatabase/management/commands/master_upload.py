@@ -56,7 +56,7 @@ def process_sample_sheet(worksheet_dir):
 		return sample_sheet_data
 
 
-def upload_sample_sheet(sample_sheet_data):
+def upload_sample_sheet(sample_sheet_data, subsection_name):
 	"""
 	Handles the Uploading of the SampleSheet data.
 
@@ -79,15 +79,16 @@ def upload_sample_sheet(sample_sheet_data):
 
 	sample_data = sample_sheet_data[0]
 
-	subsection_name = sample_sheet_data[1]
+	# assumes all have same worksheet
+	worksheet_name = sample_sheet_data[0][1][2]
 
-	worksheet_name = sample_sheet_data[2]
+	print worksheet_name
 
 	#First get the SubSection object
 
 	try:
 
-		subsection = SubSection.objects.get(name="MPN_SureSeq_OGT") #change after mass upload!
+		subsection = SubSection.objects.get(name=subsection_name) #change after mass upload!
 		print "Found SubSection: name = " + subsection.name
 
 	except SubSection.DoesNotExist:
@@ -776,7 +777,7 @@ def upload_sample_vcf(output_dir, sample_name):
 
 	#Find VCF file
 
-	query = output_dir +   "vcfs*/" + sample_name +"*.vcf.gz"
+	query = output_dir +   "vep_vcfs*/" + sample_name +"*.vcf.gz"
 
 	vcf_file_path = glob.glob(query)
 
@@ -1096,6 +1097,8 @@ class Command(BaseCommand):
 
 		parser.add_argument("--single_sample", action="store" ,help="Upload the data for only this sample. Assumes Sample already exists in DB. N.B - sample_sheet and run_qc inactive with this option.")
 
+		parser.add_argument("--subsection_name", action="store" ,help="The name of the project/sub_section to upload the data against e.g. MPN_SureSeq_OGT")
+
 
 	def handle(self, *args, **options):
 
@@ -1103,7 +1106,9 @@ class Command(BaseCommand):
 
 		output_dir = options["output_dir"]
 
-		if worksheet_dir == None or output_dir == None:
+		subsection_name = options["subsection_name"]
+
+		if worksheet_dir == None or output_dir == None or subsection_name == None :
 
 			raise CommandError("Please enter appropriate arguments. See help for detail.")
 
@@ -1123,8 +1128,7 @@ class Command(BaseCommand):
 
 		print sample_names
 
-		worksheet_name = sample_sheet_data[2]
-
+		worksheet_name = sample_sheet_data[0][1][2]
 
 		with transaction.atomic():
 
@@ -1134,7 +1138,7 @@ class Command(BaseCommand):
 
 				if options["sample_sheet"] ==True:
 
-					upload_sample_sheet(sample_sheet_data)
+					upload_sample_sheet(sample_sheet_data, subsection_name)
 
 					output_string = ("Uploaded SampleSheet: {} with {} samples."
 									.format(worksheet_name, len(sample_names)))

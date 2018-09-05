@@ -153,7 +153,7 @@ class SubSection(models.Model):
 	"""
 	A Model to represent a subsection.
 	This is similar to the concept of a project e.g. MPN
-	Can also represent a panel or chemisry for example.
+	Can also represent a panel or chemistry for example.
 
 	"""
 	name = models.CharField(max_length=25, primary_key=True)

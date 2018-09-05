@@ -1,0 +1,4 @@
+##INFO=<ID=Sanger,Number=1,Type=String,Description="ID of mate breakend">
+##INFO=<ID=worksheet,Number=1,Type=String,Description="ID of event associated to breakend">
+##INFO=<ID=START,Number=1,Type=String,Description="Yet another header line">
+##INFO=<ID=END,Number=1,Type=String,Description="Yet another header line">

@@ -250,9 +250,9 @@ def parse_sample_sheet(file):
 
 					sample_name = row[1]
 
-					#sample_name = row[1].replace("_", "-") #+'_S'+str(row[0]) #change sample name to same as in files
+					sample_name = row[1].replace("_", "-") +'_S'+str(row[0]) #change sample name to same as in files
 
-					#sample_name = sample_name.replace(".", "-")
+					sample_name = sample_name.replace(".", "-")
 
 					sample_list.append([row[0], sample_name,row[2],row[3],row[4],row[5],row[6]])
 

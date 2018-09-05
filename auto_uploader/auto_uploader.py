@@ -24,7 +24,7 @@ def parse_auto_config_file(config_file):
 	return config_dict
 
 # Here we load the django settings so we can access the models etc.
-config_dict = parse_auto_config_file("auto_uploader/auto_config.yaml")
+config_dict = parse_auto_config_file("auto_uploader/configs/auto_config.yaml")
 sys.path.append(config_dict["project_dir"])
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
 from django.conf import settings
@@ -285,13 +285,47 @@ def already_in_database(list_of_file_dicts_anno, list_of_worksheets_in_db, confi
 	return list_of_fully_annotated_file_dicts
 
 
-wk = get_worksheets_for_project("MPN_SureSeq_OGT")
+def filter_file_dict_list(list_of_fully_annotated_file_dicts):
 
-x = get_data_in_directory(config_dict["projects"]["MPN_SureSeq_OGT"]["to_watch"]["folder1"][1])
+	"""
+	Filter the list of file dicts so we only have ones we want to upload.
 
-y = parse_data_file_folders(x, "MPN_SureSeq_OGT", ["/home/joseph/Documents/variantdb_data/folder1_worksheet/", "/home/joseph/Documents/variantdb_data/folder1_data/"])
+	"""
 
-z =  annotate_file_dicts(y, config_dict)
+	return list(filter(lambda d: (d["already_in_db"]== False
+	 and d["to_exclude"] == False
+	 and d["in_ignore_list"] == False
+	 and d["is_finished"] == True), list_of_fully_annotated_file_dicts))
+
+def get_all_to_upload(config_dict):
+	"""
+	Goes through the config dict and gets all the data we need to put in the database.
+
+	"""
+
+	to_upload = []
+
+	for project in config_dict["projects"]:
+
+		worksheets_in_db = get_worksheets_for_project(project)
+
+		for folder in config_dict["projects"][project]["to_watch"]:
+
+			data_folder = config_dict["projects"][project]["to_watch"][folder]
+
+			data_folders_in_dir = get_data_in_directory(data_folder[1])
+
+			parsed_data_folders = parse_data_file_folders(data_folders_in_dir, project, data_folder)
+
+			annotated_file_dicts = annotate_file_dicts(parsed_data_folders, config_dict)
+
+			final_annotated_file_dicts = already_in_database(annotated_file_dicts, worksheets_in_db, config_dict)
+
+			filtered_file_dicts = filter_file_dict_list(final_annotated_file_dicts)
+
+			to_upload = to_upload + filtered_file_dicts
+
+	return to_upload
 
 
-print already_in_database(z, wk, config_dict )
+print get_all_to_upload(config_dict)
