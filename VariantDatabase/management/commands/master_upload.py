@@ -82,14 +82,14 @@ def upload_sample_sheet(sample_sheet_data, subsection_name):
 	# assumes all have same worksheet
 	worksheet_name = sample_sheet_data[0][1][2]
 
-	print worksheet_name
+	print (worksheet_name)
 
 	#First get the SubSection object
 
 	try:
 
 		subsection = SubSection.objects.get(name=subsection_name) #change after mass upload!
-		print "Found SubSection: name = " + subsection.name
+		print ("Found SubSection: name = " + subsection.name)
 
 	except SubSection.DoesNotExist:
 
@@ -479,7 +479,7 @@ def upload_all_sample_qcs(output_dir, sample_names):
 
 	for sample in sample_names:
 
-		print sample
+		print (sample)
 
 		upload_sample_qc(output_dir,sample)
 
@@ -819,7 +819,7 @@ def upload_sample_vcf(output_dir, sample_name):
 
 		raise CommandError(error)
 
-
+		"""
 	#Try and parse the vcf using the vcf_parser
 	try:
 
@@ -828,6 +828,10 @@ def upload_sample_vcf(output_dir, sample_name):
 	except:
 
 		raise CommandError("Could not process data using vcf_parser function")
+	"""
+
+
+	vcf_data = vcf_parser.create_master_list(vcf_file_path, sample_name)
 
 
 	#update sample information e.g. vcf location.
@@ -1068,7 +1072,7 @@ def upload_all_sample_variants(output_dir, sample_names):
 
 	for sample in sample_names:
 
-		print sample
+		print (sample)
 
 		upload_sample_vcf(output_dir, sample)
 
@@ -1126,7 +1130,7 @@ class Command(BaseCommand):
 
 		sample_names =  file_parsers.get_sample_names(sample_sheet_data)
 
-		print sample_names
+		print (sample_names)
 
 		worksheet_name = sample_sheet_data[0][1][2]
 

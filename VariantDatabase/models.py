@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils import timezone
 from django.db.models import Q
-import parsers.vcf_parser as vcf_parser
+from .parsers import vcf_parser
 from django.contrib.contenttypes.models import ContentType
 from auditlog.models import LogEntry
 from auditlog.registry import auditlog

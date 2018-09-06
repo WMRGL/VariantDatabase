@@ -1,5 +1,6 @@
 import csv
 import zipfile
+import io
 """
 This file contains functions for parsing the SamStats files and images.
 
@@ -40,12 +41,13 @@ def get_sam_stats(sample_name, stats_location):
 
 	sample_qc_dict ={}
 
-	with zipfile.ZipFile(stats_location) as myzip:
+	with zipfile.ZipFile(stats_location, "r") as myzip:
 
-		#print myzip.namelist()
-		with myzip.open(file_name, "r") as csvfile:
+		with myzip.open(file_name, 'r') as csvfile:
 
-			reader = csv.reader(csvfile, delimiter="\t")
+			myfile = io.TextIOWrapper(io.BytesIO(csvfile.read()))
+
+			reader = csv.reader(myfile, delimiter="\t")
 
 			for row in reader:
 

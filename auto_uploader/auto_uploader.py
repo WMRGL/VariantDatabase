@@ -328,4 +328,4 @@ def get_all_to_upload(config_dict):
 	return to_upload
 
 
-print get_all_to_upload(config_dict)
+print (get_all_to_upload(config_dict))

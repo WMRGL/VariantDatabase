@@ -20,7 +20,9 @@ def get_variant_hash(chromosome, pos, ref,alt):
 
 	"""
 
-	hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
+	hash_string = bytes("{chr} {pos} {ref} {alt}".format(chr =chromosome, pos=pos, ref=ref, alt=alt), 'utf-8')
+
+	hash_id = hashlib.sha256(hash_string).hexdigest()
 
 	return hash_id
 

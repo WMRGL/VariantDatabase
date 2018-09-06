@@ -251,7 +251,10 @@ def create_master_list(file,sample):
 		ref = variant_data_dict["reference"]
 		alt = variant_data_dict["alt_alleles"][0]
 
-		hash_id = hashlib.sha256(chromosome+" "+pos+" "+ref+" "+alt).hexdigest()
+
+		hash_string = bytes("{chr} {pos} {ref} {alt}".format(chr =chromosome, pos=pos, ref=ref, alt=alt), 'utf-8')
+
+		hash_id = hashlib.sha256(hash_string).hexdigest()
 
 		variant_data_dict["hash_id"] = hash_id
 

@@ -186,7 +186,7 @@ def parse_sample_sheet(file):
 
 
 
-	with open(file, "rb") as csvfile:
+	with open(file, "rt") as csvfile:
 
 
 		reader = csv.reader(csvfile, delimiter=",")
@@ -316,7 +316,7 @@ def parse_gene_coverage(file_path):
 
 	master_list =[]
 
-	with gzip.open(file_path, "rb") as f:
+	with gzip.open(file_path, "rt") as f:
 
 		reader = csv.DictReader(f, delimiter="\t")
 
@@ -354,7 +354,7 @@ def parse_exon_coverage(file_path):
 
 	master_list =[]
 
-	with gzip.open(file_path, "rb") as f:
+	with gzip.open(file_path, "rt") as f:
 
 		reader = csv.DictReader(f, delimiter="\t")
 
