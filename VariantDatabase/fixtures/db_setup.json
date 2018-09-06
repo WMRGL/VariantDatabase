@@ -441,14 +441,6 @@
     }
   },
   {
-    "model": "VariantDatabase.usersetting",
-    "pk": 1,
-    "fields": {
-      "columns_to_hide": "allele_depth,vafs,tcf,tcr,clinsig,filter_status",
-      "user": 1
-    }
-  },
-  {
     "model": "VariantDatabase.classification",
     "pk": 1,
     "fields": {

@@ -8,7 +8,7 @@ class TestFileParser(unittest.TestCase):
 		data1 = file_parsers.parse_sample_sheet("VariantDatabase/tests/test_files/sample_sheets/SampleSheet_valid.csv")
 
 
-		self.assertEqual(data1[0][0],['1', 'Sample_1', 'MPN_213837', 'A01', '25', 'TTACCCTG', ''])
+		self.assertEqual(data1[0][0],['1', 'Sample-1_S1', 'MPN_213837', 'A01', '25', 'TTACCCTG', ''])
 		self.assertEqual(data1[1], "MPN_SureSeq_OGT" )
 		self.assertEqual(data1[2], "MPN_213837" )
 
@@ -33,9 +33,9 @@ class TestFileParser(unittest.TestCase):
 
 		names1 = file_parsers.get_sample_names(data1)
 
-		output1 = ['Sample_1', 'Sample_2', 'Sample_3', 'Sample_4', 'Sample_5', 'Sample_6', 'Sample_7', 'Sample_8', 'Sample_9', 'Sample_10', 'Sample_11',
-		 'Sample_12', 'Sample_13', 'Sample_14', 'Sample_15', 'Sample_16', 'Sample_17', 'Sample_18', 'Sample_19', 'Sample_20', 'Sample_21', 'Sample_22',
-		  'Sample_23', 'Sample_24']
+		output1 = ['Sample-1_S1', 'Sample-2_S2', 'Sample-3_S3', 'Sample-4_S4', 'Sample-5_S5', 'Sample-6_S6', 'Sample-7_S7', 'Sample-8_S8', 'Sample-9_S9', 'Sample-10_S10', 'Sample-11_S11',
+		 'Sample-12_S12', 'Sample-13_S13', 'Sample-14_S14', 'Sample-15_S15', 'Sample-16_S16', 'Sample-17_S17', 'Sample-18_S18', 'Sample-19_S19', 'Sample-20_S20', 'Sample-21_S21', 'Sample-22_S22',
+		  'Sample-23_S23', 'Sample-24_S24']
 
 
 		self.assertEqual(names1, output1 )

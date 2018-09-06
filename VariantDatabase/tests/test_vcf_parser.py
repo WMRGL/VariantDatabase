@@ -112,7 +112,7 @@ class TestVcfParser(unittest.TestCase):
 
 		output3 = [('gene2','1')]
 
-		self.assertEqual(vcf_parser.get_variant_genes_list(input1), output1)
+		self.assertEqual(set(vcf_parser.get_variant_genes_list(input1)), set(output1))
 		self.assertEqual(set(vcf_parser.get_variant_genes_list(input2)), set(output2))
 		self.assertEqual(set(vcf_parser.get_variant_genes_list(input3)), set(output3))
 
@@ -135,7 +135,7 @@ class TestVcfParser(unittest.TestCase):
 
 		input2 = {'NM_002617.3': {'Existing_variation': 'gene1'}, 'NM_002614.3': {'Existing_variation': 'gene2'}}
 
-		output2 = 'gene1|gene2'
+		output2 = 'gene2|gene1'
 
 		input3 = {'NM_002617.3': {'Existing_variation': ''}, 'NM_002614.3': {'Existing_variation': 'gene2'}}
 

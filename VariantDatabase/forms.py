@@ -256,9 +256,7 @@ class ChangeUserGroupForm(forms.Form):
 	available_roles = RolesManager.get_roles_names()
 	roles_choices = [(role, role) for role in available_roles]
 	roles_field = forms.ChoiceField(choices=roles_choices)
-	users = User.objects.filter()
-	user_choices = [(user.pk, user.username) for user in users]
-	user_field = forms.ChoiceField(choices=user_choices)
+	users = User.objects.all()
 
 
 	def __init__(self, *args, **kwargs):

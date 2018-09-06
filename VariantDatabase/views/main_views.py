@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from VariantDatabase.models import *
 from django.contrib.auth.decorators import login_required
-from VariantDatabase.forms import *
+
 from django.utils import timezone
 import VariantDatabase.parsers.vcf_parser as vcf_parser
 import VariantDatabase.parsers.file_parsers as parsers
@@ -15,9 +15,14 @@ from rolepermissions.roles import get_user_roles
 from rolepermissions.roles import assign_role
 from rolepermissions.roles import clear_roles
 from rolepermissions.roles import RolesManager
-
+import sys
 from django.contrib.auth.decorators import user_passes_test
 
+
+
+
+if 'makemigrations' not in sys.argv and 'migrate' not in sys.argv:
+    from VariantDatabase.forms import *
 
 @login_required
 def list_sections(request):

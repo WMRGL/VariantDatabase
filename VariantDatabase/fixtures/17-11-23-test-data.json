@@ -85113,33 +85113,6 @@
 },
 {
   "model": "auth.permission",
-  "pk": 79,
-  "fields": {
-    "name": "Can add user setting",
-    "content_type": 27,
-    "codename": "add_usersetting"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 80,
-  "fields": {
-    "name": "Can change user setting",
-    "content_type": 27,
-    "codename": "change_usersetting"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 81,
-  "fields": {
-    "name": "Can delete user setting",
-    "content_type": 27,
-    "codename": "delete_usersetting"
-  }
-},
-{
-  "model": "auth.permission",
   "pk": 82,
   "fields": {
     "name": "Can add evidence",
@@ -85208,14 +85181,6 @@
     "date_joined": "2017-11-23T11:34:42.058Z",
     "groups": [],
     "user_permissions": []
-  }
-},
-{
-  "model": "VariantDatabase.usersetting",
-  "pk": 1,
-  "fields": {
-    "columns_to_hide": "allele_depth,vafs,tcf,tcr,clinsig,filter_status",
-    "user": 1
   }
 },
 {
