@@ -23,7 +23,7 @@ VariantDatabase allows the following:
 
 ### Requirements
 
-The database has been tested on Centos7. The best way to get all the requirements is to install conda from https://conda.io/docs/ 
+The database has been tested on Centos7 using Python3. The best way to get all the requirements is to install the conda Python distribution and package manager from from: https://conda.io/docs/ 
 
 You can then install all reqirements using a single command - see Install Requirements section for more detail. 
 
@@ -31,7 +31,7 @@ You can then install all reqirements using a single command - see Install Requir
 
 To serve VCF and BAMs using IGV.js a webserver capable of HTTP range requests is required. Nginx is used in a typical deployment. Nginx is typically paired with Gunicorn which handles dynamic requests.
 
-To annotate vcfs VEP is required (Tested on API and Cache Version 93). This is automatically installed if using the conda install method. The VEP cache will need to be installed separately. See https://bioconda.github.io/recipes/ensembl-vep/README.html for more information on how to do this.
+To annotate VCFs VEP is required (Tested on API and Cache Version 93). This is automatically installed if using the conda install method although the VEP cache will need to be installed separately. See https://bioconda.github.io/recipes/ensembl-vep/README.html for more information on how to do this.
 
 
 ### Installation
@@ -44,7 +44,7 @@ To annotate vcfs VEP is required (Tested on API and Cache Version 93). This is a
 
 `conda env create -f envs/main.yaml`
 
-`source activate variant_database
+`source activate variant_database`
 
 `pip install -f https://github.com/Illumina/interop/releases/v1.0.25 interop`
 
@@ -63,6 +63,7 @@ To annotate vcfs VEP is required (Tested on API and Cache Version 93). This is a
 `python manage.py loaddata db_setup.json`
 
 ##### Step 3 - Test
+
 
 `python manage.py test`
 
@@ -212,15 +213,12 @@ For the vcf files to be correctly parsed by the VariantDatabase parser (parsers/
 
 Once VEP is installed annotate your vcfs with the following command:
 
-`vep -i input_vcf -o output.vcf --cache --fork 4 --refseq --vcf --flag_pick --exclude_predicted --format vcf --everything --dont_skip --total_length  --offline--fasta fasta_location`
-
+```
+vep -i {input_vcf} -o {output_vcf} --cache --fork {n_forks} --vcf --flag_pick --format vcf --refseq 
+		--exclude_predicted --everything --dont_skip --total_length  --offline --fasta {ref_genome} 
+		--dir_cache {vep_cache_location} --compress_output bgzip
+```
 Other VCF annotations that are required include: INFO/Caller, FORMAT/AD, INFO/TCF, INFO/TCR and INFO/VAFS 
-
-They can then be bgzipped in preparation for database import:
-
-`bgzip file_name`
-
-`tabix file_name.gz`
 
 ## User Guide
 
