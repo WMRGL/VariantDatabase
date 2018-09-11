@@ -63,6 +63,7 @@ class SampleFilter(models.Model):
 	transcript_amplification = models.BooleanField()
 	transcript_ablation = models.BooleanField()
 	synonymous_variant = models.BooleanField()
+	start_retained_variant = models.BooleanField()
 	stop_retained_variant = models.BooleanField()
 	stop_lost = models.BooleanField()
 	stop_gained = models.BooleanField()
@@ -113,6 +114,7 @@ class SampleFilter(models.Model):
 		filter_dict["transcript_amplification"] = self.transcript_amplification
 		filter_dict["transcript_ablation"] = self.transcript_ablation
 		filter_dict["synonymous_variant"] = self.synonymous_variant
+		filter_dict["start_retained_variant"] = self.start_retained_variant
 		filter_dict["stop_retained_variant"] = self.stop_retained_variant
 		filter_dict["stop_lost"]=self.stop_lost
 		filter_dict["stop_gained"]=self.stop_gained

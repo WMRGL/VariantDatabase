@@ -1,10 +1,13 @@
 reference:
+  #human genome reference for generating HGVS
   /run/media/joseph/7ea30321-c68e-46bd-82a8-e3bdbe2d4ed6/main/vep/homo_sapiens/93_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz
 header_file:
+  #File required for editing the headers of the vcf to work with vep.
   /home/joseph/Documents/VariantDatabase/auto_uploader/misc/headers.txt
 worksheet_name:
   test
 vep_cache_location:
+  # where the vep cache lives
   /run/media/joseph/7ea30321-c68e-46bd-82a8-e3bdbe2d4ed6/main/vep/
 vep_forks:
   1

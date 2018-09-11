@@ -6,3 +6,4 @@ mysite/media/uploads/17/07/hi_kvHHN2g
 VariantDatabase/migrations/
 /static/
 auto_uploader/Bio/
+.snakemake

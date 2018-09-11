@@ -1,23 +1,30 @@
-project_dir: /home/joseph/Documents/VariantDatabase
 
+#Where is the variant database home directory
+project_dir: /home/joseph/Documents/VariantDatabase
+#Where to store a log
+log_location: /media/sf_S_DRIVE/variant_database_testdata/auto_upload_tests/logs/auto_loader_log.txt
+#Where to store csv files which contain information on which files where uploaded
+csv_log_location: /media/sf_S_DRIVE/variant_database_testdata/auto_upload_tests/logs/csv_logs/
+
+
+# Specify one or more projects here
 projects:
 
   MPN_SureSeq_OGT:
-
+    #To watch should spcifiy folder pairs to watch for a project - the first in the list should be the worksheet folder and the next one the pipeline output
     to_watch:
 
-      folder1: [/home/joseph/Documents/variantdb_data/folder1_worksheet/, /home/joseph/Documents/variantdb_data/folder1_data/]
+      folder1: [/media/sf_S_DRIVE/variant_database_testdata/auto_upload_tests/shire_worksheets_numbered/200000-299999/, /media/sf_S_DRIVE/variant_database_testdata/auto_upload_tests/pipeline_output/200000-299999/]
 
-    to_exclude: [caution, error,fail]
-
+    # any runs with these words in the path will not be uploaded
+    to_exclude: [caution, error,fail, repeat]
+    # The files name which indicates the run is finished
     is_finished: pipeline-complete.txt
-
-    vep_annotate: true
-
+    # is there an intermediate folder between the base pipeline output folder and where the files are kept.
     intermediate_folder: true
-
+    # If the intermediate folder contains a prefix specifiy that here
     intermediate_folder_prefix: MPN_
-
+    # If the worksheet folder contains a prefix specifiy that here
     worksheet_name_prefix: MPN_
-
+    # any run numbers added to this list will be ignored by the uploader
     ignore_list_location: /home/joseph/Documents/variantdb_data/MPN_SureSeq_OGT_ignore_list.txt

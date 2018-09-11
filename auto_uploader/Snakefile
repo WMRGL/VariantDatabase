@@ -41,7 +41,7 @@ rule vep_annotate:
 		ref = config["reference"],
 		forks = config["vep_forks"],
 	shell:
-		"vep -i {input} -o {output} --cache --fork {params.forks} --vcf --flag_pick --format vcf "
+		"vep -i {input} -o {output} --cache --fork {params.forks} --vcf --flag_pick --format vcf --refseq "
 		"--exclude_predicted --everything --dont_skip --total_length  --offline --fasta {params.ref} "
 		"--dir_cache {params.vep_cache} --compress_output bgzip"
 		
@@ -53,5 +53,7 @@ rule index_vep_vcfs:
 		"vep_vcfs_" + config["worksheet_name"] +  "/{sample}.unified.annovar.wmrgldb.header.vep.vcf.gz.tbi"
 	shell:
 		"tabix {input}"	
+
+
 
 

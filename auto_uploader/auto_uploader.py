@@ -1,8 +1,13 @@
 import yaml
-import os, django
+import os
+import django
 import sys
 import glob
 import re
+import csv
+import logging
+import datetime
+import subprocess
 
 
 #########################################################################################
@@ -31,6 +36,11 @@ from django.conf import settings
 django.setup()
 from VariantDatabase.models import Worksheet
 
+# Set up logger
+
+logging.basicConfig(filename=config_dict["log_location"],level=logging.DEBUG)
+
+
 #########################################################################################
 # Main program.
 #########################################################################################
@@ -58,11 +68,11 @@ def get_data_in_directory(directory):
 
 	"""
 
-	files =  glob.glob(directory+"*")
+	dirs = [directory+d for d in os.listdir(directory)  if os.path.isdir(directory+d)]
 
-	return files
+	return dirs
 
-def parse_data_file_folders(list_files, project, folder_locations):
+def parse_data_file_folders(list_files, project, folder_locations,worksheet_name_prefix ):
 
 	"""
 	Take a list of files created by get_data_in_directory() and 
@@ -88,6 +98,8 @@ def parse_data_file_folders(list_files, project, folder_locations):
 		file_dict["file_location"] = file
 
 		file_dict["project"] = project
+
+		file_dict["worksheet_name_prefix"] = worksheet_name_prefix
 
 		file_dict["folder_locations"] = folder_locations
 
@@ -120,6 +132,8 @@ def annotate_file_dicts(list_of_file_dicts, config_dict):
 
 		int_run_number = re.findall('\d+', run_number )[0]
 
+		file_dict["int_run_number"] = int_run_number
+
 		# Is the pipeline finished?
 
 		if config_dict["projects"][project]["intermediate_folder"] == True:
@@ -146,15 +160,26 @@ def annotate_file_dicts(list_of_file_dicts, config_dict):
 		if len(finished_file) == 1:
 
 			file_dict["is_finished"] = True
+			file_dict["finished_count_correct"] = True
 
 		elif len(finished_file) > 1:
 
-			raise ValueError("There appears to be more than one end of run file - please investigate.")
+			logging.warning("{run_number} - more than one finished file found - are there multiple output directories? Not uploaded.".format(
+				run_number = file_dict["run_number"]
+				))
+
+			file_dict["finished_count_correct"] = False
+			file_dict["is_finished"] = True
  
 
 		else:
 
 			file_dict["is_finished"] = False
+			file_dict["finished_count_correct"] = False
+			logging.warning("{run_number} - No finished file found.".format(
+				run_number = file_dict["run_number"]
+				))
+
 
 
 		#Does the folder path contain any forbidden words that indicate that the pipeline has failed?
@@ -216,15 +241,18 @@ def annotate_file_dicts(list_of_file_dicts, config_dict):
 		if len(data_folder) == 1:
 
 			file_dict["data_folder"] = data_folder[0]
+			file_dict["n_data_folders_correct"] = True
 
 		elif len(data_folder) > 1:
 
-			raise ValueError("There appears to be more than one data folder - please investigate.")
+			file_dict["data_folder"] = None
+			file_dict["n_data_folders_correct"] = False
+			logging.warning("{run_number} - No finished file found.")
  
 
 		else:
-
-			raise ValueError("There appears to be no data folder - please investigate.")
+			file_dict["data_folder"] = None
+			file_dict["n_data_folders_correct"] = False
 
 		#Get the worksheet folder location
 
@@ -233,25 +261,24 @@ def annotate_file_dicts(list_of_file_dicts, config_dict):
 
 		worksheet_folder_query = "{worksheet_folder_locations}{run_number}/*".format(
 			worksheet_folder_locations = worksheet_folder_locations,
-			run_number = int_run_number
+			run_number = run_number
 			)
 
 		worksheet_folder =  glob.glob(worksheet_folder_query)
 
-
 		if len(worksheet_folder) == 1:
 
 			file_dict["worksheet_folder"] = worksheet_folder[0]
+			file_dict["n_worksheet_folders_correct"] = True 
 
 		elif len(worksheet_folder) > 1:
-
-			raise ValueError("There appears to be more than one worksheet folder - please investigate.")
+			file_dict["worksheet_folder"] = None
+			file_dict["n_worksheet_folders_correct"] = False 
  
 
 		else:
-
-			raise ValueError("There appears to be no worksheet folder - please investigate.")
-
+			file_dict["worksheet_folder"] = None
+			file_dict["n_worksheet_folders_correct"] = False 
 
 		list_of_file_dicts_anno.append(file_dict)
 
@@ -295,7 +322,10 @@ def filter_file_dict_list(list_of_fully_annotated_file_dicts):
 	return list(filter(lambda d: (d["already_in_db"]== False
 	 and d["to_exclude"] == False
 	 and d["in_ignore_list"] == False
-	 and d["is_finished"] == True), list_of_fully_annotated_file_dicts))
+	 and d["is_finished"] == True
+	 and d["finished_count_correct"] ==True)
+	 and d["n_data_folders_correct"] ==True
+	 and d["n_worksheet_folders_correct"] == True, list_of_fully_annotated_file_dicts))
 
 def get_all_to_upload(config_dict):
 	"""
@@ -311,15 +341,28 @@ def get_all_to_upload(config_dict):
 
 		for folder in config_dict["projects"][project]["to_watch"]:
 
+			prefix = config_dict["projects"][project]["worksheet_name_prefix"]
+
 			data_folder = config_dict["projects"][project]["to_watch"][folder]
 
 			data_folders_in_dir = get_data_in_directory(data_folder[1])
 
-			parsed_data_folders = parse_data_file_folders(data_folders_in_dir, project, data_folder)
+			parsed_data_folders = parse_data_file_folders(data_folders_in_dir, project, data_folder,prefix )
 
 			annotated_file_dicts = annotate_file_dicts(parsed_data_folders, config_dict)
 
 			final_annotated_file_dicts = already_in_database(annotated_file_dicts, worksheets_in_db, config_dict)
+
+			# Create CSV log with each file as a row
+			keys = final_annotated_file_dicts[0].keys()
+			ts = datetime.datetime.now().timestamp()
+			file_name = config_dict["csv_log_location"] +  datetime.datetime.fromtimestamp(ts).isoformat() + ".csv"
+			file_name = file_name.replace(":", "-")
+			with open(file_name, 'wt') as output_file:
+				dict_writer = csv.DictWriter(output_file, fieldnames=keys)
+				dict_writer.writeheader()
+				dict_writer.writerows(annotated_file_dicts)
+			output_file.close()
 
 			filtered_file_dicts = filter_file_dict_list(final_annotated_file_dicts)
 
@@ -328,4 +371,38 @@ def get_all_to_upload(config_dict):
 	return to_upload
 
 
-print (get_all_to_upload(config_dict))
+def main():
+
+	to_upload = get_all_to_upload(config_dict)
+
+	for file_dict in to_upload:
+
+		#
+
+		command = "snakemake --snakefile auto_uploader/Snakefile -d {data_folder} --config worksheet_name={worksheet_name} --printshellcmds".format(
+			data_folder = file_dict["data_folder"],
+			worksheet_name = file_dict["worksheet_name_prefix"] + file_dict["int_run_number"]
+
+			)
+		print (command)
+
+		sts = subprocess.Popen(command, shell=True).wait()
+
+
+		command = "python manage.py master_upload --worksheet_dir {worksheet} --output_dir {data} --sample_sheet --run_qc --sample_qc --coverage --variants --subsection_name {project}".format(
+			worksheet = file_dict["worksheet_folder"],
+			data = file_dict["data_folder"],
+			project = file_dict["project"],
+
+			)
+
+		sts = subprocess.Popen(command, shell=True).wait()
+
+
+
+
+main()
+
+
+
+

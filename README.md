@@ -23,64 +23,28 @@ VariantDatabase allows the following:
 
 ### Requirements
 
+The database has been tested on Centos7. The best way to get all the requirements is to install conda from https://conda.io/docs/ 
 
-##### Prerequisites
-
-`CentOS7`
-
-`Python 2.7.11`
-
-`Pip`
-
-`virtualenv`
-
-
-##### Python Packages
-
-
-`Django==1.10.5`
-
-`django-auditlog==0.4.3`
-
-`gunicorn==19.7.1`
-
-`interop==1.0.25`
-
-`numpy==1.12.1`
-
-`pysam==0.10.0`
-
-`django-crispy-forms==1.6.1`
-
-`django-extensions==1.9.9`
-
-`django-filter==1.1.0`
-
-`django-role-permissions==2.1.0`
-
-`djangorestframework==3.6.4`
-
-`scipy==1.0.0`
-
+You can then install all reqirements using a single command - see Install Requirements section for more detail. 
 
 ##### Other
 
 To serve VCF and BAMs using IGV.js a webserver capable of HTTP range requests is required. Nginx is used in a typical deployment. Nginx is typically paired with Gunicorn which handles dynamic requests.
 
-To annotate vcfs VEP is required (Tested on API and Cache Version 90):
-
-http://www.ensembl.org/info/docs/tools/vep/index.html
+To annotate vcfs VEP is required (Tested on API and Cache Version 93). This is automatically installed if using the conda install method. The VEP cache will need to be installed separately. See https://bioconda.github.io/recipes/ensembl-vep/README.html for more information on how to do this.
 
 
 ### Installation
 
 ##### Step 1 - Install Requirements
 
-Within your python virtualenv type:
-
 `git clone https://github.com/WMRGL/VariantDatabase.git`
 
-`pip install -r requirements.txt`
+`cd VariantDatabase`
+
+`conda env create -f envs/main.yaml`
+
+`source activate variant_database
 
 `pip install -f https://github.com/Illumina/interop/releases/v1.0.25 interop`
 
@@ -122,7 +86,7 @@ For help using this program type:
 
 For example to upload all data for a worksheet (SampleSheet, Variants, Run QC, Sample QC, Gene Coverage and Exon Coverage) enter the following:
 
-`python manage.py master_upload --worksheet_dir /home/cuser/Documents/Project/DatabaseData/worksheet_dir/ --output_dir /home/cuser/Documents/Project/DatabaseData/MPN_213837/  --sample_sheet --run_qc --sample_qc --coverage --variants`
+`python manage.py master_upload --worksheet_dir /home/cuser/Documents/Project/DatabaseData/worksheet_dir/ --output_dir /home/cuser/Documents/Project/DatabaseData/MPN_213837/  --sample_sheet --run_qc --sample_qc --coverage --variants --subsection_name MPN_SureSeq_OGT`
 
 It is important that the directories specified by the -w/ --worksheet_dir and output_dir/-o options are structured correctly.
 
@@ -227,9 +191,19 @@ Add this option to import the variant information contained within the VEP annot
 Use this option to upload the data for a single sample. Example below:
 
 
-`python manage.py master_upload --worksheet_dir /home/cuser/Documents/Project/DatabaseData/worksheet_dir/ --output_dir /home/cuser/Documents/Project/DatabaseData/MPN_213837/  --sample_qc --coverage --variants --single_sample 213837-2-D17-26177-HP_S2`
+`python manage.py master_upload --worksheet_dir /home/cuser/Documents/Project/DatabaseData/worksheet_dir/ --output_dir /home/cuser/Documents/Project/DatabaseData/MPN_213837/  --sample_qc --coverage --variants --single_sample 213837-2-D17-26177-HP_S2 --subsection_name MPN_SureSeq_OGT`
 
 Note that the --sample_sheet and --run_qc options are not available when using the --single_sample option.
+
+### master_upload
+
+There is also a auto_uploader in development. This program monitors directories given in the auto_uploader/configs/auto_config.yaml configuration file. The program will check whether the specified directories contain runs which have not been uploaded to the database and then annotate them with vep before uploading them to the database if the match the rules specified in the config file.
+
+To run this program:
+
+`python auto_uploader/auto_uploader.py`
+
+
 
 
 ### VCF Format
