@@ -334,7 +334,13 @@ def user_settings(request):
 
 	user = request.user
 
-	user_role = get_user_roles(user)[0].get_name()
+	try:
+
+		user_role = get_user_roles(user)[0].get_name()
+
+	except:
+
+		user_role = None
 
 	return render(request, "VariantDatabase/user_settings.html", {"user_role": user_role})
 
